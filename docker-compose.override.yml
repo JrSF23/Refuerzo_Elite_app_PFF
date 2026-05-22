@@ -1,0 +1,28 @@
+# Este fichero se carga automáticamente sobre docker-compose.yml en desarrollo.
+# NO incluir en producción.
+#
+# Diferencias con producción:
+#   - El código fuente del backend se monta como volumen (cambios en vivo).
+#   - MySQL expone el puerto 3306 para conectar con TablePlus, DBeaver, etc.
+#   - APP_DEBUG activado y logs en stderr para leerlos con "docker compose logs".
+
+services:
+
+  laravel:
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_CHANNEL: stderr
+    volumes:
+      # Monta el código fuente directamente: cualquier cambio PHP se refleja
+      # sin necesidad de reconstruir la imagen.
+      - ./backend:/var/www/backend
+      # Pero conservamos los volúmenes de storage y vendor del contenedor
+      # para no pisarlos con los del host.
+      - backend_storage:/var/www/backend/storage
+      - /var/www/backend/vendor
+
+  mysql:
+    ports:
+      # Expone MySQL al host para poder usar clientes gráficos de BD.
+      - "3306:3306"

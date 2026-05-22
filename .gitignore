@@ -1,0 +1,15 @@
+# ── Docker — credenciales reales (NUNCA commitear) ────────────────────────────
+.env.docker
+
+# ── Claude Code — metadata local del IDE ─────────────────────────────────────
+.claude/
+
+# ── Sistema operativo ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Editores e IDEs ───────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.suo
+*.swp
