@@ -1,187 +1,225 @@
-# Implementacion del proyecto
+# Journal d'implémentation — Refuerzo Elite V2
 
-## 1. Objetivo
+## 1. Objectif
 
-Se inicio una nueva version de Refuerzo Elite con separacion clara entre frontend y backend, tomando como base el cahier des charges y el modelo funcional del proyecto anterior.
+Réécriture complète de Refuerzo Elite avec une séparation nette entre frontend et backend, en partant du cahier des charges et du modèle fonctionnel de la version précédente.
 
-## 2. Decisiones tecnicas
+## 2. Choix techniques
 
 ### Frontend
 
-- Se uso React con Vite para una interfaz mas rapida y modular.
-- Se uso React Router para dividir login, dashboard y modulos.
-- Se uso Axios para consumir la API REST.
+- React 19 avec Vite : rechargement rapide en développement, build optimisé en production.
+- React Router v7 pour la navigation entre login, dashboard et modules.
+- Axios pour les appels à l'API REST.
 
 ### Backend
 
-- Se uso Laravel 12 porque es compatible con PHP 8.2 del entorno actual.
-- Se instalo Sanctum para autenticacion por token.
-- Se instalo Spatie Permission para roles y permisos.
+- Laravel 12 (PHP 8.2), compatible avec l'environnement cible.
+- Sanctum pour l'authentification par token Bearer.
+- Spatie Permission pour les rôles et permissions.
 
-### Persistencia
+### Persistance
 
-- MySQL se uso como base principal y transaccional.
-- MongoDB no se activo todavia porque en esta fase no habia servidor ni extension PHP-MongoDB garantizados en el entorno.
-- Aun asi, la auditoria se dejo modelada como `audit_events`, preparada para migrarse despues a MongoDB si se desea una estrategia hibrida real de historico/eventos.
+- MySQL 8.0 comme base transactionnelle principale.
+- MongoDB non activé : en phase initiale, ni le serveur ni l'extension `php-mongodb` n'étaient garantis dans l'environnement. La table `audit_events` reste modélisée de façon à pouvoir migrer vers MongoDB plus tard si besoin.
 
-## 3. Que se hizo en backend
+### Conteneurisation
 
-### Seguridad
+- Docker Compose avec trois services : Nginx, PHP-FPM (Laravel) et MySQL.
+- `docker-compose.override.yml` chargé automatiquement en développement : montage du code source en volume, port MySQL exposé.
+- Makefile pour les commandes courantes.
 
-- Login por correo o username
-- Logout con invalidacion del token actual
-- Endpoint `/api/v1/me`
-- Seeder de roles: `admin`, `coordinator`, `staff`, `teacher`, `guardian`
-- Usuario administrador inicial
+## 3. Backend
 
-### Modelo de datos
+### Authentification et sécurité
 
-Se crearon las entidades:
+- Login par email ou par username.
+- Logout avec invalidation du token courant.
+- Endpoint `/api/v1/me`.
+- Seeder de rôles : `admin`, `coordinator`, `staff`, `teacher`, `guardian`.
+- Utilisateur administrateur initial créé par `AdminSeeder`.
+- Rate limit : 10 requêtes/minute sur `/login`, 120/minute sur les routes authentifiées.
 
-- `guardians`
-- `teachers`
-- `subjects`
-- `students`
-- `class_groups`
-- `enrollments`
-- `class_sessions`
-- `attendances`
-- `payments`
-- `audit_events`
+### Modèle de données
 
-Tambien quedaron activas:
+Tables créées par les migrations :
 
-- tablas de usuarios/sesiones/cache/jobs de Laravel
-- tablas de `Sanctum`
-- tablas de `Spatie Permission`
+- `guardians`, `teachers`, `subjects`, `students`
+- `class_groups`, `enrollments`, `class_sessions`
+- `attendances`, `payments`, `audit_events`
+- Tables Laravel standard : utilisateurs, sessions, cache, jobs, Sanctum, Spatie Permission
 
-### API REST implementada
+### API REST
 
-Rutas disponibles en `/api/v1`:
+Base : `/api/v1`
 
-- `POST /login`
-- `POST /logout`
-- `GET /me`
-- `GET /dashboard`
-- CRUD completos para:
-  - `guardians`
-  - `teachers`
-  - `subjects`
-  - `students`
-  - `class-groups`
-  - `enrollments`
-  - `class-sessions`
-  - `attendances`
-  - `payments`
+| Endpoint | Description |
+|---|---|
+| `POST /login` | Login par username ou email |
+| `GET /me` | Utilisateur connecté |
+| `POST /logout` | Invalidation du token |
+| `GET /dashboard` | Métriques selon le rôle |
+| CRUD `/students` | Gestion des élèves |
+| CRUD `/guardians` | Tuteurs légaux |
+| CRUD `/teachers` | Professeurs |
+| CRUD `/subjects` | Matières |
+| CRUD `/class-groups` | Groupes de classe |
+| CRUD `/enrollments` | Inscriptions |
+| CRUD `/class-sessions` | Séances |
+| CRUD `/attendances` | Présences |
+| CRUD `/payments` | Paiements |
 
-## 4. Que se hizo en frontend
+Tous les endpoints de liste supportent la suppression douce (soft delete).
 
-### Experiencia de uso
+## 4. Frontend
 
-- Se sustituyo el template de Vite por una interfaz orientada al centro escolar.
-- Se creo un login funcional conectado a la API.
-- Se creo un `AppShell` con sidebar y navegacion de modulos.
-- Se creo un dashboard inicial con metricas y tablas recientes.
+### Structure
 
-### Patron de modulos
+- `AppShell` : barre latérale et topbar. Adapte son branding et ses textes selon que l'utilisateur est admin ou professeur.
+- `SessionContext` : gestion du token en `localStorage`, vérification de session au démarrage via `/me`.
+- `ModulePage` : composant générique qui génère formulaires et tableaux CRUD à partir d'une définition de module. Un seul composant couvre les neuf modules de l'application.
+- `DashboardPage` : affiche la vue admin ou la vue professeur selon `data.role` retourné par l'API.
 
-Se implemento una pantalla generica `ModulePage` que:
+### Tableau de bord par rôle
 
-- carga registros del modulo
-- soporta busqueda
-- crea registros
-- actualiza registros
-- elimina registros
-- carga datos auxiliares para selects relacionados
+Le backend retourne un champ `role` dans la réponse de `/dashboard`. Le frontend s'en sert pour choisir quel composant afficher.
 
-Esto permite crecer sin duplicar demasiadas pantallas.
+**Vue admin :** métriques globales (élèves actifs, groupes, recettes du mois, prochaines séances), liens vers chaque module.
 
-## 5. Configuracion realizada
+**Vue professeur :** ses groupes assignés, ses prochaines séances, les présences récentes de ses élèves, statistiques de sa classe. Le profil professeur est relié au compte utilisateur par l'email, sans clé étrangère directe entre les tables `users` et `teachers`.
 
-### MySQL
+### Badges de statut
 
-Se configuro el backend para usar:
+Classes CSS globales pour les statuts dans les tableaux :
 
-- `DB_CONNECTION=mysql`
-- `DB_DATABASE=refuerzo_elite_v2`
+| Classe | Usage |
+|---|---|
+| `.badge-ok` | Actif, présent, payé |
+| `.badge-warn` | En attente, en retard |
+| `.badge-danger` | Inactif, absent, annulé |
+| `.badge-muted` | Valeur vide ou non définie |
 
-### Compilacion
+## 5. Configuration initiale
 
-Verificaciones realizadas:
+### Base de données (développement sans Docker)
 
-- `php artisan migrate:fresh --seed` OK
-- `php artisan route:list --path=api` OK
-- `npm.cmd run build` OK
+```
+DB_CONNECTION=mysql
+DB_DATABASE=refuerzo_elite_v2
+DB_HOST=127.0.0.1
+DB_PORT=3306
+```
 
-## 6. Credenciales iniciales
+### Variables d'environnement Docker
 
-- Usuario: `admin`
-- Correo: `admin@refuerzoelite.test`
-- Contrasena: `Admin12345!`
+Copier `.env.docker.example` en `.env.docker`. Ce fichier est dans `.gitignore`.
 
-Usuarios de demo (creados por DemoSeeder):
-
-- Profesora de Matematicas: `mgarcia` / `Teacher12345!`
-- Profesor de Lengua: `cmartinez` / `Teacher12345!`
-
-## 7. Como inicializar la base de datos con datos de demo
+### Vérifications de build
 
 ```bash
+php artisan migrate:fresh --seed   # OK
+php artisan route:list --path=api  # OK
+npm run build                       # OK
+```
+
+## 6. Identifiants initiaux
+
+| Utilisateur | Mot de passe | Rôle |
+|---|---|---|
+| `admin` | `Admin12345!` | Administrateur |
+| `mgarcia` | `Teacher12345!` | Professeur (Mathématiques) |
+| `cmartinez` | `Teacher12345!` | Professeur (Langue) |
+
+## 7. Initialiser la base de données avec des données de démo
+
+```bash
+# Sans Docker
 php artisan migrate:fresh --seed
+
+# Avec Docker
+make migrate-fresh
+make seed
 ```
 
-Esto ejecuta AdminSeeder + DemoSeeder y crea:
-- 1 usuario admin
-- 2 profesores con cuenta de acceso
-- 3 materias (Matematicas, Lengua, Ingles)
-- 4 grupos de clase
-- 5 tutores / 8 alumnos
-- 11 inscripciones
-- 10 sesiones de clase
-- ~30 registros de asistencia
-- 21 pagos (pagados, pendientes, cancelados)
+Cela exécute `AdminSeeder` + `DemoSeeder` et crée :
 
-## 8. Ejecucion de tests
+- 1 utilisateur admin
+- 2 professeurs avec compte d'accès
+- 3 matières (Mathématiques, Langue, Anglais)
+- 4 groupes de classe
+- 5 tuteurs / 8 élèves (7 actifs, 1 inactif)
+- 11 inscriptions
+- 10 séances de classe (janvier 2026)
+- environ 30 enregistrements de présence
+- 21 paiements d'octobre 2025 à janvier 2026 (payés, en attente, annulés)
+
+## 8. Tests
 
 ```bash
-cd backend
-php artisan test
+# Sans Docker
+cd backend && php artisan test
+
+# Avec Docker
+make test
 ```
 
-Los tests cubren:
+34 tests au total, tous avec `RefreshDatabase` :
 
-- **AuthTest**: login correcto, login con contrasena erronea, usuario inactivo,
-  rol sin acceso, campos requeridos, endpoint /me, logout que invalida el token.
-- **StudentTest**: listado por admin y teacher, busqueda, creacion, validacion de
-  status invalido, email duplicado, actualizacion, borrado suave, control de acceso.
-- **PaymentTest**: control de acceso, creacion valida, enrollment de otro alumno
-  (cross-student), metodo de pago invalido, status invalido, campos requeridos,
-  pago sin enrollment, borrado suave.
+```
+AuthTest (10 tests)
+  admin peut se connecter avec son email
+  admin peut se connecter avec son username
+  teacher peut se connecter
+  login échoue avec un mauvais mot de passe
+  login échoue pour un utilisateur inactif
+  login refusé pour le rôle student
+  login exige les champs login et password
+  /me retourne l'utilisateur authentifié
+  /me exige une authentification
+  logout invalide le token
+
+StudentTest (14 tests)
+  admin peut lister les élèves
+  teacher peut lister les élèves
+  non authentifié ne peut pas lister
+  la recherche par nom fonctionne
+  admin peut créer un élève
+  teacher ne peut pas créer un élève
+  la création échoue sans les champs requis
+  la création refuse un statut invalide
+  la création refuse un email dupliqué
+  admin peut voir un élève
+  show retourne 404 pour un id inexistant
+  admin peut mettre à jour un élève
+  admin peut supprimer un élève (soft delete)
+  teacher ne peut pas supprimer un élève
+
+PaymentTest (10 tests)
+  admin peut lister les paiements
+  teacher n'a pas accès aux paiements
+  non authentifié n'a pas accès
+  admin peut créer un paiement
+  échoue si l'inscription appartient à un autre élève
+  refuse une méthode de paiement invalide
+  refuse un statut invalide
+  exige les champs obligatoires
+  permet un paiement sans inscription
+  admin peut supprimer un paiement (soft delete)
+```
 
 ---
 
-## 9. Auditoria tecnica — cambios realizados (2026-05-21)
+## 9. Audit technique — modifications appliquées (2026-05-21)
 
-A continuacion se documenta cada cambio aplicado tras la auditoria del proyecto.
+### 9.1 Validation des champs enum avec `Rule::in()`
 
----
+Fichiers modifiés : `StudentController`, `PaymentController`, `EnrollmentController`, `ClassGroupController`, `AttendanceController`.
 
-### 9.1 Validaciones de campos enum con `Rule::in()`
+Les champs de type énuméré acceptaient n'importe quelle chaîne. Il était possible d'enregistrer `status = "whatever"` sans erreur.
 
-**Archivos afectados:**
-- `backend/app/Http/Controllers/Api/StudentController.php`
-- `backend/app/Http/Controllers/Api/PaymentController.php`
-- `backend/app/Http/Controllers/Api/EnrollmentController.php`
-- `backend/app/Http/Controllers/Api/ClassGroupController.php`
-- `backend/app/Http/Controllers/Api/AttendanceController.php`
+On a remplacé les règles `'string', 'max:50'` par `Rule::in([...])` avec les valeurs exactes :
 
-**Problema:** Los campos de tipo enumerado (`status`, `payment_method`) aceptaban
-cualquier cadena de texto. Era posible guardar `status = "whatever"` sin error.
-
-**Solucion:** Se reemplazaron las reglas `'string', 'max:50'` por `Rule::in([...])`
-con los valores validos exactos de cada campo:
-
-| Campo | Valores permitidos |
+| Champ | Valeurs autorisées |
 |---|---|
 | `students.status` | `active`, `inactive` |
 | `enrollments.status` | `active`, `inactive` |
@@ -190,19 +228,13 @@ con los valores validos exactos de cada campo:
 | `payments.payment_method` | `cash`, `card`, `transfer` |
 | `payments.status` | `paid`, `pending`, `cancelled` |
 
----
+### 9.2 Validation croisée inscription-élève dans les paiements
 
-### 9.2 Validacion de propiedad del enrollment en pagos
+Fichier : `PaymentController`.
 
-**Archivo:** `backend/app/Http/Controllers/Api/PaymentController.php`
+En créant un paiement, on pouvait indiquer `student_id = 1` et `enrollment_id = 5` même si cette inscription appartenait à l'élève 3. Le backend l'acceptait sans vérifier.
 
-**Problema:** Al crear un pago era posible indicar `student_id = 1` y
-`enrollment_id = 5` aunque esa inscripcion perteneciera al alumno 3. Esto
-producia datos incoherentes en la base de datos.
-
-**Solucion:** Se añadio una regla de validacion con closure que comprueba que
-el `enrollment_id`, cuando se proporciona, pertenezca al `student_id` enviado
-en la misma peticion:
+On a ajouté une closure de validation qui vérifie que l'`enrollment_id`, quand il est fourni, appartient bien au `student_id` de la même requête :
 
 ```php
 function (string $attribute, mixed $value, Closure $fail): void {
@@ -215,203 +247,125 @@ function (string $attribute, mixed $value, Closure $fail): void {
 },
 ```
 
----
+### 9.3 AuthController hérite de Controller
 
-### 9.3 AuthController extiende Controller
+Fichier : `AuthController`.
 
-**Archivo:** `backend/app/Http/Controllers/Api/AuthController.php`
+`AuthController` n'étendait pas `App\Http\Controllers\Controller`, ce qui l'excluait de tout middleware ou fonctionnalité ajoutée au contrôleur de base. On a ajouté `extends Controller` et l'import correspondant.
 
-**Problema:** `AuthController` no extendia `App\Http\Controllers\Controller`,
-lo que lo excluia de cualquier middleware o funcionalidad que se anyadiera
-en el futuro al controlador base.
+### 9.4 Rate limiting sur les routes authentifiées
 
-**Solucion:** Se añadio `extends Controller` y el import correspondiente.
+Fichier : `routes/api.php`.
 
----
+Seul `/login` avait un rate limit (10/minute). Le reste de l'API n'était pas limité. On a ajouté `throttle:120,1` au groupe de routes authentifiées.
 
-### 9.4 Rate limiting en rutas autenticadas
+### 9.5 Index de performance sur la base de données
 
-**Archivo:** `backend/routes/api.php`
+Fichier créé : `database/migrations/2026_05_21_000001_add_performance_indexes.php`.
 
-**Problema:** Solo el endpoint `/login` tenia rate limiting (10 por minuto).
-El resto de la API no estaba limitada.
+Les tables n'avaient pas d'index sur les colonnes utilisées dans les filtres et tris. On a créé une migration qui en ajoute sur :
 
-**Solucion:** Se añadio `throttle:120,1` al grupo de rutas autenticadas
-(120 peticiones por minuto por usuario). El login mantiene su limite de 10/min.
-
----
-
-### 9.5 Indices de rendimiento en base de datos
-
-**Archivo nuevo:** `backend/database/migrations/2026_05_21_000001_add_performance_indexes.php`
-
-**Problema:** Las tablas no tenian indices en campos usados frecuentemente en
-filtros y ordenaciones. A medida que crezca el volumen de datos, las consultas
-se vuelven lentas.
-
-**Solucion:** Se creo una migracion que añade indices en:
-
-| Tabla | Columnas indexadas |
+| Table | Colonnes indexées |
 |---|---|
 | `students` | `status`, `guardian_id` |
 | `enrollments` | `status` |
 | `class_groups` | `status`, `academic_year` |
-| `class_sessions` | `(class_group_id, session_date)` compuesto |
+| `class_sessions` | `(class_group_id, session_date)` composé |
 | `payments` | `status`, `paid_at` |
 | `audit_events` | `(entity_type, entity_id)`, `user_id`, `created_at` |
 
-Para aplicar: `php artisan migrate` (si la BD ya existe) o
-`php artisan migrate:fresh --seed` (recrea todo con datos de demo).
+### 9.6 DemoSeeder avec des données réalistes
 
----
+Fichiers créés : `DemoSeeder.php`, `StudentFactory.php`.
 
-### 9.6 DemoSeeder con datos realistas
-
-**Archivos nuevos:**
-- `backend/database/seeders/DemoSeeder.php`
-- `backend/database/factories/StudentFactory.php`
-
-**Problema:** Solo existia el `AdminSeeder`. No habia datos de demo para
-mostrar el sistema funcionando durante la presentacion del proyecto.
-
-**Solucion:** `DemoSeeder` crea un conjunto coherente de datos:
-
-- 2 profesoras/es con cuenta de acceso al sistema
-- 3 materias (Matematicas, Lengua, Ingles)
-- 4 grupos de clase con horarios reales
-- 5 tutores legales con contacto
-- 8 alumnos (7 activos, 1 inactivo)
-- 11 inscripciones vinculando alumnos y grupos
-- 10 sesiones de clase en enero 2026
-- ~30 registros de asistencia (mezcla de presentes, ausentes, tarde)
-- 21 pagos de octubre 2025 a enero 2026 (pagados, pendientes, cancelados)
-
-Tambien se añadio `StudentFactory` para su uso en tests automatizados.
-
-`DemoSeeder` se registra en `DatabaseSeeder` y se ejecuta automaticamente
-con `php artisan migrate:fresh --seed`.
-
----
+Il n'existait que `AdminSeeder`. Sans données de démo, impossible de montrer le système en fonctionnement lors de la présentation. `DemoSeeder` crée un jeu de données cohérent (voir section 7). `StudentFactory` est utilisée dans les tests automatisés.
 
 ### 9.7 Tests de feature
 
-**Archivos nuevos:**
-- `backend/tests/Feature/AuthTest.php` — 10 tests
-- `backend/tests/Feature/StudentTest.php` — 12 tests
-- `backend/tests/Feature/PaymentTest.php` — 10 tests
+Fichiers créés : `AuthTest.php` (10 tests), `StudentTest.php` (14 tests), `PaymentTest.php` (10 tests).
 
-**Problema:** Solo existian los tests de plantilla de Laravel (sin contenido real).
-Sin tests no es posible demostrar que el codigo funciona bajo regresion.
+Seuls les tests de template Laravel existaient. On a écrit 34 tests d'intégration avec `RefreshDatabase` couvrant les comportements critiques du système.
 
-**Solucion:** Se escribieron 32 tests de integracion con `RefreshDatabase`
-que verifican los comportamientos criticos del sistema:
+Deux problèmes rencontrés pendant l'écriture des tests :
 
-```
-AuthTest (10 tests)
-  ✓ admin puede hacer login con email
-  ✓ admin puede hacer login con username
-  ✓ teacher puede hacer login
-  ✓ login falla con contrasena incorrecta
-  ✓ login falla para usuario inactivo
-  ✓ login denegado para rol student
-  ✓ login requiere los campos login y password
-  ✓ /me devuelve el usuario autenticado
-  ✓ /me requiere autenticacion
-  ✓ logout invalida el token
+**Logout :** le test vérifiait que `/me` retournait 401 après un logout. Sanctum met en cache la validation du token dans le même processus de test, donc la deuxième requête s'authentifiait encore depuis le cache mémoire même après suppression en base. Solution : vérifier directement avec `assertDatabaseMissing('personal_access_tokens', ['id' => $tokenId])` plutôt que de refaire une requête HTTP.
 
-StudentTest (12 tests)
-  ✓ admin puede listar alumnos
-  ✓ teacher puede listar alumnos
-  ✓ no autenticado no puede listar
-  ✓ busqueda por nombre funciona
-  ✓ admin puede crear alumno
-  ✓ teacher no puede crear alumno
-  ✓ creacion falla sin campos requeridos
-  ✓ creacion rechaza status invalido
-  ✓ creacion rechaza email duplicado
-  ✓ admin puede ver un alumno
-  ✓ show devuelve 404 para id inexistente
-  ✓ admin puede actualizar alumno
-  ✓ admin puede borrar alumno (soft delete)
-  ✓ teacher no puede borrar alumno
+**Enrollment croisé :** le helper `createEnrolledStudent()` appelé deux fois dans le même test tentait d'insérer `code = 'TST'` deux fois dans `subjects`, provoquant une `UniqueConstraintViolationException`. Solution : utiliser `'TST' . uniqid()` pour les codes et les champs uniques dans les helpers de test.
 
-PaymentTest (10 tests)
-  ✓ admin puede listar pagos
-  ✓ teacher no puede acceder a pagos
-  ✓ no autenticado no puede acceder
-  ✓ admin puede crear pago
-  ✓ falla si enrollment pertenece a otro alumno
-  ✓ rechaza metodo de pago invalido
-  ✓ rechaza status invalido
-  ✓ requiere campos obligatorios
-  ✓ permite pago sin enrollment
-  ✓ admin puede borrar pago (soft delete)
-```
+### 9.8 Fix frontend : `isAuthenticated` pendant le boot
 
-Para ejecutar: `cd backend && php artisan test`
+Fichier : `SessionContext.jsx`.
 
----
+`isAuthenticated: Boolean(token)` retournait `true` dès le démarrage même si le token était expiré ou révoqué. `RequireAuth` attendait déjà `isBooting`, mais la prop `isAuthenticated` était accessible comme `true` avant que `/me` ne réponde.
 
-### 9.8 Fix frontend: isAuthenticated durante el boot
+On a changé en `isAuthenticated: Boolean(token) && !isBooting`. La valeur reste `false` tant que l'app vérifie le token, et passe à `true` seulement une fois la session confirmée.
 
-**Archivo:** `frontend/src/context/SessionContext.jsx`
+### 9.9 Fix frontend : effacement des champs nullables à l'édition
 
-**Problema:** `isAuthenticated: Boolean(token)` devuelve `true` durante el
-arranque de la app aunque el token este expirado o haya sido revocado. El
-componente `RequireAuth` ya esperaba a `isBooting`, pero la prop
-`isAuthenticated` era accesible como `true` antes de confirmar con `/me`.
+Fichier : `ModulePage.jsx`.
 
-**Solucion:** Se cambio a `isAuthenticated: Boolean(token) && !isBooting`.
-Ahora `isAuthenticated` es `false` mientras la app verifica el token con
-el servidor, y pasa a `true` solo una vez confirmada la sesion.
+Le payload filtrait tous les champs vides. En mode édition, vider un champ optionnel (téléphone, adresse) ne l'envoyait pas, donc le backend conservait l'ancienne valeur.
+
+On a séparé les deux cas : à la création, les champs vides ne sont pas envoyés ; à l'édition, les champs optionnels vides sont envoyés comme `null` pour que le backend les efface.
+
+### 9.10 Fix frontend : erreur 403 sur les modules en lecture seule
+
+Fichier : `ModulePage.jsx`.
+
+Pour les modules avec des selects liés (ex. groupes → matières, groupes → professeurs), `ModulePage` chargeait les données auxiliaires même quand l'utilisateur n'avait pas le droit de créer ni de modifier. Un professeur qui consultait la liste des groupes recevait une erreur 403 en arrière-plan.
+
+On a ajouté une condition : les données auxiliaires ne sont chargées que si `canCreate || canEdit`.
+
+### 9.11 Tableau de bord par rôle
+
+Fichiers modifiés : `DashboardController.php`, `DashboardPage.jsx`, `AppShell.jsx`, `index.css`.
+
+Les professeurs voyaient le même tableau de bord que les admins, avec des métriques qui n'avaient pas de sens pour eux (nombre total d'élèves, recettes globales).
+
+`DashboardController` bifurque maintenant selon le rôle : si l'utilisateur a le rôle `teacher`, il appelle `teacherDashboard()` au lieu de `adminDashboard()`. Le profil professeur est retrouvé par correspondance d'email entre `users` et `teachers`, sans FK directe.
+
+`DashboardPage` lit le champ `role` de la réponse et affiche `<AdminDashboard>` ou `<TeacherDashboard>` selon le cas. `AppShell` adapte le branding de la barre latérale ("Espace enseignant" vs "Espace équipe").
+
+### 9.12 Conteneurisation Docker
+
+Fichiers créés : `docker/php/Dockerfile`, `docker/php/entrypoint.sh`, `docker/nginx/default.conf`, `docker-compose.yml`, `docker-compose.override.yml`, `Makefile`, `.env.docker.example`.
+
+Architecture à trois services sur un réseau interne `app` :
+
+- **nginx** sert le build React sur `/` et fait proxy de `/api` vers PHP-FPM sur le port 9000.
+- **laravel** est une image PHP 8.2 FPM construite depuis `docker/php/Dockerfile`. L'entrypoint attend que MySQL accepte les connexions avant de lancer `php-fpm`.
+- **mysql** utilise l'image officielle MySQL 8.0 avec un healthcheck.
+
+Le Dockerfile copie d'abord `composer.json` et `composer.lock` avant le code source pour que `composer install` soit mis en cache et ne se relance pas à chaque changement de fichier PHP.
+
+En développement, `docker-compose.override.yml` se charge automatiquement. Il monte `./backend` en volume dans le conteneur (modifications PHP visibles sans rebuild) et expose le port 3306 pour les clients de base de données.
 
 ---
 
-### 9.9 Fix frontend: borrado de campos nullable al editar
+## 10. État du projet
 
-**Archivo:** `frontend/src/pages/ModulePage.jsx`
+### Terminé
 
-**Problema:** El payload de envio filtraba todos los campos con valor vacio
-(`value !== ''`). Esto impedia que al editar un registro se pudiera borrar
-un campo opcional como el telefono o la direccion, ya que el campo vacio
-simplemente no se enviaba y el backend mantenia el valor anterior.
+- Validations enum sur tous les contrôleurs
+- Validation croisée inscription-élève dans les paiements
+- `AuthController` hérite de `Controller`
+- Rate limiting sur les routes authentifiées
+- Index de performance en base de données
+- Données de démo pour les présentations
+- 34 tests automatisés
+- Fix `isAuthenticated` pendant le boot
+- Fix champs nullables en édition
+- Fix 403 sur les modules en lecture seule
+- Tableau de bord distinct par rôle (admin / professeur)
+- Interface adaptée au rôle dans `AppShell`
+- Conteneurisation Docker complète avec Makefile
 
-**Solucion:** Se diferencian los dos casos:
+### Améliorations possibles
 
-- **Al crear:** los campos vacios no se envian (el backend aplica sus defaults).
-- **Al editar:** los campos vacios opcionales se envian como `null` para que
-  el backend los limpie explicitamente.
-
----
-
-### 9.10 Confirmacion: dist/ en .gitignore
-
-**Archivo:** `frontend/.gitignore`
-
-`dist/` ya estaba listado en el `.gitignore` del frontend desde el inicio
-del proyecto. No fue necesario ningun cambio adicional.
-
----
-
-## 10. Estado del proyecto tras la auditoria
-
-**Resuelto:**
-- Validaciones de enum en todos los controladores
-- Validacion cruzada enrollment-alumno en pagos
-- AuthController hereda correctamente de Controller
-- Rate limiting en rutas autenticadas
-- Indices de rendimiento en base de datos
-- Datos de demo para presentaciones
-- 32 tests automatizados
-- Fix de `isAuthenticated` durante boot
-- Fix de campos nullable en edicion
-
-**Pendiente (mejoras futuras):**
-- Exportacion CSV / PDF
-- Panel especifico para el rol teacher
-- Visor de log de auditoria en frontend
-- Pagina de perfil del usuario
-- Filtros avanzados en listados (por estado, fecha, grupo)
-- Indicadores de alumnos con pagos pendientes
-- Recordatorios de pago por email
-- Vista del tutor/responsable
+- Export CSV / PDF des listes
+- Journal d'audit visible dans le frontend
+- Page de profil utilisateur
+- Filtres avancés dans les listes (par statut, date, groupe)
+- Indicateurs d'élèves avec paiements en retard
+- Rappels de paiement par email
+- Vue pour le tuteur / responsable légal
