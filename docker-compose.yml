@@ -4,7 +4,7 @@ services:
   nginx:
     image: nginx:1.27-alpine
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - ./frontend/dist:/var/www/frontend/dist:ro
@@ -17,8 +17,8 @@ services:
   # ── Laravel — PHP-FPM ─────────────────────────────────────────────────────
   laravel:
     build:
-      context: ./backend
-      dockerfile: ../docker/php/Dockerfile
+      context: .
+      dockerfile: docker/php/Dockerfile
     environment:
       APP_NAME: "Refuerzo Elite"
       APP_ENV: production
