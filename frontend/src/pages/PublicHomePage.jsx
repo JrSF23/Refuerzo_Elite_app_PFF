@@ -39,21 +39,17 @@ export function PublicHomePage() {
           </div>
         </section>
 
-        <section className="public-section">
+        <section className="public-section reveal">
           <div className="section-head public-section-head">
             <div>
               <div className="section-label">Explorer</div>
               <h2>Trois facons de comprendre le projet pedagogique du centre.</h2>
             </div>
-            <p className="hint">
-              La page d accueil va maintenant a l essentiel. Chaque espace detaille plus finement une dimension
-              importante du centre scolaire.
-            </p>
           </div>
 
-          <div className="overview-grid">
+          <div className="overview-grid stagger-grid">
             {overviewCards.map((card) => (
-              <article className="media-card" key={card.title}>
+              <article className="media-card reveal" key={card.title}>
                 <img alt={card.title} className="media-card-image" src={card.image} />
                 <div className="media-card-body">
                   <div className="section-label">{card.eyebrow}</div>
@@ -68,7 +64,7 @@ export function PublicHomePage() {
           </div>
         </section>
 
-        <section className="public-section contact-section" id="contact">
+        <section className="public-section contact-section reveal" id="contact">
           <div className="section-head public-section-head">
             <div>
               <div className="section-label">Contact</div>

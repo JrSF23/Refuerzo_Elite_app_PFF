@@ -1,0 +1,28 @@
+# Dépendances — installées dans le conteneur
+backend/vendor/
+
+# Environnement local
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Logs et cache générés à l'exécution
+backend/storage/logs/*.log
+backend/storage/framework/cache/
+backend/storage/framework/sessions/
+backend/storage/framework/views/
+backend/bootstrap/cache/*.php
+
+# Tests et outils de développement
+backend/.phpunit.result.cache
+backend/tests/
+
+# Frontend — non nécessaire pour le conteneur PHP
+frontend/node_modules/
+frontend/dist/
+
+# Git et éditeurs
+.git/
+.gitignore
+.claude/
+*.md

@@ -22,7 +22,4 @@ services:
       - backend_storage:/var/www/backend/storage
       - /var/www/backend/vendor
 
-  mysql:
-    ports:
-      # Expone MySQL al host para poder usar clientes gráficos de BD.
-      - "3306:3306"
+  # mysql: port non exposé — XAMPP occupe déjà 3306 et 3307 sur cet hôte.

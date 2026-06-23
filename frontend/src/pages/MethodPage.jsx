@@ -22,7 +22,7 @@ export function MethodPage() {
           </div>
         </section>
 
-        <section className="public-section">
+        <section className="public-section reveal">
           <div className="section-head public-section-head">
             <div>
               <div className="section-label">Progression</div>
@@ -30,9 +30,9 @@ export function MethodPage() {
             </div>
           </div>
 
-          <div className="timeline-grid">
+          <div className="timeline-grid stagger-grid">
             {methodTimeline.map((item) => (
-              <article className="method-card timeline-card" key={item.step}>
+              <article className="method-card timeline-card reveal" key={item.step}>
                 <span className="method-index">{item.step}</span>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
@@ -41,10 +41,10 @@ export function MethodPage() {
           </div>
         </section>
 
-        <section className="public-section">
-          <div className="feature-grid">
+        <section className="public-section reveal">
+          <div className="feature-grid stagger-grid">
             {methodTools.map((item) => (
-              <article className="feature-card info-card" key={item.title}>
+              <article className="feature-card info-card reveal" key={item.title}>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
               </article>

@@ -23,7 +23,7 @@ export function CentrePage() {
           </div>
         </section>
 
-        <section className="public-section">
+        <section className="public-section reveal">
           <div className="section-head public-section-head">
             <div>
               <div className="section-label">Ce qui fait le centre</div>
@@ -31,9 +31,9 @@ export function CentrePage() {
             </div>
           </div>
 
-          <div className="feature-grid">
+          <div className="feature-grid stagger-grid">
             {centreHighlights.map((item) => (
-              <article className="feature-card info-card" key={item.title}>
+              <article className="feature-card info-card reveal" key={item.title}>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
               </article>
@@ -41,7 +41,7 @@ export function CentrePage() {
           </div>
         </section>
 
-        <section className="public-section">
+        <section className="public-section reveal">
           <div className="content-split">
             <article className="content-card">
               <div className="section-label">Cadre de travail</div>

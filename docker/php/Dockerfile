@@ -28,7 +28,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/backend
 
 # ── Dependency layer (cached unless composer.json/lock changes) ───────────────
-COPY composer.json composer.lock ./
+COPY backend/composer.json backend/composer.lock ./
 RUN composer install \
         --no-dev \
         --no-scripts \
@@ -37,7 +37,7 @@ RUN composer install \
         --optimize-autoloader
 
 # ── Application source ────────────────────────────────────────────────────────
-COPY . .
+COPY backend/ .
 
 # Finish Composer post-install hooks now that the full source is present
 RUN composer run-script post-autoload-dump
@@ -50,7 +50,7 @@ RUN chown -R www-data:www-data \
         /var/www/backend/storage \
         /var/www/backend/bootstrap/cache
 
-COPY ../docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 9000

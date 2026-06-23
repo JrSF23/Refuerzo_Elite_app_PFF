@@ -22,7 +22,7 @@ export function ContactPage() {
           </div>
         </section>
 
-        <section className="public-section">
+        <section className="public-section reveal">
           <div className="section-head public-section-head">
             <div>
               <div className="section-label">Coordonnees</div>

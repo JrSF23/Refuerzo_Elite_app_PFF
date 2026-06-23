@@ -7,10 +7,9 @@ until php -r "new PDO('mysql:host=${DB_HOST};dbname=${DB_DATABASE}', '${DB_USERN
 done
 echo "[entrypoint] MySQL is ready."
 
-echo "[entrypoint] Caching Laravel config, routes and views..."
+echo "[entrypoint] Caching Laravel config and routes..."
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
 
 echo "[entrypoint] Starting PHP-FPM..."
 exec "$@"

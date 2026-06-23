@@ -22,7 +22,7 @@ export function ServicesPage() {
           </div>
         </section>
 
-        <section className="public-section">
+        <section className="public-section reveal">
           <div className="section-head public-section-head">
             <div>
               <div className="section-label">Parcours proposes</div>
@@ -30,9 +30,9 @@ export function ServicesPage() {
             </div>
           </div>
 
-          <div className="service-program-grid">
+          <div className="service-program-grid stagger-grid">
             {servicePrograms.map((item) => (
-              <article className="service-program-card" key={item.title}>
+              <article className="service-program-card reveal" key={item.title}>
                 <div className="section-label">{item.audience}</div>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
@@ -41,7 +41,7 @@ export function ServicesPage() {
           </div>
         </section>
 
-        <section className="public-section">
+        <section className="public-section reveal">
           <div className="content-card cta-panel">
             <div>
               <div className="section-label">Ce que les familles recherchent</div>
