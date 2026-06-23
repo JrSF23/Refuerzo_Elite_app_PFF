@@ -1,9 +1,9 @@
 export const publicImages = {
-  homeHero: '/brand/hero-campus.jpg',
-  centre: '/brand/page-centre.jpg',
-  services: '/brand/page-services.jpg',
-  method: '/brand/page-method.jpg',
-  contact: '/brand/hero-community.jpg',
+  homeHero: '/brand/hero-campus.svg',
+  centre: '/brand/page-centre.svg',
+  services: '/brand/page-services.svg',
+  method: '/brand/page-method.svg',
+  contact: '/brand/hero-contact.svg',
 }
 
 export const overviewCards = [

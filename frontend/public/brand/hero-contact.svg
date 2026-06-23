@@ -1,0 +1,155 @@
+<svg viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-ct" x1="0" y1="0" x2="800" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#061510"/>
+      <stop offset="100%" stop-color="#040D07"/>
+    </linearGradient>
+    <radialGradient id="glow-ct1" cx="35%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#1A6038" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#1A6038" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow-ct2" cx="72%" cy="40%" r="42%">
+      <stop offset="0%" stop-color="#2AD267" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#2AD267" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dot-ct" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="0.85" fill="#1A3E26" opacity="0.6"/>
+    </pattern>
+  </defs>
+
+  <rect width="800" height="520" fill="url(#bg-ct)"/>
+  <rect width="800" height="520" fill="url(#dot-ct)"/>
+  <ellipse cx="300" cy="260" rx="340" ry="260" fill="url(#glow-ct1)"/>
+  <ellipse cx="580" cy="220" rx="260" ry="220" fill="url(#glow-ct2)"/>
+
+  <!-- ─── Person 1: Parent/Guardian (left) ───────────────────────────── -->
+  <!-- Body -->
+  <rect x="82" y="230" width="78" height="110" rx="30" fill="#0B2818" stroke="#1E5630" stroke-width="2"/>
+  <!-- Head -->
+  <circle cx="121" cy="200" r="38" fill="#0B2818" stroke="#2AD267" stroke-width="2.5"/>
+  <!-- Face details -->
+  <ellipse cx="109" cy="197" rx="5"   ry="6"   fill="#2AD267" opacity="0.5"/>
+  <ellipse cx="133" cy="197" rx="5"   ry="6"   fill="#2AD267" opacity="0.5"/>
+  <path d="M110 212 Q121 220 132 212" stroke="#2AD267" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <!-- Arms -->
+  <path d="M82 260 Q52 280 62 310"  stroke="#0B2818" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M82 260 Q52 280 62 310"  stroke="#1E5630" stroke-width="2"  stroke-linecap="round" fill="none"/>
+  <path d="M160 260 Q192 282 180 312" stroke="#0B2818" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M160 260 Q192 282 180 312" stroke="#1E5630" stroke-width="2"  stroke-linecap="round" fill="none"/>
+  <!-- Legs -->
+  <path d="M100 338 Q94 370 90 410"  stroke="#081810" stroke-width="20" stroke-linecap="round" fill="none"/>
+  <path d="M142 338 Q148 370 152 410" stroke="#081810" stroke-width="20" stroke-linecap="round" fill="none"/>
+
+  <!-- Label: Parent -->
+  <rect x="68" y="424" width="106" height="30" rx="15" fill="#0A2016" stroke="#1E5630" stroke-width="1.5"/>
+  <rect x="73" y="433" width="96" height="5" rx="2.5" fill="#2AD267" opacity="0.7"/>
+  <rect x="82" y="442" width="78" height="4" rx="2"   fill="#1A4828" opacity="0.5"/>
+
+  <!-- ─── Person 2: Teacher/Staff (right) ─────────────────────────────── -->
+  <rect x="640" y="230" width="78" height="110" rx="30" fill="#0C2C1C" stroke="#1E5630" stroke-width="2"/>
+  <circle cx="679" cy="200" r="38" fill="#0C2C1C" stroke="#7DFF99" stroke-width="2.5"/>
+  <ellipse cx="667" cy="197" rx="5"   ry="6"   fill="#7DFF99" opacity="0.5"/>
+  <ellipse cx="691" cy="197" rx="5"   ry="6"   fill="#7DFF99" opacity="0.5"/>
+  <path d="M668 212 Q679 220 690 212" stroke="#7DFF99" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <!-- Clipboard in hand -->
+  <path d="M718 260 Q748 278 742 308" stroke="#0C2C1C" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M718 260 Q748 278 742 308" stroke="#1E5630" stroke-width="2"  stroke-linecap="round" fill="none"/>
+  <rect x="738" y="275" width="44" height="58" rx="6" fill="#081A10" stroke="#1E5630" stroke-width="1.5"/>
+  <rect x="752" y="270" width="16" height="10" rx="5" fill="#0C2818" stroke="#2AD267" stroke-width="1"/>
+  <rect x="745" y="290" width="30" height="3.5" rx="1.5" fill="#2AD267" opacity="0.7"/>
+  <rect x="745" y="300" width="26" height="3.5" rx="1.5" fill="#1A4828" opacity="0.6"/>
+  <rect x="745" y="310" width="28" height="3.5" rx="1.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="745" y="320" width="22" height="3.5" rx="1.5" fill="#1A4828" opacity="0.5"/>
+  <!-- Other arm -->
+  <path d="M640 260 Q610 278 618 308" stroke="#0C2C1C" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M640 260 Q610 278 618 308" stroke="#1E5630" stroke-width="2"  stroke-linecap="round" fill="none"/>
+  <!-- Legs -->
+  <path d="M658 338 Q652 370 648 410" stroke="#091610" stroke-width="20" stroke-linecap="round" fill="none"/>
+  <path d="M700 338 Q706 370 710 410" stroke="#091610" stroke-width="20" stroke-linecap="round" fill="none"/>
+
+  <!-- Label: Encadrant -->
+  <rect x="626" y="424" width="106" height="30" rx="15" fill="#0A2016" stroke="#1E5630" stroke-width="1.5"/>
+  <rect x="631" y="433" width="96" height="5" rx="2.5" fill="#7DFF99" opacity="0.7"/>
+  <rect x="640" y="442" width="78" height="4" rx="2"   fill="#1A4828" opacity="0.5"/>
+
+  <!-- ─── Speech bubble: parent → center ─────────────────────────────── -->
+  <rect x="190" y="115" width="178" height="100" rx="16" fill="#081A12" stroke="#2AD267" stroke-width="2"/>
+  <polygon points="192,180 160,210 210,180" fill="#081A12" stroke="#2AD267" stroke-width="2"/>
+  <polygon points="192,180 210,180 200,186" fill="#081A12"/>
+  <!-- Bubble content -->
+  <rect x="206" y="134" width="130" height="6"   rx="3"   fill="#2AD267" opacity="0.8"/>
+  <rect x="206" y="147" width="110" height="4.5" rx="2.2" fill="#1A4828" opacity="0.6"/>
+  <rect x="206" y="158" width="120" height="4.5" rx="2.2" fill="#1A4828" opacity="0.55"/>
+  <rect x="206" y="169" width="96"  height="4.5" rx="2.2" fill="#1A4828" opacity="0.55"/>
+  <rect x="206" y="180" width="105" height="4.5" rx="2.2" fill="#1A4828" opacity="0.5"/>
+  <rect x="206" y="191" width="80"  height="4.5" rx="2.2" fill="#1A4828" opacity="0.5"/>
+
+  <!-- ─── Speech bubble: center → teacher ────────────────────────────── -->
+  <rect x="432" y="105" width="178" height="110" rx="16" fill="#091C14" stroke="#7DFF99" stroke-width="2"/>
+  <polygon points="608,155 640,180 598,165" fill="#091C14" stroke="#7DFF99" stroke-width="2"/>
+  <polygon points="606,163 618,163 610,158" fill="#091C14"/>
+  <!-- Bubble content -->
+  <rect x="448" y="124" width="130" height="6"   rx="3"   fill="#7DFF99" opacity="0.8"/>
+  <rect x="448" y="138" width="114" height="4.5" rx="2.2" fill="#1A4828" opacity="0.6"/>
+  <rect x="448" y="149" width="124" height="4.5" rx="2.2" fill="#1A4828" opacity="0.55"/>
+  <rect x="448" y="160" width="100" height="4.5" rx="2.2" fill="#1A4828" opacity="0.55"/>
+  <rect x="448" y="171" width="116" height="4.5" rx="2.2" fill="#1A4828" opacity="0.5"/>
+  <rect x="448" y="182" width="90"  height="4.5" rx="2.2" fill="#1A4828" opacity="0.5"/>
+  <!-- Check mark at end -->
+  <circle cx="574" cy="198" r="11" fill="#0E3020" stroke="#7DFF99" stroke-width="1.5"/>
+  <polyline points="569,198 573,203 580,193" stroke="#7DFF99" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+  <!-- ─── Central hub / Institution ───────────────────────────────────── -->
+  <!-- Outer ring glow -->
+  <circle cx="400" cy="280" r="88" fill="#2AD267" opacity="0.06"/>
+  <!-- Main circle -->
+  <circle cx="400" cy="280" r="72" fill="#081A12" stroke="#2AD267" stroke-width="2.5"/>
+  <circle cx="400" cy="280" r="60" fill="#091C14" stroke="#1E5630" stroke-width="1"/>
+  <!-- Logo-like center mark -->
+  <circle cx="400" cy="280" r="22" fill="#0B2818" stroke="#2AD267" stroke-width="2"/>
+  <!-- R monogram shape -->
+  <rect x="390" y="266" width="6" height="28" rx="3" fill="#2AD267" opacity="0.9"/>
+  <path d="M396 266 Q420 266 420 278 Q420 290 396 290" stroke="#2AD267" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <line x1="403" y1="290" x2="416" y2="306" stroke="#2AD267" stroke-width="4" stroke-linecap="round"/>
+  <!-- Label ring text hint -->
+  <rect x="340" y="340" width="120" height="5" rx="2.5" fill="#2AD267" opacity="0.4"/>
+  <rect x="352" y="350" width="96"  height="4" rx="2"   fill="#1A4828" opacity="0.35"/>
+
+  <!-- Connection line: person 1 → hub -->
+  <line x1="182" y1="285" x2="328" y2="280" stroke="#1E5630" stroke-width="2" stroke-dasharray="6 4"/>
+  <circle cx="182" cy="285" r="5" fill="#2AD267" opacity="0.7"/>
+  <circle cx="328" cy="280" r="5" fill="#2AD267" opacity="0.7"/>
+
+  <!-- Connection line: hub → person 2 -->
+  <line x1="472" y1="280" x2="618" y2="275" stroke="#1E5630" stroke-width="2" stroke-dasharray="6 4"/>
+  <circle cx="472" cy="280" r="5" fill="#7DFF99" opacity="0.7"/>
+  <circle cx="618" cy="275" r="5" fill="#7DFF99" opacity="0.7"/>
+
+  <!-- ─── Contact channel icons (bottom) ──────────────────────────────── -->
+  <!-- WhatsApp card -->
+  <rect x="160" y="440" width="130" height="52" rx="12" fill="#081A12" stroke="#1E5630" stroke-width="1.5"/>
+  <rect x="160" y="440" width="5"   height="52" rx="2.5" fill="#2AD267"/>
+  <!-- Phone icon -->
+  <rect x="175" y="453" width="26" height="26" rx="6" fill="#0B2818"/>
+  <path d="M181 459 Q181 463 185 465 Q187 465 189 463 L191 461 Q193 459 191 457 Q189 455 187 457 Q185 458 183 459 Q179 463 183 469 Q185 473 189 475 Q191 475 193 473 L195 471 Q197 469 195 467 Q193 465 191 467" stroke="#2AD267" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <rect x="208" y="452" width="74"  height="6"   rx="3"   fill="#2AD267" opacity="0.75"/>
+  <rect x="208" y="464" width="60"  height="4.5" rx="2.2" fill="#1A4828" opacity="0.55"/>
+  <rect x="208" y="474" width="68"  height="4.5" rx="2.2" fill="#1A4828" opacity="0.5"/>
+
+  <!-- Email card -->
+  <rect x="510" y="440" width="130" height="52" rx="12" fill="#081A12" stroke="#1E5630" stroke-width="1.5"/>
+  <rect x="510" y="440" width="5"   height="52" rx="2.5" fill="#7DFF99"/>
+  <!-- Envelope icon -->
+  <rect x="525" y="453" width="26" height="20" rx="4" fill="#0B2818" stroke="#7DFF99" stroke-width="1.2"/>
+  <polyline points="525,453 538,463 551,453" stroke="#7DFF99" stroke-width="1.2" fill="none"/>
+  <rect x="558" y="452" width="74"  height="6"   rx="3"   fill="#7DFF99" opacity="0.75"/>
+  <rect x="558" y="464" width="60"  height="4.5" rx="2.2" fill="#1A4828" opacity="0.55"/>
+  <rect x="558" y="474" width="68"  height="4.5" rx="2.2" fill="#1A4828" opacity="0.5"/>
+
+  <!-- Floating particles -->
+  <circle cx="40"  cy="160" r="2"   fill="#2AD267" opacity="0.5"/>
+  <circle cx="765" cy="120" r="2.5" fill="#7DFF99" opacity="0.45"/>
+  <circle cx="780" cy="420" r="1.8" fill="#2AD267" opacity="0.35"/>
+  <circle cx="30"  cy="450" r="2"   fill="#7DFF99" opacity="0.3"/>
+  <circle cx="400" cy="14"  r="1.5" fill="#2AD267" opacity="0.4"/>
+</svg>

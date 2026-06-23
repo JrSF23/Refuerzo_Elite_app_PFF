@@ -1,27 +1,209 @@
-<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1600" height="900" rx="48" fill="#041009"/>
-  <rect x="56" y="56" width="1488" height="788" rx="40" fill="url(#bg)"/>
-  <circle cx="350" cy="190" r="140" fill="#1B6B3A" opacity="0.28"/>
-  <circle cx="1270" cy="210" r="160" fill="#2AD267" opacity="0.2"/>
-  <rect x="220" y="220" width="1160" height="470" rx="36" fill="#081C12" stroke="#2AD267" stroke-opacity="0.34" stroke-width="4"/>
-  <rect x="300" y="292" width="260" height="250" rx="24" fill="#0E2D1C"/>
-  <circle cx="430" cy="370" r="68" fill="#2AD267"/>
-  <path d="M390 430C415 392 446 364 486 330" stroke="#062014" stroke-width="16" stroke-linecap="round"/>
-  <rect x="640" y="292" width="640" height="92" rx="24" fill="#0E2D1C"/>
-  <rect x="692" y="330" width="510" height="18" rx="9" fill="#2AD267"/>
-  <rect x="640" y="416" width="640" height="92" rx="24" fill="#0B2417"/>
-  <rect x="692" y="454" width="460" height="18" rx="9" fill="#7DFF99"/>
-  <rect x="640" y="540" width="640" height="92" rx="24" fill="#0E2D1C"/>
-  <rect x="692" y="578" width="420" height="18" rx="9" fill="#2AD267"/>
-  <rect x="250" y="710" width="1100" height="28" rx="14" fill="#0E2D1C"/>
-  <rect x="330" y="738" width="210" height="72" rx="18" fill="#123A22"/>
-  <rect x="580" y="738" width="210" height="72" rx="18" fill="#123A22"/>
-  <rect x="830" y="738" width="210" height="72" rx="18" fill="#123A22"/>
-  <rect x="1080" y="738" width="210" height="72" rx="18" fill="#123A22"/>
+<svg viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="110" y1="80" x2="1490" y2="820" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#071710"/>
-      <stop offset="1" stop-color="#0D2919"/>
+    <linearGradient id="bg-s" x1="0" y1="0" x2="800" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#061510"/>
+      <stop offset="100%" stop-color="#040D08"/>
+    </linearGradient>
+    <radialGradient id="glow-s1" cx="30%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1A6038" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#1A6038" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow-s2" cx="80%" cy="30%" r="45%">
+      <stop offset="0%" stop-color="#2AD267" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#2AD267" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dot-s" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="0.85" fill="#1A3E26" opacity="0.6"/>
+    </pattern>
+    <linearGradient id="bar1" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#2AD267"/>
+      <stop offset="100%" stop-color="#1A4828"/>
+    </linearGradient>
+    <linearGradient id="bar2" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#7DFF99"/>
+      <stop offset="100%" stop-color="#1E5630"/>
     </linearGradient>
   </defs>
+
+  <rect width="800" height="520" fill="url(#bg-s)"/>
+  <rect width="800" height="520" fill="url(#dot-s)"/>
+  <ellipse cx="260" cy="280" rx="320" ry="260" fill="url(#glow-s1)"/>
+  <ellipse cx="640" cy="180" rx="260" ry="200" fill="url(#glow-s2)"/>
+
+  <!-- ─── LEFT PANEL: Open book ─────────────────────────────────────────── -->
+  <rect x="50" y="60" width="330" height="400" rx="16" fill="#071612" stroke="#1A3D22" stroke-width="1.5"/>
+
+  <!-- Book spine -->
+  <rect x="210" y="60" width="10" height="400" fill="#091C14" stroke="#1A4828" stroke-width="0.5"/>
+
+  <!-- Left page -->
+  <rect x="60" y="72" width="140" height="376" rx="6" fill="#061210"/>
+  <!-- Left page content — text lines -->
+  <rect x="72"  y="95"  width="110" height="6" rx="3" fill="#2AD267" opacity="0.85"/>
+  <rect x="72"  y="112" width="96"  height="4" rx="2" fill="#1A4828" opacity="0.65"/>
+  <rect x="72"  y="122" width="104" height="4" rx="2" fill="#1A4828" opacity="0.6"/>
+  <rect x="72"  y="132" width="88"  height="4" rx="2" fill="#1A4828" opacity="0.6"/>
+  <rect x="72"  y="142" width="100" height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <rect x="72"  y="152" width="80"  height="4" rx="2" fill="#1A4828" opacity="0.6"/>
+  <!-- Divider -->
+  <rect x="72"  y="166" width="110" height="1.5" rx="0.75" fill="#1A4828" opacity="0.5"/>
+  <!-- Paragraph 2 -->
+  <rect x="72"  y="178" width="98"  height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <rect x="72"  y="188" width="108" height="4" rx="2" fill="#1A4828" opacity="0.6"/>
+  <rect x="72"  y="198" width="84"  height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <rect x="72"  y="208" width="102" height="4" rx="2" fill="#1A4828" opacity="0.6"/>
+  <rect x="72"  y="218" width="90"  height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <rect x="72"  y="228" width="106" height="4" rx="2" fill="#1A4828" opacity="0.6"/>
+  <!-- Divider -->
+  <rect x="72"  y="242" width="110" height="1.5" rx="0.75" fill="#1A4828" opacity="0.5"/>
+  <!-- Mini diagram on left page -->
+  <rect x="72"  y="256" width="110" height="70" rx="6" fill="#081A10"/>
+  <!-- bars -->
+  <rect x="82"  y="290" width="14" height="30" rx="2" fill="#1A4828" opacity="0.7"/>
+  <rect x="100" y="278" width="14" height="42" rx="2" fill="#1E5630" opacity="0.8"/>
+  <rect x="118" y="266" width="14" height="54" rx="2" fill="#2AD267" opacity="0.85"/>
+  <rect x="136" y="274" width="14" height="46" rx="2" fill="#1E5630" opacity="0.8"/>
+  <rect x="154" y="262" width="14" height="58" rx="2" fill="#2AD267" opacity="0.9"/>
+  <line x1="78" y1="320" x2="172" y2="320" stroke="#1A4828" stroke-width="1"/>
+  <!-- Paragraph 3 -->
+  <rect x="72"  y="342" width="94"  height="4" rx="2" fill="#1A4828" opacity="0.5"/>
+  <rect x="72"  y="352" width="106" height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <rect x="72"  y="362" width="78"  height="4" rx="2" fill="#1A4828" opacity="0.5"/>
+  <rect x="72"  y="372" width="100" height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <rect x="72"  y="382" width="86"  height="4" rx="2" fill="#1A4828" opacity="0.5"/>
+  <rect x="72"  y="392" width="108" height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <!-- Page number -->
+  <rect x="112" y="420" width="36" height="5" rx="2.5" fill="#1A4828" opacity="0.4"/>
+
+  <!-- Right page -->
+  <rect x="220" y="72" width="150" height="376" rx="6" fill="#071410"/>
+  <!-- Right page heading -->
+  <rect x="232" y="95"  width="126" height="6"   rx="3"   fill="#2AD267" opacity="0.8"/>
+  <!-- Right page content lines -->
+  <rect x="232" y="112" width="110" height="4" rx="2" fill="#1A4828" opacity="0.6"/>
+  <rect x="232" y="122" width="118" height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <rect x="232" y="132" width="96"  height="4" rx="2" fill="#1A4828" opacity="0.6"/>
+  <rect x="232" y="142" width="120" height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <rect x="232" y="152" width="88"  height="4" rx="2" fill="#1A4828" opacity="0.6"/>
+  <!-- Check-list -->
+  <rect x="232" y="170" width="126" height="1.5" rx="0.75" fill="#1A4828" opacity="0.45"/>
+  <circle cx="240" cy="184" r="5" fill="#1A4828" stroke="#2AD267" stroke-width="1"/>
+  <polyline points="237,184 240,187 244,180" stroke="#2AD267" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <rect x="252" y="180" width="96" height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <circle cx="240" cy="200" r="5" fill="#1A4828" stroke="#2AD267" stroke-width="1"/>
+  <polyline points="237,200 240,203 244,196" stroke="#2AD267" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <rect x="252" y="196" width="80" height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <circle cx="240" cy="216" r="5" fill="#1A4828" stroke="#7DFF99" stroke-width="1"/>
+  <polyline points="237,216 240,219 244,212" stroke="#7DFF99" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <rect x="252" y="212" width="90" height="4" rx="2" fill="#1A4828" opacity="0.55"/>
+  <circle cx="240" cy="232" r="5" fill="#1A4828" stroke="#1A4828" stroke-width="1"/>
+  <rect x="252" y="228" width="86" height="4" rx="2" fill="#1A4828" opacity="0.4"/>
+  <circle cx="240" cy="248" r="5" fill="#1A4828" stroke="#1A4828" stroke-width="1"/>
+  <rect x="252" y="244" width="100" height="4" rx="2" fill="#1A4828" opacity="0.4"/>
+  <!-- Right page illustration -->
+  <rect x="232" y="268" width="126" height="80" rx="6" fill="#061210"/>
+  <!-- Upward arrow chart -->
+  <line x1="242" y1="340" x2="242" y2="276" stroke="#1A4828" stroke-width="1.2"/>
+  <line x1="242" y1="340" x2="350" y2="340" stroke="#1A4828" stroke-width="1.2"/>
+  <polyline points="248,336 264,322 284,308 306,295 328,280 350,270" stroke="#2AD267" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="350,266 354,276 344,274" fill="#2AD267"/>
+  <circle cx="264" cy="322" r="3.5" fill="#1A4828" stroke="#2AD267" stroke-width="1"/>
+  <circle cx="284" cy="308" r="3.5" fill="#1A4828" stroke="#2AD267" stroke-width="1"/>
+  <circle cx="306" cy="295" r="3.5" fill="#1A4828" stroke="#2AD267" stroke-width="1"/>
+  <circle cx="328" cy="280" r="4"   fill="#1E5630" stroke="#7DFF99" stroke-width="1.2"/>
+  <!-- More text -->
+  <rect x="232" y="364" width="104" height="4" rx="2" fill="#1A4828" opacity="0.5"/>
+  <rect x="232" y="374" width="118" height="4" rx="2" fill="#1A4828" opacity="0.5"/>
+  <rect x="232" y="384" width="88"  height="4" rx="2" fill="#1A4828" opacity="0.45"/>
+  <rect x="232" y="394" width="110" height="4" rx="2" fill="#1A4828" opacity="0.5"/>
+  <rect x="258" y="422" width="36"  height="5" rx="2.5" fill="#1A4828" opacity="0.4"/>
+
+  <!-- ─── RIGHT PANEL: Stats and service cards ──────────────────────────── -->
+
+  <!-- Card 1 — Reinforcement -->
+  <rect x="420" y="60" width="330" height="90" rx="14" fill="#081A12" stroke="#1E5630" stroke-width="1.5"/>
+  <rect x="420" y="60" width="6"   height="90" rx="3" fill="#2AD267"/>
+  <!-- Icon background -->
+  <rect x="436" y="76" width="48" height="48" rx="10" fill="#0C2E1E"/>
+  <!-- Book icon -->
+  <rect x="444" y="84" width="32" height="32" rx="4" fill="#1A4828" stroke="#2AD267" stroke-width="1.5"/>
+  <line x1="460" y1="84" x2="460" y2="116" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="448" y="90"  width="8" height="3" rx="1.5" fill="#2AD267" opacity="0.7"/>
+  <rect x="448" y="97"  width="8" height="3" rx="1.5" fill="#2AD267" opacity="0.6"/>
+  <rect x="448" y="104" width="8" height="3" rx="1.5" fill="#2AD267" opacity="0.5"/>
+  <rect x="464" y="90"  width="8" height="3" rx="1.5" fill="#2AD267" opacity="0.7"/>
+  <rect x="464" y="97"  width="8" height="3" rx="1.5" fill="#2AD267" opacity="0.6"/>
+  <!-- Text -->
+  <rect x="498" y="79"  width="120" height="7"  rx="3.5" fill="#2AD267" opacity="0.85"/>
+  <rect x="498" y="93"  width="96"  height="5"  rx="2.5" fill="#1A4828" opacity="0.6"/>
+  <rect x="498" y="104" width="110" height="5"  rx="2.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="498" y="115" width="80"  height="5"  rx="2.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="498" y="126" width="50"  height="14" rx="7"   fill="#0C2E1E" stroke="#1E5630" stroke-width="1"/>
+  <rect x="504" y="130" width="38"  height="5"  rx="2.5" fill="#2AD267" opacity="0.7"/>
+
+  <!-- Card 2 — Methodology -->
+  <rect x="420" y="170" width="330" height="90" rx="14" fill="#081A12" stroke="#1E5630" stroke-width="1.5"/>
+  <rect x="420" y="170" width="6"   height="90" rx="3" fill="#7DFF99"/>
+  <!-- Icon background -->
+  <rect x="436" y="186" width="48" height="48" rx="10" fill="#0C2E1E"/>
+  <!-- Target/method icon -->
+  <circle cx="460" cy="210" r="16" fill="#091A10" stroke="#7DFF99" stroke-width="1.5"/>
+  <circle cx="460" cy="210" r="10" fill="#091A10" stroke="#2AD267" stroke-width="1"/>
+  <circle cx="460" cy="210" r="4"  fill="#2AD267"/>
+  <!-- Text -->
+  <rect x="498" y="189" width="110" height="7"  rx="3.5" fill="#7DFF99" opacity="0.8"/>
+  <rect x="498" y="203" width="100" height="5"  rx="2.5" fill="#1A4828" opacity="0.6"/>
+  <rect x="498" y="214" width="116" height="5"  rx="2.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="498" y="225" width="86"  height="5"  rx="2.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="498" y="236" width="50"  height="14" rx="7"   fill="#0C2E1E" stroke="#1E5630" stroke-width="1"/>
+  <rect x="504" y="240" width="38"  height="5"  rx="2.5" fill="#7DFF99" opacity="0.7"/>
+
+  <!-- Card 3 — Exam prep -->
+  <rect x="420" y="280" width="330" height="90" rx="14" fill="#081A12" stroke="#1E5630" stroke-width="1.5"/>
+  <rect x="420" y="280" width="6"   height="90" rx="3" fill="#2AD267"/>
+  <!-- Icon -->
+  <rect x="436" y="296" width="48" height="48" rx="10" fill="#0C2E1E"/>
+  <!-- Pencil/exam icon -->
+  <rect x="448" y="302" width="24" height="34" rx="3" fill="#091A10" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="451" y="307" width="18" height="3"  rx="1.5" fill="#2AD267" opacity="0.8"/>
+  <rect x="451" y="315" width="18" height="3"  rx="1.5" fill="#2AD267" opacity="0.6"/>
+  <rect x="451" y="323" width="12" height="3"  rx="1.5" fill="#2AD267" opacity="0.5"/>
+  <polygon points="448,334 460,342 472,334" fill="#2AD267" opacity="0.7"/>
+  <!-- Text -->
+  <rect x="498" y="299" width="130" height="7"  rx="3.5" fill="#2AD267" opacity="0.85"/>
+  <rect x="498" y="313" width="106" height="5"  rx="2.5" fill="#1A4828" opacity="0.6"/>
+  <rect x="498" y="324" width="118" height="5"  rx="2.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="498" y="335" width="90"  height="5"  rx="2.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="498" y="346" width="50"  height="14" rx="7"   fill="#0C2E1E" stroke="#1E5630" stroke-width="1"/>
+  <rect x="504" y="350" width="38"  height="5"  rx="2.5" fill="#2AD267" opacity="0.7"/>
+
+  <!-- Card 4 — Family coordination -->
+  <rect x="420" y="390" width="330" height="90" rx="14" fill="#081A12" stroke="#1E5630" stroke-width="1.5"/>
+  <rect x="420" y="390" width="6"   height="90" rx="3" fill="#7DFF99"/>
+  <!-- Icon -->
+  <rect x="436" y="406" width="48" height="48" rx="10" fill="#0C2E1E"/>
+  <!-- People/family icon -->
+  <circle cx="452" cy="416" r="7"  fill="#0D2A1C" stroke="#7DFF99" stroke-width="1.5"/>
+  <rect x="444" y="424" width="16" height="22" rx="6" fill="#0D2A1C" stroke="#7DFF99" stroke-width="1.5"/>
+  <circle cx="468" cy="420" r="5"  fill="#0D2A1C" stroke="#2AD267" stroke-width="1"/>
+  <rect x="462" y="426" width="12" height="18" rx="5" fill="#0D2A1C" stroke="#2AD267" stroke-width="1"/>
+  <!-- Text -->
+  <rect x="498" y="409" width="140" height="7"  rx="3.5" fill="#7DFF99" opacity="0.8"/>
+  <rect x="498" y="423" width="108" height="5"  rx="2.5" fill="#1A4828" opacity="0.6"/>
+  <rect x="498" y="434" width="120" height="5"  rx="2.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="498" y="445" width="90"  height="5"  rx="2.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="498" y="456" width="50"  height="14" rx="7"   fill="#0C2E1E" stroke="#1E5630" stroke-width="1"/>
+  <rect x="504" y="460" width="38"  height="5"  rx="2.5" fill="#7DFF99" opacity="0.7"/>
+
+  <!-- Connector line book → cards -->
+  <line x1="380" y1="260" x2="420" y2="260" stroke="#1E5630" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <circle cx="380" cy="260" r="4" fill="#2AD267" opacity="0.6"/>
+  <circle cx="420" cy="260" r="4" fill="#2AD267" opacity="0.6"/>
+
+  <!-- Floating particles -->
+  <circle cx="52"  cy="140" r="2"   fill="#2AD267" opacity="0.5"/>
+  <circle cx="760" cy="80"  r="2.5" fill="#7DFF99" opacity="0.45"/>
+  <circle cx="780" cy="450" r="1.8" fill="#2AD267" opacity="0.35"/>
+  <circle cx="30"  cy="460" r="2"   fill="#7DFF99" opacity="0.3"/>
+  <circle cx="400" cy="510" r="1.5" fill="#2AD267" opacity="0.3"/>
 </svg>

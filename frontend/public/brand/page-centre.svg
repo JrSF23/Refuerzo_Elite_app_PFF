@@ -1,29 +1,246 @@
-<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1600" height="900" rx="48" fill="#05110B"/>
-  <rect x="64" y="64" width="1472" height="772" rx="40" fill="url(#surface)"/>
-  <circle cx="1230" cy="220" r="170" fill="#1D8A4A" opacity="0.25"/>
-  <rect x="240" y="220" width="1120" height="430" rx="36" fill="#0A1D13" stroke="#2AD267" stroke-opacity="0.35" stroke-width="4"/>
-  <rect x="318" y="280" width="300" height="270" rx="26" fill="#0D2A1B"/>
-  <rect x="370" y="336" width="196" height="26" rx="13" fill="#2AD267"/>
-  <rect x="370" y="388" width="160" height="18" rx="9" fill="#7DFF99"/>
-  <rect x="370" y="428" width="120" height="18" rx="9" fill="#1C6E3B"/>
-  <rect x="675" y="280" width="605" height="126" rx="26" fill="#0D2A1B"/>
-  <rect x="730" y="330" width="500" height="18" rx="9" fill="#164F2C"/>
-  <rect x="730" y="370" width="430" height="18" rx="9" fill="#2AD267"/>
-  <rect x="675" y="436" width="605" height="114" rx="26" fill="#092115"/>
-  <circle cx="780" cy="493" r="30" fill="#2AD267"/>
-  <circle cx="914" cy="493" r="30" fill="#7DFF99"/>
-  <circle cx="1048" cy="493" r="30" fill="#2AD267"/>
-  <circle cx="1182" cy="493" r="30" fill="#7DFF99"/>
-  <rect x="300" y="650" width="1000" height="34" rx="17" fill="#0C2B19"/>
-  <rect x="380" y="684" width="180" height="88" rx="18" fill="#11351F"/>
-  <rect x="600" y="684" width="180" height="88" rx="18" fill="#11351F"/>
-  <rect x="820" y="684" width="180" height="88" rx="18" fill="#11351F"/>
-  <rect x="1040" y="684" width="180" height="88" rx="18" fill="#11351F"/>
+<svg viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="surface" x1="136" y1="90" x2="1450" y2="820" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#071811"/>
-      <stop offset="1" stop-color="#0D2618"/>
+    <linearGradient id="bg-c" x1="0" y1="0" x2="0" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#071A10"/>
+      <stop offset="100%" stop-color="#030D06"/>
     </linearGradient>
+    <radialGradient id="glow-c" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#1A6038" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#1A6038" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="lamp-c" cx="50%" cy="0%" r="100%">
+      <stop offset="0%" stop-color="#2AD267" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#2AD267" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dot-c" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="13" cy="13" r="0.85" fill="#1A3E26" opacity="0.65"/>
+    </pattern>
   </defs>
+
+  <rect width="800" height="520" fill="url(#bg-c)"/>
+  <rect width="800" height="520" fill="url(#dot-c)"/>
+  <ellipse cx="400" cy="240" rx="380" ry="250" fill="url(#glow-c)"/>
+
+  <!-- Bookshelf back wall -->
+  <rect x="0" y="0" width="800" height="360" fill="#040E08"/>
+  <rect x="0" y="0" width="800" height="360" fill="#061210" opacity="0.5"/>
+
+  <!-- Shelf units -->
+  <rect x="30" y="20"  width="6" height="340" fill="#091C12"/>
+  <rect x="764" y="20" width="6" height="340" fill="#091C12"/>
+  <rect x="30" y="20"  width="740" height="6" fill="#091C12"/>
+
+  <!-- Horizontal shelves -->
+  <rect x="30" y="115" width="740" height="10" rx="2" fill="#0B2218" stroke="#152D1E" stroke-width="0.5"/>
+  <rect x="30" y="225" width="740" height="10" rx="2" fill="#0B2218" stroke="#152D1E" stroke-width="0.5"/>
+  <rect x="30" y="335" width="740" height="10" rx="2" fill="#0B2218" stroke="#152D1E" stroke-width="0.5"/>
+
+  <!-- Vertical dividers -->
+  <rect x="282" y="20" width="5" height="325" fill="#0A1E14"/>
+  <rect x="516" y="20" width="5" height="325" fill="#0A1E14"/>
+
+  <!-- SHELF ROW 1 — Books left section (x:36..282) -->
+  <rect x="40"  y="32" width="19" height="81" rx="1.5" fill="#0C3022" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="62"  y="38" width="15" height="75" rx="1.5" fill="#0A2418" stroke="#1A4828" stroke-width="1"/>
+  <rect x="80"  y="30" width="22" height="83" rx="1.5" fill="#0E3626" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="105" y="36" width="17" height="77" rx="1.5" fill="#0B2A1E" stroke="#1A4828" stroke-width="1"/>
+  <rect x="125" y="28" width="20" height="85" rx="1.5" fill="#092218" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="148" y="34" width="16" height="79" rx="1.5" fill="#0D2E20" stroke="#1A4828" stroke-width="1"/>
+  <rect x="167" y="30" width="21" height="83" rx="1.5" fill="#0B3224" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="191" y="36" width="18" height="77" rx="1.5" fill="#0A2618" stroke="#1A4828" stroke-width="1"/>
+  <rect x="212" y="32" width="20" height="81" rx="1.5" fill="#0D3022" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="235" y="38" width="16" height="75" rx="1.5" fill="#0B2A1C" stroke="#1A4828" stroke-width="1"/>
+  <rect x="254" y="28" width="22" height="85" rx="1.5" fill="#092418" stroke="#2AD267" stroke-width="1.5"/>
+
+  <!-- SHELF ROW 1 — Books mid section (x:290..516) -->
+  <rect x="292" y="34" width="20" height="79" rx="1.5" fill="#0E3224" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="315" y="28" width="18" height="85" rx="1.5" fill="#0A2418" stroke="#1A4828" stroke-width="1"/>
+  <rect x="336" y="32" width="23" height="81" rx="1.5" fill="#0C2E20" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="362" y="38" width="16" height="75" rx="1.5" fill="#0B2A1C" stroke="#1A4828" stroke-width="1"/>
+  <rect x="381" y="30" width="21" height="83" rx="1.5" fill="#0D3224" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="405" y="36" width="18" height="77" rx="1.5" fill="#0A2416" stroke="#1A4828" stroke-width="1"/>
+  <rect x="426" y="28" width="20" height="85" rx="1.5" fill="#0B2E20" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="449" y="34" width="17" height="79" rx="1.5" fill="#0D2A1E" stroke="#1A4828" stroke-width="1"/>
+  <rect x="469" y="30" width="22" height="83" rx="1.5" fill="#0E3422" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="494" y="36" width="16" height="77" rx="1.5" fill="#0A2018" stroke="#1A4828" stroke-width="1"/>
+
+  <!-- SHELF ROW 1 — Books right section (x:524..764) -->
+  <rect x="526" y="30" width="21" height="83" rx="1.5" fill="#0C3020" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="550" y="34" width="19" height="79" rx="1.5" fill="#0A2618" stroke="#1A4828" stroke-width="1"/>
+  <rect x="572" y="28" width="20" height="85" rx="1.5" fill="#0E2E20" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="595" y="36" width="17" height="77" rx="1.5" fill="#0B2A1C" stroke="#1A4828" stroke-width="1"/>
+  <rect x="615" y="30" width="22" height="83" rx="1.5" fill="#0D3222" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="640" y="36" width="18" height="77" rx="1.5" fill="#0A2018" stroke="#1A4828" stroke-width="1"/>
+  <rect x="661" y="28" width="20" height="85" rx="1.5" fill="#0C2E1E" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="684" y="34" width="16" height="79" rx="1.5" fill="#0D2C1C" stroke="#1A4828" stroke-width="1"/>
+  <rect x="703" y="30" width="21" height="83" rx="1.5" fill="#0E3224" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="727" y="36" width="18" height="77" rx="1.5" fill="#0A2416" stroke="#1A4828" stroke-width="1"/>
+  <rect x="748" y="28" width="14" height="85" rx="1.5" fill="#0B2C1E" stroke="#2AD267" stroke-width="1.2"/>
+
+  <!-- SHELF ROW 2 -->
+  <rect x="40"  y="128" width="22" height="95" rx="1.5" fill="#123020" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="65"  y="135" width="16" height="88" rx="1.5" fill="#0A2016" stroke="#1A4828" stroke-width="1"/>
+  <rect x="84"  y="126" width="20" height="97" rx="1.5" fill="#0E3424" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="107" y="132" width="18" height="91" rx="1.5" fill="#0B2A1C" stroke="#1A4828" stroke-width="1"/>
+  <rect x="128" y="125" width="24" height="98" rx="1.5" fill="#0D2E1E" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="155" y="130" width="16" height="93" rx="1.5" fill="#0A2418" stroke="#1A4828" stroke-width="1"/>
+  <rect x="174" y="128" width="21" height="95" rx="1.5" fill="#103022" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="198" y="132" width="19" height="91" rx="1.5" fill="#0C2C1C" stroke="#1A4828" stroke-width="1"/>
+  <rect x="220" y="126" width="22" height="97" rx="1.5" fill="#0E2E20" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="245" y="130" width="17" height="93" rx="1.5" fill="#0A2618" stroke="#1A4828" stroke-width="1"/>
+  <rect x="265" y="128" width="14" height="95" rx="1.5" fill="#0D3022" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="292" y="126" width="20" height="97" rx="1.5" fill="#0B2E1E" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="315" y="132" width="18" height="91" rx="1.5" fill="#0A2016" stroke="#1A4828" stroke-width="1"/>
+  <rect x="336" y="127" width="22" height="96" rx="1.5" fill="#0E3020" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="361" y="131" width="16" height="92" rx="1.5" fill="#0C2818" stroke="#1A4828" stroke-width="1"/>
+  <rect x="380" y="126" width="21" height="97" rx="1.5" fill="#103424" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="404" y="132" width="18" height="91" rx="1.5" fill="#0A2218" stroke="#1A4828" stroke-width="1"/>
+  <rect x="425" y="125" width="23" height="98" rx="1.5" fill="#0D3022" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="451" y="129" width="16" height="94" rx="1.5" fill="#0B2A1C" stroke="#1A4828" stroke-width="1"/>
+  <rect x="470" y="127" width="21" height="96" rx="1.5" fill="#0E2E1E" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="494" y="130" width="18" height="93" rx="1.5" fill="#0A2016" stroke="#1A4828" stroke-width="1"/>
+  <rect x="526" y="125" width="20" height="98" rx="1.5" fill="#0C3020" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="549" y="131" width="18" height="92" rx="1.5" fill="#0A2618" stroke="#1A4828" stroke-width="1"/>
+  <rect x="570" y="127" width="22" height="96" rx="1.5" fill="#0E3222" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="595" y="130" width="16" height="93" rx="1.5" fill="#0B2A1C" stroke="#1A4828" stroke-width="1"/>
+  <rect x="614" y="126" width="21" height="97" rx="1.5" fill="#103020" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="638" y="132" width="19" height="91" rx="1.5" fill="#0A2216" stroke="#1A4828" stroke-width="1"/>
+  <rect x="660" y="127" width="23" height="96" rx="1.5" fill="#0D2E1E" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="686" y="130" width="16" height="93" rx="1.5" fill="#0C2C1A" stroke="#1A4828" stroke-width="1"/>
+  <rect x="705" y="128" width="20" height="95" rx="1.5" fill="#0E3024" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="728" y="131" width="18" height="92" rx="1.5" fill="#0A2418" stroke="#1A4828" stroke-width="1"/>
+  <rect x="749" y="126" width="13" height="97" rx="1.5" fill="#0D3122" stroke="#2AD267" stroke-width="1.2"/>
+
+  <!-- SHELF ROW 3 — decorative objects -->
+  <!-- Globe left section -->
+  <circle cx="100" cy="298" r="30" fill="#0A2016" stroke="#2AD267" stroke-width="1.5"/>
+  <ellipse cx="100" cy="298" rx="30" ry="10" fill="none" stroke="#1A4828" stroke-width="1"/>
+  <line x1="100" y1="268" x2="100" y2="328" stroke="#1A4828" stroke-width="0.8"/>
+  <ellipse cx="100" cy="298" rx="17" ry="30" fill="none" stroke="#1A4828" stroke-width="0.7"/>
+
+  <!-- Books on shelf 3 left section -->
+  <rect x="140" y="248" width="17" height="85" rx="1.5" fill="#0C3020" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="160" y="254" width="15" height="79" rx="1.5" fill="#0A2418" stroke="#1A4828" stroke-width="1"/>
+  <rect x="178" y="246" width="20" height="87" rx="1.5" fill="#0E3422" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="201" y="252" width="16" height="81" rx="1.5" fill="#0B2A1C" stroke="#1A4828" stroke-width="1"/>
+  <rect x="220" y="247" width="19" height="86" rx="1.5" fill="#0D3022" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="242" y="250" width="15" height="83" rx="1.5" fill="#0A2018" stroke="#1A4828" stroke-width="1"/>
+  <rect x="260" y="246" width="18" height="87" rx="1.5" fill="#0E2E20" stroke="#2AD267" stroke-width="1.2"/>
+
+  <!-- Trophy mid section -->
+  <path d="M360 256 Q348 278 348 295 L348 308 L378 308 L378 295 Q378 278 366 256Z" fill="#0D3020" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="351" y="306" width="24" height="7" rx="2" fill="#1A4828"/>
+  <rect x="345" y="312" width="36" height="5" rx="2.5" fill="#2AD267" opacity="0.7"/>
+  <!-- Stars on trophy -->
+  <circle cx="363" cy="274" r="4" fill="#2AD267" opacity="0.9"/>
+  <circle cx="352" cy="285" r="3" fill="#7DFF99" opacity="0.7"/>
+  <circle cx="374" cy="285" r="3" fill="#7DFF99" opacity="0.7"/>
+
+  <!-- More books mid section -->
+  <rect x="400" y="248" width="18" height="85" rx="1.5" fill="#0C3022" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="421" y="253" width="15" height="80" rx="1.5" fill="#0A2618" stroke="#1A4828" stroke-width="1"/>
+  <rect x="439" y="247" width="21" height="86" rx="1.5" fill="#0E3020" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="463" y="252" width="16" height="81" rx="1.5" fill="#0B2A1E" stroke="#1A4828" stroke-width="1"/>
+  <rect x="482" y="246" width="19" height="87" rx="1.5" fill="#0D2E1C" stroke="#2AD267" stroke-width="1.2"/>
+
+  <!-- Plant right section -->
+  <rect x="618" y="275" width="10" height="26" rx="2" fill="#091810"/>
+  <ellipse cx="623" cy="263" rx="20" ry="24" fill="#0D3020" stroke="#2AD267" stroke-width="1.5"/>
+  <ellipse cx="608" cy="275" rx="13" ry="17" fill="#0C2A1C" stroke="#1A4828" stroke-width="1"/>
+  <ellipse cx="638" cy="272" rx="13" ry="17" fill="#0C2A1C" stroke="#1A4828" stroke-width="1"/>
+  <rect x="614" y="298" width="18" height="12" rx="3" fill="#091E12" stroke="#1A3A20" stroke-width="1"/>
+
+  <!-- Books right section -->
+  <rect x="650" y="248" width="18" height="85" rx="1.5" fill="#0E3022" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="671" y="252" width="16" height="81" rx="1.5" fill="#0A2418" stroke="#1A4828" stroke-width="1"/>
+  <rect x="690" y="247" width="21" height="86" rx="1.5" fill="#0C2E1E" stroke="#2AD267" stroke-width="1.5"/>
+  <rect x="714" y="252" width="15" height="81" rx="1.5" fill="#0B2C1A" stroke="#1A4828" stroke-width="1"/>
+  <rect x="732" y="248" width="20" height="85" rx="1.5" fill="#0E3224" stroke="#2AD267" stroke-width="1.2"/>
+
+  <!-- Floor -->
+  <rect x="0" y="360" width="800" height="160" fill="#030A05"/>
+  <line x1="0" y1="360" x2="800" y2="360" stroke="#152C1C" stroke-width="1.5"/>
+
+  <!-- Study desk in foreground -->
+  <rect x="80" y="368" width="640" height="52" rx="8" fill="#0A2016" stroke="#1A3D22" stroke-width="1.5"/>
+  <!-- Desk legs -->
+  <rect x="110" y="418" width="16" height="70" rx="4" fill="#081610"/>
+  <rect x="676" y="418" width="16" height="70" rx="4" fill="#081610"/>
+  <!-- Desk edge highlight -->
+  <rect x="80" y="368" width="640" height="4" rx="2" fill="#1A4828" opacity="0.4"/>
+
+  <!-- Lamp -->
+  <rect x="105" y="300" width="7" height="90" rx="3.5" fill="#0A1E12" stroke="#152C1C" stroke-width="1"/>
+  <path d="M108 300 Q132 270 165 285" stroke="#0A1E12" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <path d="M108 300 Q132 270 165 285" stroke="#1A3D22" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <ellipse cx="170" cy="290" rx="24" ry="14" fill="#0B2418" stroke="#2AD267" stroke-width="1.5"/>
+  <ellipse cx="170" cy="310" rx="65" ry="32" fill="url(#lamp-c)" opacity="0.75"/>
+  <rect x="100" y="388" width="20" height="6" rx="3" fill="#0B2016"/>
+  <rect x="94"  y="393" width="32" height="5" rx="2.5" fill="#1A3D22"/>
+
+  <!-- Laptop open on desk -->
+  <rect x="210" y="314" width="118" height="78" rx="7" fill="#0A1C12" stroke="#2AD267" stroke-width="1.8"/>
+  <rect x="217" y="320" width="104" height="66" rx="4" fill="#060E08"/>
+  <!-- Screen — code editor look -->
+  <rect x="221" y="326" width="38" height="5" rx="2" fill="#1A4828" opacity="0.7"/>
+  <rect x="263" y="326" width="52" height="5" rx="2" fill="#2AD267" opacity="0.8"/>
+  <rect x="221" y="337" width="20" height="4" rx="2" fill="#1A4828" opacity="0.5"/>
+  <rect x="245" y="337" width="44" height="4" rx="2" fill="#7DFF99" opacity="0.6"/>
+  <rect x="221" y="347" width="30" height="4" rx="2" fill="#1A4828" opacity="0.5"/>
+  <rect x="255" y="347" width="36" height="4" rx="2" fill="#2AD267" opacity="0.65"/>
+  <rect x="221" y="357" width="68" height="4" rx="2" fill="#1A4828" opacity="0.4"/>
+  <rect x="221" y="367" width="25" height="4" rx="2" fill="#1A4828" opacity="0.5"/>
+  <rect x="249" y="367" width="40" height="4" rx="2" fill="#2AD267" opacity="0.6"/>
+  <rect x="221" y="377" width="50" height="4" rx="2" fill="#1A4828" opacity="0.4"/>
+  <!-- Laptop base -->
+  <rect x="204" y="390" width="130" height="8" rx="4" fill="#080E0A"/>
+
+  <!-- Open notebook on desk -->
+  <rect x="362" y="322" width="106" height="78" rx="5" fill="#071410" stroke="#1A3D22" stroke-width="1.5"/>
+  <line x1="415" y1="322" x2="415" y2="400" stroke="#1A3D22" stroke-width="1"/>
+  <!-- Left page lines -->
+  <rect x="369" y="332" width="40" height="3.5" rx="1.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="369" y="341" width="32" height="3.5" rx="1.5" fill="#1A4828" opacity="0.5"/>
+  <rect x="369" y="350" width="38" height="3.5" rx="1.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="369" y="359" width="28" height="3.5" rx="1.5" fill="#1A4828" opacity="0.5"/>
+  <rect x="369" y="368" width="35" height="3.5" rx="1.5" fill="#1A4828" opacity="0.55"/>
+  <rect x="369" y="377" width="30" height="3.5" rx="1.5" fill="#1A4828" opacity="0.5"/>
+  <rect x="369" y="386" width="36" height="3.5" rx="1.5" fill="#1A4828" opacity="0.55"/>
+  <!-- Right page — mini chart -->
+  <line x1="424" y1="392" x2="460" y2="392" stroke="#1A4828" stroke-width="1"/>
+  <line x1="424" y1="392" x2="424" y2="334" stroke="#1A4828" stroke-width="1"/>
+  <polyline points="426,388 432,378 440,368 448,355 458,342" stroke="#2AD267" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <circle cx="458" cy="342" r="3" fill="#7DFF99"/>
+
+  <!-- Coffee mug -->
+  <rect x="500" y="330" width="42" height="48" rx="7" fill="#09180E" stroke="#1A3D22" stroke-width="1.5"/>
+  <path d="M542 344 Q558 344 558 355 Q558 366 542 366" stroke="#1A3D22" stroke-width="1.5" fill="none"/>
+  <!-- Steam wisps -->
+  <path d="M512 326 Q517 318 512 310" stroke="#1A4828" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.55"/>
+  <path d="M524 326 Q529 316 524 306" stroke="#1A4828" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.55"/>
+  <path d="M536 326 Q541 318 536 310" stroke="#1A4828" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.5"/>
+  <ellipse cx="521" cy="342" rx="14" ry="5" fill="#0D2416" opacity="0.9"/>
+
+  <!-- Stack of books on desk -->
+  <rect x="578" y="344" width="84" height="12" rx="2" fill="#0D3020" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="582" y="334" width="76" height="12" rx="2" fill="#0A2818" stroke="#1A4828" stroke-width="1"/>
+  <rect x="578" y="324" width="82" height="12" rx="2" fill="#0E3424" stroke="#2AD267" stroke-width="1.2"/>
+  <rect x="584" y="314" width="70" height="12" rx="2" fill="#0B2A1E" stroke="#1A4828" stroke-width="1"/>
+  <!-- Page edges -->
+  <line x1="660" y1="314" x2="660" y2="356" stroke="#1A4828" stroke-width="0.5" opacity="0.4"/>
+  <line x1="656" y1="314" x2="656" y2="356" stroke="#1A4828" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Pencil on desk -->
+  <rect x="686" y="360" width="6" height="44" rx="3" fill="#1A4828" transform="rotate(-8 689 382)"/>
+  <polygon points="686,402 692,410 698,402" fill="#2AD267" opacity="0.85" transform="rotate(-8 692 406)"/>
+  <rect x="686" y="358" width="6" height="6" rx="1" fill="#0E2E1E" transform="rotate(-8 689 361)"/>
+
+  <!-- Floating specs -->
+  <circle cx="60"  cy="200" r="2"   fill="#2AD267" opacity="0.5"/>
+  <circle cx="740" cy="150" r="2.5" fill="#7DFF99" opacity="0.45"/>
+  <circle cx="770" cy="290" r="1.8" fill="#2AD267" opacity="0.4"/>
+  <circle cx="40"  cy="400" r="2"   fill="#7DFF99" opacity="0.35"/>
+  <circle cx="760" cy="460" r="1.8" fill="#2AD267" opacity="0.3"/>
+  <circle cx="330" cy="18"  r="1.5" fill="#7DFF99" opacity="0.4"/>
+  <circle cx="580" cy="12"  r="1.5" fill="#2AD267" opacity="0.35"/>
 </svg>
