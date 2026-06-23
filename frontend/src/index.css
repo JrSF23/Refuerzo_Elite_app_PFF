@@ -169,8 +169,30 @@ img {
 
 .public-hero {
   background:
-    linear-gradient(120deg, rgba(9, 20, 15, 0.98), rgba(8, 32, 19, 0.92)),
+    linear-gradient(120deg, rgba(9, 20, 15, 0.86) 0%, rgba(8, 32, 19, 0.72) 50%, rgba(9, 20, 15, 0.86) 100%),
+    url('/brand/logo-refuerzo-elite.png') center / 320px auto no-repeat,
     var(--panel);
+}
+
+.public-hero-centered {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.public-hero-centered .hero-stack {
+  align-items: center;
+}
+
+.public-hero-centered .public-actions {
+  justify-content: center;
+}
+
+.public-hero-centered .metrics-grid {
+  width: 100%;
 }
 
 .public-hero-grid,

@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
 import { PublicLayout } from '../components/PublicLayout'
-import { contactDetails, overviewCards, publicImages } from '../content/publicContent'
+import { contactDetails, overviewCards } from '../content/publicContent'
 
 export function PublicHomePage() {
   return (
     <PublicLayout>
       <main>
         <section className="public-hero" id="accueil">
-          <div className="public-hero-grid">
+          <div className="public-hero-centered">
             <div className="hero-stack">
               <div className="hero-chip">Accompagnement scolaire personnalise</div>
               <h1 className="hero-title">Une experience plus claire pour decouvrir Refuerzo Elite.</h1>
@@ -34,12 +34,6 @@ export function PublicHomePage() {
                   <div className="section-label">Relation</div>
                   <strong>Dialogue clair entre eleves, centre et familles</strong>
                 </article>
-              </div>
-            </div>
-
-            <div className="hero-visual">
-              <div className="hero-image-frame">
-                <img alt="Vue d'ensemble du centre Refuerzo Elite" src={publicImages.homeHero} />
               </div>
             </div>
           </div>
