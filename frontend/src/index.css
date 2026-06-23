@@ -169,8 +169,8 @@ img {
 
 .public-hero {
   background:
-    linear-gradient(120deg, rgba(9, 20, 15, 0.86) 0%, rgba(8, 32, 19, 0.72) 50%, rgba(9, 20, 15, 0.86) 100%),
-    url('/brand/logo-refuerzo-elite.png') center / 320px auto no-repeat,
+    linear-gradient(120deg, rgba(9, 20, 15, 0.82) 0%, rgba(8, 32, 19, 0.58) 50%, rgba(9, 20, 15, 0.82) 100%),
+    url('/brand/logo-refuerzo-elite.png') center / 560px auto no-repeat,
     var(--panel);
 }
 
