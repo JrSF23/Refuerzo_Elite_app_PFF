@@ -626,6 +626,14 @@ th {
     rgba(4, 12, 7, 0.55) 100%);
   pointer-events: none;
 }
+/* SVG hero — own dark bg, lighter overlay so illustration shows through */
+.page-hero--svg::before {
+  background: linear-gradient(105deg,
+    rgba(3, 8, 5, 0.88) 0%,
+    rgba(3, 8, 5, 0.55) 48%,
+    rgba(3, 8, 5, 0.10) 100%);
+}
+
 .page-hero .page-copy {
   position: relative;
   z-index: 1;

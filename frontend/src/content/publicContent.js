@@ -3,9 +3,9 @@ export const publicImages = {
   centre:       '/brand/bg-centre.jpg',
   services:     '/brand/bg-services.jpg',
   method:       '/brand/bg-method.jpg',
-  contact:      '/brand/bg-contact.jpg',
-  cardCentre:   '/brand/bg-card-centre.jpg',
-  cardServices: '/brand/bg-card-services.jpg',
+  contact:      '/brand/contact-illustration.svg',
+  cardCentre:   '/brand/bg-contact.jpg',
+  cardServices: '/brand/bg-card-centre.jpg',
   cardMethod:   '/brand/bg-card-method.jpg',
 }
 

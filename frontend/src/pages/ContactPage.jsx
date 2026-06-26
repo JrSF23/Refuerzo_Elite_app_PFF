@@ -6,7 +6,7 @@ export function ContactPage() {
     <PublicLayout>
       <main>
         <section
-          className="public-section page-hero"
+          className="public-section page-hero page-hero--svg"
           style={{ backgroundImage: `url(${publicImages.contact})` }}
         >
           <div className="page-copy">
