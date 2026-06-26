@@ -5,20 +5,17 @@ export function ServicesPage() {
   return (
     <PublicLayout contactHref="/#contact">
       <main>
-        <section className="public-section page-hero">
-          <div className="page-hero-grid">
-            <div className="page-copy">
-              <div className="section-label">Services</div>
-              <h1>Des formes d'accompagnement adaptees aux besoins scolaires les plus frequents.</h1>
-              <p>
-                Le centre articule renforcement academique, methodologie et communication avec les familles pour aider
-                l'eleve a reprendre le controle de son travail et a retrouver de la solidite dans ses apprentissages.
-              </p>
-            </div>
-
-            <div className="hero-image-frame page-hero-image">
-              <img alt="Photo d'un atelier d'accompagnement scolaire" src={publicImages.services} />
-            </div>
+        <section
+          className="public-section page-hero"
+          style={{ backgroundImage: `url(${publicImages.services})` }}
+        >
+          <div className="page-copy">
+            <div className="section-label">Services</div>
+            <h1>Des formes d'accompagnement adaptees aux besoins scolaires les plus frequents.</h1>
+            <p>
+              Le centre articule renforcement academique, methodologie et communication avec les familles pour aider
+              l'eleve a reprendre le controle de son travail et a retrouver de la solidite dans ses apprentissages.
+            </p>
           </div>
         </section>
 

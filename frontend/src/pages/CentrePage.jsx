@@ -5,21 +5,18 @@ export function CentrePage() {
   return (
     <PublicLayout contactHref="/#contact">
       <main>
-        <section className="public-section page-hero">
-          <div className="page-hero-grid">
-            <div className="page-copy">
-              <div className="section-label">Le centre</div>
-              <h1>Un environnement stable pour apprendre, reprendre confiance et progresser.</h1>
-              <p>
-                Refuerzo Elite ne se limite pas a donner des cours. Le centre construit un cadre de travail lisible,
-                humain et exigeant, dans lequel chaque eleve peut retrouver des repaires, mieux comprendre ses
-                difficultes et se remettre en mouvement.
-              </p>
-            </div>
-
-            <div className="hero-image-frame page-hero-image">
-              <img alt="Photo d'une salle de classe du centre scolaire" src={publicImages.centre} />
-            </div>
+        <section
+          className="public-section page-hero"
+          style={{ backgroundImage: `url(${publicImages.centre})` }}
+        >
+          <div className="page-copy">
+            <div className="section-label">Le centre</div>
+            <h1>Un environnement stable pour apprendre, reprendre confiance et progresser.</h1>
+            <p>
+              Refuerzo Elite ne se limite pas a donner des cours. Le centre construit un cadre de travail lisible,
+              humain et exigeant, dans lequel chaque eleve peut retrouver des repaires, mieux comprendre ses
+              difficultes et se remettre en mouvement.
+            </p>
           </div>
         </section>
 

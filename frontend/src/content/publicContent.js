@@ -1,9 +1,12 @@
 export const publicImages = {
-  homeHero: '/brand/hero-campus.svg',
-  centre: '/brand/page-centre.svg',
-  services: '/brand/page-services.svg',
-  method: '/brand/page-method.svg',
-  contact: '/brand/hero-contact.svg',
+  heroBg:       '/brand/bg-hero-home.jpg',
+  centre:       '/brand/bg-centre.jpg',
+  services:     '/brand/bg-services.jpg',
+  method:       '/brand/bg-method.jpg',
+  contact:      '/brand/bg-contact.jpg',
+  cardCentre:   '/brand/bg-card-centre.jpg',
+  cardServices: '/brand/bg-card-services.jpg',
+  cardMethod:   '/brand/bg-card-method.jpg',
 }
 
 export const overviewCards = [
@@ -12,21 +15,21 @@ export const overviewCards = [
     title: 'Un cadre de confiance pour apprendre avec regularite.',
     text: "Une structure accueillante, des groupes raisonnables et un environnement pense pour renforcer la concentration, la methode et l'estime de soi.",
     to: '/centre',
-    image: publicImages.centre,
+    image: publicImages.cardCentre,
   },
   {
     eyebrow: 'Services',
     title: 'Des parcours de soutien adaptes aux besoins reels.',
     text: 'Soutien scolaire, ateliers de methode, preparation aux examens et coordination avec les familles pour garder un suivi clair et stable.',
     to: '/services',
-    image: publicImages.services,
+    image: publicImages.cardServices,
   },
   {
     eyebrow: 'Methode',
     title: "Une progression lisible, de l'observation aux resultats.",
     text: "Chaque eleve avance selon une logique simple: diagnostic, plan d'accompagnement, seances actives, evaluation des acquis et ajustements.",
     to: '/methode',
-    image: publicImages.method,
+    image: publicImages.cardMethod,
   },
 ]
 

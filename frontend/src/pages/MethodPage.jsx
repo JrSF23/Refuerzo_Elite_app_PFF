@@ -5,20 +5,17 @@ export function MethodPage() {
   return (
     <PublicLayout contactHref="/#contact">
       <main>
-        <section className="public-section page-hero">
-          <div className="page-hero-grid">
-            <div className="page-copy">
-              <div className="section-label">Methode</div>
-              <h1>Une pedagogie simple a lire, active dans la pratique et suivie dans le temps.</h1>
-              <p>
-                La methode de Refuerzo Elite cherche a rendre l'apprentissage concret. On observe, on planifie, on fait
-                travailler l'eleve activement et l'on mesure regulierement ce qui change vraiment.
-              </p>
-            </div>
-
-            <div className="hero-image-frame page-hero-image">
-              <img alt="Photo d'eleves en situation d'apprentissage guide" src={publicImages.method} />
-            </div>
+        <section
+          className="public-section page-hero"
+          style={{ backgroundImage: `url(${publicImages.method})` }}
+        >
+          <div className="page-copy">
+            <div className="section-label">Methode</div>
+            <h1>Une pedagogie simple a lire, active dans la pratique et suivie dans le temps.</h1>
+            <p>
+              La methode de Refuerzo Elite cherche a rendre l'apprentissage concret. On observe, on planifie, on fait
+              travailler l'eleve activement et l'on mesure regulierement ce qui change vraiment.
+            </p>
           </div>
         </section>
 
