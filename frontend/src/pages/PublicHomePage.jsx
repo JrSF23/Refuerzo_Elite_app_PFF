@@ -50,7 +50,7 @@ export function PublicHomePage() {
           <div className="overview-grid stagger-grid">
             {overviewCards.map((card) => (
               <article className="media-card reveal" key={card.title}>
-                <div className="media-card-image" style={{ backgroundImage: `url(${card.image})` }} />
+                <img alt={card.title} className="media-card-image" src={card.image} />
                 <div className="media-card-body">
                   <div className="section-label">{card.eyebrow}</div>
                   <h3>{card.title}</h3>
