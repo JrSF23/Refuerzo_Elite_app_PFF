@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Student;
+use App\Rules\BelongsToCurrentOrganization;
+use App\Models\Guardian;
 use Illuminate\Validation\Rule;
+
+use Illuminate\Database\Eloquent\Builder;
 
 class StudentController extends BaseApiController
 {
@@ -15,10 +19,10 @@ class StudentController extends BaseApiController
     protected function rules(?int $id = null): array
     {
         return [
-            'guardian_id' => ['nullable', 'exists:guardians,id'],
+            'guardian_id' => ['nullable', new BelongsToCurrentOrganization(Guardian::class)],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', Rule::unique('students', 'email')->ignore($id)],
+            'email' => ['nullable', 'email', Rule::unique('students', 'email')->ignore($id)->where('organization_id', $this->currentOrganizationId())],
             'phone' => ['nullable', 'string', 'max:30'],
             'date_of_birth' => ['nullable', 'date'],
             'school_name' => ['nullable', 'string', 'max:255'],
@@ -27,5 +31,18 @@ class StudentController extends BaseApiController
             'address' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string'],
         ];
+    }
+
+    /**
+     * El profesor solo ve los alumnos matriculados en los grupos que imparte.
+     */
+    protected function applyTeacherScope(Builder $query): void
+    {
+        $groupIds = $this->taughtClassGroupIds();
+
+        $query->whereHas(
+            'enrollments',
+            fn (Builder $enrollments) => $enrollments->whereIn('class_group_id', $groupIds)
+        );
     }
 }

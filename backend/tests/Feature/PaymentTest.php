@@ -2,54 +2,49 @@
 
 namespace Tests\Feature;
 
-use App\Models\ClassGroup;
-use App\Models\Enrollment;
-use App\Models\Guardian;
+use App\Models\Organization;
 use App\Models\Payment;
-use App\Models\Student;
-use App\Models\Subject;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
+use Tests\Concerns\CreatesOrganizations;
 use Tests\TestCase;
 
 class PaymentTest extends TestCase
 {
-    use RefreshDatabase;
+    use CreatesOrganizations, RefreshDatabase;
+
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        foreach (['admin', 'teacher', 'student'] as $role) {
-            Role::findOrCreate($role, 'web');
-        }
+        $this->ensureRoles();
+        $this->organization = $this->createOrganization();
     }
 
     private function actingAsAdmin(): static
     {
-        $user = User::factory()->create(['is_active' => true]);
-        $user->assignRole('admin');
+        $user = $this->createUserFor($this->organization, 'org_admin');
 
-        return $this->withToken($user->createToken('test')->plainTextToken);
+        return $this->withToken($this->tokenFor($user));
     }
 
     private function actingAsTeacher(): static
     {
-        $user = User::factory()->create(['is_active' => true]);
-        $user->assignRole('teacher');
+        $user = $this->createUserFor($this->organization, 'teacher');
 
-        return $this->withToken($user->createToken('test')->plainTextToken);
+        return $this->withToken($this->tokenFor($user));
     }
 
     private function createEnrolledStudent(): array
     {
-        $uid = uniqid();
-        $guardian = Guardian::create(['first_name' => 'Tutor', 'last_name' => 'Test', 'phone' => '6'.substr($uid, 0, 8), 'relationship_label' => 'Padre']);
-        $student = Student::factory()->create(['guardian_id' => $guardian->id, 'status' => 'active']);
-        $subject = Subject::create(['name' => 'Mates', 'code' => 'TST'.$uid, 'monthly_fee' => 80]);
-        $group = ClassGroup::create(['subject_id' => $subject->id, 'name' => 'G'.$uid, 'code' => 'G'.$uid, 'academic_year' => '2025-2026', 'capacity' => 10, 'status' => 'active']);
-        $enrollment = Enrollment::create(['student_id' => $student->id, 'class_group_id' => $group->id, 'enrolled_at' => '2025-09-16', 'monthly_fee' => 80, 'status' => 'active']);
+        $guardian = $this->createGuardian($this->organization);
+        $student = $this->createStudent($this->organization, [
+            'guardian_id' => $guardian->id,
+            'status' => 'active',
+        ]);
+        $group = $this->createClassGroup($this->organization);
+        $enrollment = $this->createEnrollment($this->organization, $student, $group);
 
         return compact('guardian', 'student', 'enrollment');
     }
@@ -169,7 +164,8 @@ class PaymentTest extends TestCase
     {
         ['student' => $student, 'enrollment' => $enrollment] = $this->createEnrolledStudent();
 
-        $payment = Payment::create([
+        $payment = Payment::forceCreate([
+            'organization_id' => $this->organization->id,
             'student_id'     => $student->id,
             'enrollment_id'  => $enrollment->id,
             'amount'         => 80,

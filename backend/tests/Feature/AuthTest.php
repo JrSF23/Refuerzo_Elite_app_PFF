@@ -2,38 +2,34 @@
 
 namespace Tests\Feature;
 
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
+use Tests\Concerns\CreatesOrganizations;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
-    use RefreshDatabase;
+    use CreatesOrganizations, RefreshDatabase;
+
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        foreach (['admin', 'teacher', 'student'] as $role) {
-            Role::findOrCreate($role, 'web');
-        }
+        $this->ensureRoles();
+        $this->organization = $this->createOrganization();
     }
 
     private function makeAdmin(array $overrides = []): User
     {
-        $user = User::factory()->create(array_merge(['is_active' => true], $overrides));
-        $user->assignRole('admin');
-
-        return $user;
+        return $this->createUserFor($this->organization, 'org_admin', $overrides);
     }
 
     private function makeTeacher(array $overrides = []): User
     {
-        $user = User::factory()->create(array_merge(['is_active' => true], $overrides));
-        $user->assignRole('teacher');
-
-        return $user;
+        return $this->createUserFor($this->organization, 'teacher', $overrides);
     }
 
     // ── Login ──────────────────────────────────────────────────────────────
@@ -75,8 +71,10 @@ class AuthTest extends TestCase
 
     public function test_login_fails_for_inactive_user(): void
     {
-        $user = User::factory()->create(['is_active' => false, 'password' => 'secret123']);
-        $user->assignRole('admin');
+        $user = $this->createUserFor($this->organization, 'org_admin', [
+            'is_active' => false,
+            'password' => 'secret123',
+        ]);
 
         $this->postJson('/api/v1/login', ['login' => $user->email, 'password' => 'secret123'])
             ->assertStatus(422);
@@ -84,8 +82,10 @@ class AuthTest extends TestCase
 
     public function test_login_forbidden_for_student_role(): void
     {
-        $user = User::factory()->create(['is_active' => true, 'password' => 'secret123']);
-        $user->assignRole('student');
+        $user = $this->createUserFor($this->organization, 'student', [
+            'is_active' => true,
+            'password' => 'secret123',
+        ]);
 
         $this->postJson('/api/v1/login', ['login' => $user->email, 'password' => 'secret123'])
             ->assertStatus(403);

@@ -28,6 +28,10 @@ class DashboardController
     private function adminDashboard(): JsonResponse
     {
         return response()->json([
+            // Discriminador de vista, no el nombre del rol: el frontend solo
+            // comprueba `=== 'teacher'` y todo lo demás cae en la vista de
+            // administración. Se conserva el valor para no cambiar la forma de la
+            // respuesta sin necesidad (FR-026).
             'role'           => 'admin',
             'stats'          => [
                 'students'   => Student::count(),
@@ -47,11 +51,15 @@ class DashboardController
 
     private function teacherDashboard($user): JsonResponse
     {
-        // Link the logged-in user to their teacher profile by email
-        $teacher = Teacher::where('email', $user->email)->first();
+        // El vínculo es teachers.user_id, no el email (D6). Emparejar por correo
+        // era frágil —`teachers.email` es nullable y un cambio de correo rompía el
+        // vínculo en silencio— y convertirlo en regla de acceso sería un fallo de
+        // seguridad.
+        $teacher = Teacher::where('user_id', $user->id)->first();
 
         if (! $teacher) {
-            // Teacher user exists but has no profile yet — return empty dashboard
+            // Usuario con rol profesor sin ficha vinculada: cero grupos, cero
+            // alumnos. El fallo cierra el acceso, nunca lo abre (FR-015c).
             return response()->json([
                 'role'               => 'teacher',
                 'teacher'            => null,

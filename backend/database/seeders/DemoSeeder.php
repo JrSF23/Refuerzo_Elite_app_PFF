@@ -7,6 +7,7 @@ use App\Models\ClassGroup;
 use App\Models\ClassSession;
 use App\Models\Enrollment;
 use App\Models\Guardian;
+use App\Models\Organization;
 use App\Models\Payment;
 use App\Models\Student;
 use App\Models\Subject;
@@ -15,302 +16,279 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 
+/**
+ * Datos de demostración para DOS organizaciones.
+ *
+ * Que sean dos y no una es deliberado: el aislamiento solo es comprobable a mano
+ * si hay algo de lo que aislarse. Ambas usan los MISMOS códigos de asignatura y de
+ * grupo (MAT, LEN, ING, MAT-A…) y correos de alumno repetidos, que es justo lo que
+ * FR-019 exige que sea posible.
+ *
+ * Los modelos aún no llevan el trait de tenancy, así que `organization_id` se fija
+ * explícitamente con forceCreate: no está en $fillable a propósito, para que jamás
+ * pueda llegar desde una petición.
+ */
 class DemoSeeder extends Seeder
 {
     public function run(): void
     {
-        // ── Roles ────────────────────────────────────────────────────────────
-        foreach (['admin', 'teacher', 'student'] as $roleName) {
+        foreach (['super_admin', 'org_admin', 'teacher'] as $roleName) {
             Role::findOrCreate($roleName, 'web');
         }
 
-        // ── Profesores con cuenta de usuario ─────────────────────────────────
-        $teacher1 = Teacher::create([
-            'first_name' => 'María',
-            'last_name'  => 'García López',
-            'email'      => 'mgarcia@refuerzoelite.test',
-            'phone'      => '612345678',
-            'specialty'  => 'Matemáticas y Física',
-            'bio'        => 'Licenciada en Matemáticas con 8 años de experiencia en refuerzo escolar.',
-        ]);
+        // Organización del centro actual, creada por M1.
+        $centroA = Organization::query()->orderBy('id')->firstOrFail();
 
-        $teacher2 = Teacher::create([
-            'first_name' => 'Carlos',
-            'last_name'  => 'Martínez Ruiz',
-            'email'      => 'cmartinez@refuerzoelite.test',
-            'phone'      => '623456789',
-            'specialty'  => 'Lengua y Literatura',
-            'bio'        => 'Profesor de Secundaria, especialista en comprensión lectora y escritura.',
-        ]);
-
-        $userTeacher1 = User::updateOrCreate(
-            ['email' => $teacher1->email],
+        $centroB = Organization::query()->firstOrCreate(
+            ['slug' => 'centro-piloto-malabo'],
             [
-                'name'      => $teacher1->first_name.' '.$teacher1->last_name,
-                'username'  => 'mgarcia',
-                'password'  => 'Teacher12345!',
+                'name' => 'Centro Piloto Malabo',
+                'status' => Organization::STATUS_ACTIVE,
+                'contact_email' => 'contacto@centropiloto.test',
+            ]
+        );
+
+        $this->seedOrganization($centroA, 'a', [
+            ['María', 'García López', 'mgarcia', 'Matemáticas y Física'],
+            ['Carlos', 'Martínez Ruiz', 'cmartinez', 'Lengua y Literatura'],
+        ]);
+
+        $this->seedOrganization($centroB, 'b', [
+            ['Lucía', 'Nvono Obiang', 'lnvono', 'Matemáticas'],
+            ['Tomás', 'Ela Mangue', 'tela', 'Inglés'],
+        ]);
+    }
+
+    /**
+     * @param  list<array{0: string, 1: string, 2: string, 3: string}>  $teacherData
+     */
+    private function seedOrganization(Organization $organization, string $suffix, array $teacherData): void
+    {
+        $orgId = $organization->getKey();
+
+        // ── Administrador de la organización ─────────────────────────────────
+        $orgAdmin = User::query()->updateOrCreate(
+            ['email' => "admin.{$suffix}@refuerzoelite.test"],
+            [
+                'name' => 'Administración '.$organization->name,
+                'username' => "admin.{$suffix}",
+                'password' => 'Admin12345!',
                 'is_active' => true,
             ]
         );
-        $userTeacher1->syncRoles(['teacher']);
+        $orgAdmin->forceFill(['organization_id' => $orgId])->save();
+        $orgAdmin->syncRoles(['org_admin']);
 
-        $userTeacher2 = User::updateOrCreate(
-            ['email' => $teacher2->email],
-            [
-                'name'      => $teacher2->first_name.' '.$teacher2->last_name,
-                'username'  => 'cmartinez',
-                'password'  => 'Teacher12345!',
-                'is_active' => true,
-            ]
-        );
-        $userTeacher2->syncRoles(['teacher']);
+        // ── Profesores con ficha y cuenta vinculadas ─────────────────────────
+        $teachers = [];
 
-        // ── Materias ──────────────────────────────────────────────────────────
-        $mates = Subject::create([
-            'name'        => 'Matemáticas',
-            'code'        => 'MAT',
-            'level'       => 'ESO / Bachillerato',
-            'monthly_fee' => 80.00,
-            'description' => 'Refuerzo de álgebra, geometría y cálculo.',
-        ]);
+        foreach ($teacherData as $index => [$firstName, $lastName, $username, $specialty]) {
+            // El email de la cuenta es único global; el de la ficha, único por
+            // organización. Son campos distintos a propósito.
+            $account = User::query()->updateOrCreate(
+                ['email' => "{$username}.{$suffix}@refuerzoelite.test"],
+                [
+                    'name' => "{$firstName} {$lastName}",
+                    'username' => "{$username}.{$suffix}",
+                    'password' => 'Teacher12345!',
+                    'is_active' => true,
+                ]
+            );
+            $account->forceFill(['organization_id' => $orgId])->save();
+            $account->syncRoles(['teacher']);
 
-        $lengua = Subject::create([
-            'name'        => 'Lengua Castellana',
-            'code'        => 'LEN',
-            'level'       => 'Primaria / ESO',
-            'monthly_fee' => 70.00,
-            'description' => 'Comprensión lectora, gramática y expresión escrita.',
-        ]);
-
-        $ingles = Subject::create([
-            'name'        => 'Inglés',
-            'code'        => 'ING',
-            'level'       => 'Todos los niveles',
-            'monthly_fee' => 75.00,
-            'description' => 'Cambridge, B1/B2 y conversación.',
-        ]);
-
-        // ── Grupos ────────────────────────────────────────────────────────────
-        $groupMatesA = ClassGroup::create([
-            'subject_id'    => $mates->id,
-            'teacher_id'    => $teacher1->id,
-            'name'          => 'Matemáticas — Grupo A',
-            'code'          => 'MAT-A',
-            'academic_year' => '2025-2026',
-            'schedule'      => 'Lunes y miércoles 17:00–18:30',
-            'capacity'      => 12,
-            'start_date'    => '2025-09-16',
-            'end_date'      => '2026-06-15',
-            'status'        => 'active',
-        ]);
-
-        $groupMatesB = ClassGroup::create([
-            'subject_id'    => $mates->id,
-            'teacher_id'    => $teacher1->id,
-            'name'          => 'Matemáticas — Grupo B',
-            'code'          => 'MAT-B',
-            'academic_year' => '2025-2026',
-            'schedule'      => 'Martes y jueves 18:30–20:00',
-            'capacity'      => 10,
-            'start_date'    => '2025-09-16',
-            'end_date'      => '2026-06-15',
-            'status'        => 'active',
-        ]);
-
-        $groupLengua = ClassGroup::create([
-            'subject_id'    => $lengua->id,
-            'teacher_id'    => $teacher2->id,
-            'name'          => 'Lengua — Grupo Mañana',
-            'code'          => 'LEN-M',
-            'academic_year' => '2025-2026',
-            'schedule'      => 'Sábados 10:00–11:30',
-            'capacity'      => 8,
-            'start_date'    => '2025-09-20',
-            'end_date'      => '2026-06-13',
-            'status'        => 'active',
-        ]);
-
-        $groupIngles = ClassGroup::create([
-            'subject_id'    => $ingles->id,
-            'teacher_id'    => null,
-            'name'          => 'Inglés B2 — Grupo Tarde',
-            'code'          => 'ING-T',
-            'academic_year' => '2025-2026',
-            'schedule'      => 'Viernes 16:00–17:30',
-            'capacity'      => 10,
-            'start_date'    => '2025-09-19',
-            'end_date'      => '2026-06-12',
-            'status'        => 'active',
-        ]);
-
-        // ── Tutores ───────────────────────────────────────────────────────────
-        $guardians = [
-            Guardian::create(['first_name' => 'Rosa',    'last_name' => 'Fernández Pérez', 'email' => 'r.fernandez@email.com', 'phone' => '634111222', 'relationship_label' => 'Madre']),
-            Guardian::create(['first_name' => 'Antonio', 'last_name' => 'López Jiménez',   'email' => 'a.lopez@email.com',     'phone' => '634222333', 'relationship_label' => 'Padre']),
-            Guardian::create(['first_name' => 'Elena',   'last_name' => 'Sánchez Gómez',   'email' => 'e.sanchez@email.com',   'phone' => '634333444', 'relationship_label' => 'Madre']),
-            Guardian::create(['first_name' => 'Pablo',   'last_name' => 'Moreno Castro',   'email' => 'p.moreno@email.com',    'phone' => '634444555', 'relationship_label' => 'Padre']),
-            Guardian::create(['first_name' => 'Luisa',   'last_name' => 'Díaz Herrera',    'email' => 'l.diaz@email.com',      'phone' => '634555666', 'relationship_label' => 'Madre']),
-        ];
-
-        // ── Alumnos ───────────────────────────────────────────────────────────
-        $students = [
-            Student::create(['guardian_id' => $guardians[0]->id, 'first_name' => 'Lucía',    'last_name' => 'Fernández Pérez', 'date_of_birth' => '2010-03-15', 'school_name' => 'IES Ramón y Cajal',   'school_level' => '4º ESO',      'status' => 'active']),
-            Student::create(['guardian_id' => $guardians[0]->id, 'first_name' => 'Alejandro','last_name' => 'Fernández Pérez', 'date_of_birth' => '2012-07-22', 'school_name' => 'IES Ramón y Cajal',   'school_level' => '2º ESO',      'status' => 'active']),
-            Student::create(['guardian_id' => $guardians[1]->id, 'first_name' => 'Sofía',    'last_name' => 'López Jiménez',   'date_of_birth' => '2009-11-08', 'school_name' => 'Colegio San Pedro',   'school_level' => '1º Bachiller', 'status' => 'active']),
-            Student::create(['guardian_id' => $guardians[2]->id, 'first_name' => 'Diego',    'last_name' => 'Sánchez Gómez',   'date_of_birth' => '2011-01-30', 'school_name' => 'CEIP Mediterráneo',  'school_level' => '6º Primaria', 'status' => 'active']),
-            Student::create(['guardian_id' => $guardians[3]->id, 'first_name' => 'Isabel',   'last_name' => 'Moreno Castro',   'date_of_birth' => '2010-09-05', 'school_name' => 'IES Victoria Kent',  'school_level' => '4º ESO',      'status' => 'active']),
-            Student::create(['guardian_id' => $guardians[3]->id, 'first_name' => 'Marcos',   'last_name' => 'Moreno Castro',   'date_of_birth' => '2013-04-18', 'school_name' => 'CEIP Mediterráneo',  'school_level' => '4º Primaria', 'status' => 'active']),
-            Student::create(['guardian_id' => $guardians[4]->id, 'first_name' => 'Carmen',   'last_name' => 'Díaz Herrera',    'date_of_birth' => '2008-12-10', 'school_name' => 'Colegio San Pedro',   'school_level' => '2º Bachiller', 'status' => 'active']),
-            Student::create(['guardian_id' => $guardians[4]->id, 'first_name' => 'Javier',   'last_name' => 'Díaz Herrera',    'date_of_birth' => '2011-06-25', 'school_name' => 'IES Victoria Kent',  'school_level' => '1º ESO',      'status' => 'inactive']),
-        ];
-
-        // ── Inscripciones ─────────────────────────────────────────────────────
-        $enrollments = [
-            // Lucía → Mates A + Inglés
-            Enrollment::create(['student_id' => $students[0]->id, 'class_group_id' => $groupMatesA->id, 'enrolled_at' => '2025-09-16', 'monthly_fee' => 80.00, 'status' => 'active']),
-            Enrollment::create(['student_id' => $students[0]->id, 'class_group_id' => $groupIngles->id, 'enrolled_at' => '2025-09-19', 'monthly_fee' => 75.00, 'status' => 'active']),
-            // Alejandro → Mates A
-            Enrollment::create(['student_id' => $students[1]->id, 'class_group_id' => $groupMatesA->id, 'enrolled_at' => '2025-09-16', 'monthly_fee' => 80.00, 'status' => 'active']),
-            // Sofía → Mates B + Inglés
-            Enrollment::create(['student_id' => $students[2]->id, 'class_group_id' => $groupMatesB->id, 'enrolled_at' => '2025-09-16', 'monthly_fee' => 80.00, 'status' => 'active']),
-            Enrollment::create(['student_id' => $students[2]->id, 'class_group_id' => $groupIngles->id, 'enrolled_at' => '2025-09-19', 'monthly_fee' => 75.00, 'status' => 'active']),
-            // Diego → Lengua
-            Enrollment::create(['student_id' => $students[3]->id, 'class_group_id' => $groupLengua->id, 'enrolled_at' => '2025-09-20', 'monthly_fee' => 70.00, 'status' => 'active']),
-            // Isabel → Mates B
-            Enrollment::create(['student_id' => $students[4]->id, 'class_group_id' => $groupMatesB->id, 'enrolled_at' => '2025-09-16', 'monthly_fee' => 80.00, 'status' => 'active']),
-            // Marcos → Lengua
-            Enrollment::create(['student_id' => $students[5]->id, 'class_group_id' => $groupLengua->id, 'enrolled_at' => '2025-09-20', 'monthly_fee' => 70.00, 'status' => 'active']),
-            // Carmen → Mates A + Inglés
-            Enrollment::create(['student_id' => $students[6]->id, 'class_group_id' => $groupMatesA->id, 'enrolled_at' => '2025-09-16', 'monthly_fee' => 80.00, 'status' => 'active']),
-            Enrollment::create(['student_id' => $students[6]->id, 'class_group_id' => $groupIngles->id, 'enrolled_at' => '2025-09-19', 'monthly_fee' => 75.00, 'status' => 'active']),
-            // Javier → inactivo, inscripción inactiva
-            Enrollment::create(['student_id' => $students[7]->id, 'class_group_id' => $groupMatesA->id, 'enrolled_at' => '2025-09-16', 'monthly_fee' => 80.00, 'status' => 'inactive']),
-        ];
-
-        // ── Sesiones de clase ─────────────────────────────────────────────────
-        $sessionsMatesA = [];
-        $dates = ['2026-01-13', '2026-01-15', '2026-01-20', '2026-01-22'];
-        foreach ($dates as $i => $date) {
-            $sessionsMatesA[] = ClassSession::create([
-                'class_group_id' => $groupMatesA->id,
-                'title'          => 'Sesión '.($i + 1).' — Álgebra lineal',
-                'session_date'   => $date,
-                'starts_at'      => '17:00:00',
-                'ends_at'        => '18:30:00',
-                'room'           => 'Aula 1',
+            $teachers[$index] = Teacher::forceCreate([
+                'organization_id' => $orgId,
+                'user_id' => $account->getKey(),
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => "{$username}@centro.test", // se repite entre organizaciones
+                'phone' => '61234567'.$index,
+                'specialty' => $specialty,
             ]);
         }
 
-        $sessionsMatesB = [];
-        $datesB = ['2026-01-13', '2026-01-15', '2026-01-20'];
-        foreach ($datesB as $i => $date) {
-            $sessionsMatesB[] = ClassSession::create([
-                'class_group_id' => $groupMatesB->id,
-                'title'          => 'Sesión '.($i + 1).' — Funciones y derivadas',
-                'session_date'   => $date,
-                'starts_at'      => '18:30:00',
-                'ends_at'        => '20:00:00',
-                'room'           => 'Aula 2',
+        // ── Materias — mismos códigos en ambas organizaciones ────────────────
+        $subjects = [];
+
+        foreach ([
+            ['Matemáticas', 'MAT', 'ESO / Bachillerato', 80.00],
+            ['Lengua Castellana', 'LEN', 'Primaria / ESO', 70.00],
+            ['Inglés', 'ING', 'Todos los niveles', 75.00],
+        ] as $index => [$name, $code, $level, $fee]) {
+            $subjects[$index] = Subject::forceCreate([
+                'organization_id' => $orgId,
+                'name' => $name,
+                'code' => $code,
+                'level' => $level,
+                'monthly_fee' => $fee,
             ]);
         }
 
-        $sessionsLengua = [];
-        $datesL = ['2026-01-10', '2026-01-17', '2026-01-24'];
-        foreach ($datesL as $i => $date) {
-            $sessionsLengua[] = ClassSession::create([
-                'class_group_id' => $groupLengua->id,
-                'title'          => 'Sesión '.($i + 1).' — Comprensión lectora',
-                'session_date'   => $date,
-                'starts_at'      => '10:00:00',
-                'ends_at'        => '11:30:00',
-                'room'           => 'Aula 3',
+        // ── Grupos — mismos códigos en ambas organizaciones ──────────────────
+        $groups = [];
+
+        foreach ([
+            [0, 0, 'Matemáticas — Grupo A', 'MAT-A', 'Lunes y miércoles 17:00–18:30', 12],
+            [0, 0, 'Matemáticas — Grupo B', 'MAT-B', 'Martes y jueves 18:30–20:00', 10],
+            [1, 1, 'Lengua — Grupo Mañana', 'LEN-M', 'Sábados 10:00–11:30', 8],
+            [2, null, 'Inglés B2 — Grupo Tarde', 'ING-T', 'Viernes 16:00–17:30', 10],
+        ] as $index => [$subjectIndex, $teacherIndex, $name, $code, $schedule, $capacity]) {
+            $groups[$index] = ClassGroup::forceCreate([
+                'organization_id' => $orgId,
+                'subject_id' => $subjects[$subjectIndex]->getKey(),
+                'teacher_id' => $teacherIndex === null ? null : $teachers[$teacherIndex]->getKey(),
+                'name' => $name,
+                'code' => $code,
+                'academic_year' => '2025-2026',
+                'schedule' => $schedule,
+                'capacity' => $capacity,
+                'start_date' => '2025-09-16',
+                'end_date' => '2026-06-15',
+                'status' => 'active',
             ]);
         }
 
-        // ── Asistencias ───────────────────────────────────────────────────────
-        // Alumnos de Mates A: students[0] (Lucía), [1] (Alejandro), [6] (Carmen)
-        $matesAStudents = [$students[0], $students[1], $students[6]];
-        $attendanceStatuses = ['present', 'present', 'present', 'absent', 'present', 'late', 'present', 'present', 'present', 'present', 'absent', 'present'];
-        $attendanceIndex = 0;
-        foreach ($sessionsMatesA as $session) {
-            foreach ($matesAStudents as $student) {
-                Attendance::create([
-                    'class_session_id' => $session->id,
-                    'student_id'       => $student->id,
-                    'status'           => $attendanceStatuses[$attendanceIndex % count($attendanceStatuses)],
-                ]);
-                $attendanceIndex++;
-            }
+        // ── Tutores ──────────────────────────────────────────────────────────
+        $guardians = [];
+
+        foreach ([
+            ['Rosa', 'Fernández Pérez', 'r.fernandez@email.com', 'Madre'],
+            ['Antonio', 'López Jiménez', 'a.lopez@email.com', 'Padre'],
+            ['Elena', 'Sánchez Gómez', 'e.sanchez@email.com', 'Madre'],
+            ['Pablo', 'Moreno Castro', 'p.moreno@email.com', 'Padre'],
+            ['Luisa', 'Díaz Herrera', 'l.diaz@email.com', 'Madre'],
+        ] as $index => [$firstName, $lastName, $email, $relation]) {
+            $guardians[$index] = Guardian::forceCreate([
+                'organization_id' => $orgId,
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => $email, // se repite entre organizaciones
+                'phone' => '6341112'.str_pad((string) $index, 2, '0', STR_PAD_LEFT),
+                'relationship_label' => $relation,
+            ]);
         }
 
-        // Alumnos de Mates B: students[2] (Sofía), [4] (Isabel)
-        $matesBStudents = [$students[2], $students[4]];
-        foreach ($sessionsMatesB as $session) {
-            foreach ($matesBStudents as $student) {
-                Attendance::create([
-                    'class_session_id' => $session->id,
-                    'student_id'       => $student->id,
-                    'status'           => 'present',
+        // ── Alumnos ──────────────────────────────────────────────────────────
+        $students = [];
+
+        foreach ([
+            [0, 'Lucía', 'Fernández Pérez', '2010-03-15', '4º ESO', 'active'],
+            [0, 'Alejandro', 'Fernández Pérez', '2012-07-22', '2º ESO', 'active'],
+            [1, 'Sofía', 'López Jiménez', '2009-11-08', '1º Bachiller', 'active'],
+            [2, 'Diego', 'Sánchez Gómez', '2011-01-30', '6º Primaria', 'active'],
+            [3, 'Isabel', 'Moreno Castro', '2010-09-05', '4º ESO', 'active'],
+            [3, 'Marcos', 'Moreno Castro', '2013-04-18', '4º Primaria', 'active'],
+            [4, 'Carmen', 'Díaz Herrera', '2008-12-10', '2º Bachiller', 'active'],
+            [4, 'Javier', 'Díaz Herrera', '2011-06-25', '1º ESO', 'inactive'],
+        ] as $index => [$guardianIndex, $firstName, $lastName, $birth, $level, $status]) {
+            $students[$index] = Student::forceCreate([
+                'organization_id' => $orgId,
+                'guardian_id' => $guardians[$guardianIndex]->getKey(),
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'date_of_birth' => $birth,
+                'school_level' => $level,
+                'status' => $status,
+            ]);
+        }
+
+        // ── Inscripciones ────────────────────────────────────────────────────
+        $enrollments = [];
+
+        foreach ([
+            [0, 0, 80.00, 'active'], [0, 3, 75.00, 'active'],
+            [1, 0, 80.00, 'active'],
+            [2, 1, 80.00, 'active'], [2, 3, 75.00, 'active'],
+            [3, 2, 70.00, 'active'],
+            [4, 1, 80.00, 'active'],
+            [5, 2, 70.00, 'active'],
+            [6, 0, 80.00, 'active'], [6, 3, 75.00, 'active'],
+            [7, 0, 80.00, 'inactive'],
+        ] as $index => [$studentIndex, $groupIndex, $fee, $status]) {
+            $enrollments[$index] = Enrollment::forceCreate([
+                'organization_id' => $orgId,
+                'student_id' => $students[$studentIndex]->getKey(),
+                'class_group_id' => $groups[$groupIndex]->getKey(),
+                'enrolled_at' => '2025-09-16',
+                'monthly_fee' => $fee,
+                'status' => $status,
+            ]);
+        }
+
+        // ── Sesiones ─────────────────────────────────────────────────────────
+        $sessions = [];
+
+        foreach ([
+            [0, ['2026-01-13', '2026-01-15', '2026-01-20', '2026-01-22'], 'Álgebra lineal', '17:00:00', '18:30:00'],
+            [1, ['2026-01-13', '2026-01-15', '2026-01-20'], 'Funciones y derivadas', '18:30:00', '20:00:00'],
+            [2, ['2026-01-10', '2026-01-17', '2026-01-24'], 'Comprensión lectora', '10:00:00', '11:30:00'],
+        ] as [$groupIndex, $dates, $topic, $startsAt, $endsAt]) {
+            foreach ($dates as $i => $date) {
+                $sessions[$groupIndex][] = ClassSession::forceCreate([
+                    'organization_id' => $orgId,
+                    'class_group_id' => $groups[$groupIndex]->getKey(),
+                    'title' => 'Sesión '.($i + 1).' — '.$topic,
+                    'session_date' => $date,
+                    'starts_at' => $startsAt,
+                    'ends_at' => $endsAt,
+                    'room' => 'Aula '.($groupIndex + 1),
                 ]);
             }
         }
 
-        // Alumnos de Lengua: students[3] (Diego), [5] (Marcos)
-        $lenguaStudents = [$students[3], $students[5]];
-        $lenguaStatuses = ['present', 'absent', 'present', 'present', 'present', 'present'];
-        $li = 0;
-        foreach ($sessionsLengua as $session) {
-            foreach ($lenguaStudents as $student) {
-                Attendance::create([
-                    'class_session_id' => $session->id,
-                    'student_id'       => $student->id,
-                    'status'           => $lenguaStatuses[$li % count($lenguaStatuses)],
-                ]);
-                $li++;
+        // ── Asistencias ──────────────────────────────────────────────────────
+        $statuses = ['present', 'present', 'present', 'absent', 'present', 'late'];
+        $cursor = 0;
+
+        foreach ([0 => [0, 1, 6], 1 => [2, 4], 2 => [3, 5]] as $groupIndex => $studentIndexes) {
+            foreach ($sessions[$groupIndex] as $session) {
+                foreach ($studentIndexes as $studentIndex) {
+                    Attendance::forceCreate([
+                        'organization_id' => $orgId,
+                        'class_session_id' => $session->getKey(),
+                        'student_id' => $students[$studentIndex]->getKey(),
+                        'status' => $statuses[$cursor % count($statuses)],
+                    ]);
+                    $cursor++;
+                }
             }
         }
 
-        // ── Pagos (oct–dic 2025 + ene 2026) ──────────────────────────────────
-        $paymentData = [
-            // Lucía — Mates A (enc.[0]) + Inglés (enc.[1])
-            [$students[0], $guardians[0], $enrollments[0], 80.00, 'Octubre 2025',    '2025-10-05', 'cash',     'paid'],
-            [$students[0], $guardians[0], $enrollments[0], 80.00, 'Noviembre 2025',  '2025-11-04', 'card',     'paid'],
-            [$students[0], $guardians[0], $enrollments[0], 80.00, 'Diciembre 2025',  '2025-12-03', 'cash',     'paid'],
-            [$students[0], $guardians[0], $enrollments[0], 80.00, 'Enero 2026',      '2026-01-07', 'transfer', 'paid'],
-            [$students[0], $guardians[0], $enrollments[1], 75.00, 'Octubre 2025',    '2025-10-05', 'cash',     'paid'],
-            [$students[0], $guardians[0], $enrollments[1], 75.00, 'Noviembre 2025',  '2025-11-04', 'cash',     'paid'],
-            // Sofía — Mates B (enc.[3])
-            [$students[2], $guardians[1], $enrollments[3], 80.00, 'Octubre 2025',    '2025-10-06', 'card',     'paid'],
-            [$students[2], $guardians[1], $enrollments[3], 80.00, 'Noviembre 2025',  '2025-11-05', 'card',     'paid'],
-            [$students[2], $guardians[1], $enrollments[3], 80.00, 'Diciembre 2025',  '2025-12-04', 'card',     'paid'],
-            [$students[2], $guardians[1], $enrollments[3], 80.00, 'Enero 2026',      '2026-01-08', 'card',     'pending'],
-            // Diego — Lengua (enc.[5])
-            [$students[3], $guardians[2], $enrollments[5], 70.00, 'Octubre 2025',    '2025-10-07', 'cash',     'paid'],
-            [$students[3], $guardians[2], $enrollments[5], 70.00, 'Noviembre 2025',  '2025-11-06', 'cash',     'paid'],
-            [$students[3], $guardians[2], $enrollments[5], 70.00, 'Diciembre 2025',  '2025-12-05', 'cash',     'paid'],
-            [$students[3], $guardians[2], $enrollments[5], 70.00, 'Enero 2026',      null,         'cash',     'pending'],
-            // Isabel — Mates B (enc.[6])
-            [$students[4], $guardians[3], $enrollments[6], 80.00, 'Octubre 2025',    '2025-10-06', 'transfer', 'paid'],
-            [$students[4], $guardians[3], $enrollments[6], 80.00, 'Noviembre 2025',  '2025-11-05', 'transfer', 'paid'],
-            [$students[4], $guardians[3], $enrollments[6], 80.00, 'Diciembre 2025',  '2025-12-04', 'transfer', 'paid'],
-            // Carmen — Mates A + Inglés (enc.[8], enc.[9])
-            [$students[6], $guardians[4], $enrollments[8], 80.00, 'Octubre 2025',    '2025-10-05', 'cash',     'paid'],
-            [$students[6], $guardians[4], $enrollments[8], 80.00, 'Noviembre 2025',  '2025-11-04', 'cash',     'paid'],
-            [$students[6], $guardians[4], $enrollments[9], 75.00, 'Noviembre 2025',  '2025-11-04', 'cash',     'paid'],
-            [$students[6], $guardians[4], $enrollments[8], 80.00, 'Diciembre 2025',  '2025-12-03', 'cash',     'cancelled'],
-        ];
-
-        foreach ($paymentData as $row) {
-            [$student, $guardian, $enrollment, $amount, $period, $paidAt, $method, $status] = $row;
-            Payment::create([
-                'student_id'     => $student->id,
-                'guardian_id'    => $guardian->id,
-                'enrollment_id'  => $enrollment->id,
-                'amount'         => $amount,
-                'period_label'   => $period,
-                'paid_at'        => $paidAt ?? now()->toDateString(),
+        // ── Pagos ────────────────────────────────────────────────────────────
+        foreach ([
+            [0, 0, 0, 80.00, 'Octubre 2025', '2025-10-05', 'cash', 'paid'],
+            [0, 0, 0, 80.00, 'Noviembre 2025', '2025-11-04', 'card', 'paid'],
+            [0, 0, 0, 80.00, 'Diciembre 2025', '2025-12-03', 'cash', 'paid'],
+            [0, 0, 0, 80.00, 'Enero 2026', '2026-01-07', 'transfer', 'paid'],
+            [0, 0, 1, 75.00, 'Octubre 2025', '2025-10-05', 'cash', 'paid'],
+            [0, 0, 1, 75.00, 'Noviembre 2025', '2025-11-04', 'cash', 'paid'],
+            [2, 1, 3, 80.00, 'Octubre 2025', '2025-10-06', 'card', 'paid'],
+            [2, 1, 3, 80.00, 'Noviembre 2025', '2025-11-05', 'card', 'paid'],
+            [2, 1, 3, 80.00, 'Diciembre 2025', '2025-12-04', 'card', 'paid'],
+            [2, 1, 3, 80.00, 'Enero 2026', '2026-01-08', 'card', 'pending'],
+            [3, 2, 5, 70.00, 'Octubre 2025', '2025-10-07', 'cash', 'paid'],
+            [3, 2, 5, 70.00, 'Noviembre 2025', '2025-11-06', 'cash', 'paid'],
+            [3, 2, 5, 70.00, 'Diciembre 2025', '2025-12-05', 'cash', 'paid'],
+            [3, 2, 5, 70.00, 'Enero 2026', null, 'cash', 'pending'],
+            [4, 3, 6, 80.00, 'Octubre 2025', '2025-10-06', 'transfer', 'paid'],
+            [4, 3, 6, 80.00, 'Noviembre 2025', '2025-11-05', 'transfer', 'paid'],
+            [4, 3, 6, 80.00, 'Diciembre 2025', '2025-12-04', 'transfer', 'paid'],
+            [6, 4, 8, 80.00, 'Octubre 2025', '2025-10-05', 'cash', 'paid'],
+            [6, 4, 8, 80.00, 'Noviembre 2025', '2025-11-04', 'cash', 'paid'],
+            [6, 4, 9, 75.00, 'Noviembre 2025', '2025-11-04', 'cash', 'paid'],
+            [6, 4, 8, 80.00, 'Diciembre 2025', '2025-12-03', 'cash', 'cancelled'],
+        ] as [$studentIndex, $guardianIndex, $enrollmentIndex, $amount, $period, $paidAt, $method, $status]) {
+            Payment::forceCreate([
+                'organization_id' => $orgId,
+                'student_id' => $students[$studentIndex]->getKey(),
+                'guardian_id' => $guardians[$guardianIndex]->getKey(),
+                'enrollment_id' => $enrollments[$enrollmentIndex]->getKey(),
+                'amount' => $amount,
+                'period_label' => $period,
+                'paid_at' => $paidAt ?? now()->toDateString(),
                 'payment_method' => $method,
-                'status'         => $status,
+                'status' => $status,
             ]);
         }
     }

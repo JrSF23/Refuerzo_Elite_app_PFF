@@ -7,6 +7,9 @@ use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Rules\BelongsToCurrentOrganization;
+use App\Models\Student;
+use App\Models\Guardian;
 use Illuminate\Validation\Rule;
 
 class PaymentController extends BaseApiController
@@ -18,11 +21,11 @@ class PaymentController extends BaseApiController
     protected function rules(?int $id = null): array
     {
         return [
-            'student_id' => ['required', 'exists:students,id'],
-            'guardian_id' => ['nullable', 'exists:guardians,id'],
+            'student_id' => ['required', new BelongsToCurrentOrganization(Student::class)],
+            'guardian_id' => ['nullable', new BelongsToCurrentOrganization(Guardian::class)],
             'enrollment_id' => [
                 'nullable',
-                'exists:enrollments,id',
+                new BelongsToCurrentOrganization(Enrollment::class),
                 function (string $attribute, mixed $value, \Closure $fail): void {
                     if ($value === null) {
                         return;

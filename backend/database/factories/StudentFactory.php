@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Organization;
 use App\Models\Student;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -13,6 +14,10 @@ class StudentFactory extends Factory
     public function definition(): array
     {
         return [
+            // Por defecto crea su propia organización, para que la factory nunca
+            // viole el NOT NULL. Los tests que comparan alumnos entre sí deben
+            // pasar la organización explícitamente o usar forOrganization().
+            'organization_id' => Organization::factory(),
             'guardian_id'  => null,
             'first_name'   => fake()->firstName(),
             'last_name'    => fake()->lastName().' '.fake()->lastName(),
@@ -25,5 +30,12 @@ class StudentFactory extends Factory
             'address'      => null,
             'notes'        => null,
         ];
+    }
+
+    public function forOrganization(Organization $organization): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'organization_id' => $organization->getKey(),
+        ]);
     }
 }

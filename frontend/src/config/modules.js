@@ -21,40 +21,60 @@ const paymentMethodOptions = [
   { value: 'transfer', label: 'Virement' },
 ]
 
-const adminOnlyPermissions = {
-  access: ['admin'],
-  create: ['admin'],
-  edit: ['admin'],
-  delete: ['admin'],
+const orgAdminOnlyPermissions = {
+  access: ['org_admin'],
+  create: ['org_admin'],
+  edit: ['org_admin'],
+  delete: ['org_admin'],
 }
 
-const adminWriteTeacherReadPermissions = {
-  access: ['admin', 'teacher'],
-  create: ['admin'],
-  edit: ['admin'],
-  delete: ['admin'],
+const orgAdminWriteTeacherReadPermissions = {
+  access: ['org_admin', 'teacher'],
+  create: ['org_admin'],
+  edit: ['org_admin'],
+  delete: ['org_admin'],
 }
 
 const staffCrudPermissions = {
-  access: ['admin', 'teacher'],
-  create: ['admin', 'teacher'],
-  edit: ['admin', 'teacher'],
-  delete: ['admin', 'teacher'],
+  access: ['org_admin', 'teacher'],
+  create: ['org_admin', 'teacher'],
+  edit: ['org_admin', 'teacher'],
+  delete: ['org_admin', 'teacher'],
 }
 
+// INVARIANT — l'enseignant n'accède à aucune information financière (FR-016).
+//
+// Les quatre modules qu'il voit (élèves, groupes, séances, présences) ne portent
+// aucun champ monétaire, et les trois qui en portent (matières, inscriptions,
+// paiements) lui sont fermés. L'API refuse déjà tout cela ; ces permissions font
+// que l'interface ne le lui propose même pas.
+//
+// Avant d'ajouter un champ `monthly_fee`, `amount` ou équivalent à un module en
+// `staffCrudPermissions` ou `orgAdminWriteTeacherReadPermissions`, il faut donc
+// changer d'abord ce qu'autorise le serveur.
+
 export const roleLabels = {
-  admin: 'Administration',
+  super_admin: 'Plateforme',
+  org_admin: 'Administration',
   teacher: 'Enseignant',
   student: 'Élève',
 }
 
-export const staffRoles = ['admin', 'teacher']
+export const staffRoles = ['super_admin', 'org_admin', 'teacher']
+
+// Le super administrateur ne gère ni élèves ni paiements : son périmètre se limite
+// aux organisations et aux comptes. Ces entrées ne passent donc pas par
+// ModulePage, elles ont leurs propres pages.
+export const platformModules = [
+  { key: 'organizations', label: 'Organisations', path: '/espace/organisations', roles: ['super_admin'] },
+  { key: 'users', label: 'Comptes', path: '/espace/comptes', roles: ['org_admin'] },
+]
 
 export const moduleDefinitions = {
   students: {
     title: 'Élèves',
     endpoint: 'students',
-    permissions: adminWriteTeacherReadPermissions,
+    permissions: orgAdminWriteTeacherReadPermissions,
     columns: [
       { key: 'full_name', label: 'Élève' },
       { key: 'school_name', label: 'Établissement' },
@@ -78,7 +98,7 @@ export const moduleDefinitions = {
   guardians: {
     title: 'Responsables',
     endpoint: 'guardians',
-    permissions: adminOnlyPermissions,
+    permissions: orgAdminOnlyPermissions,
     columns: [
       { key: 'full_name', label: 'Responsable' },
       { key: 'relationship_label', label: 'Lien' },
@@ -98,7 +118,7 @@ export const moduleDefinitions = {
   teachers: {
     title: 'Enseignants',
     endpoint: 'teachers',
-    permissions: adminOnlyPermissions,
+    permissions: orgAdminOnlyPermissions,
     columns: [
       { key: 'full_name', label: 'Enseignant' },
       { key: 'specialty', label: 'Spécialité' },
@@ -117,7 +137,7 @@ export const moduleDefinitions = {
   subjects: {
     title: 'Matières',
     endpoint: 'subjects',
-    permissions: adminOnlyPermissions,
+    permissions: orgAdminOnlyPermissions,
     columns: [
       { key: 'name', label: 'Matière' },
       { key: 'code', label: 'Code' },
@@ -135,7 +155,7 @@ export const moduleDefinitions = {
   classGroups: {
     title: 'Groupes',
     endpoint: 'class-groups',
-    permissions: adminWriteTeacherReadPermissions,
+    permissions: orgAdminWriteTeacherReadPermissions,
     columns: [
       { key: 'name', label: 'Groupe' },
       { key: 'code', label: 'Code' },
@@ -158,7 +178,7 @@ export const moduleDefinitions = {
   enrollments: {
     title: 'Inscriptions',
     endpoint: 'enrollments',
-    permissions: adminOnlyPermissions,
+    permissions: orgAdminOnlyPermissions,
     columns: [
       { key: 'student.full_name', label: 'Élève' },
       { key: 'class_group.name', label: 'Groupe' },
@@ -213,7 +233,7 @@ export const moduleDefinitions = {
   payments: {
     title: 'Paiements',
     endpoint: 'payments',
-    permissions: adminOnlyPermissions,
+    permissions: orgAdminOnlyPermissions,
     columns: [
       { key: 'student.full_name', label: 'Élève' },
       { key: 'period_label', label: 'Période' },
