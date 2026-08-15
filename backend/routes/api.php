@@ -7,10 +7,12 @@ use App\Http\Controllers\Api\ClassSessionController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\GuardianController;
+use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -20,7 +22,24 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
 
-        Route::middleware('role.any:admin,teacher')->group(function (): void {
+        // ── Rutas de plataforma ──────────────────────────────────────────────
+        // Van FUERA de 'tenant': el super_admin no pertenece a ninguna
+        // organización, así que no puede establecer contexto de tenant.
+        Route::middleware('role.any:super_admin')->group(function (): void {
+            Route::post('/organizations/{id}/suspend', [OrganizationController::class, 'suspend']);
+            Route::post('/organizations/{id}/activate', [OrganizationController::class, 'activate']);
+            Route::apiResource('organizations', OrganizationController::class);
+        });
+
+        // El alcance depende del rol: el super_admin ve cuentas de cualquier
+        // organización; el org_admin, solo las de la suya (US4).
+        Route::middleware('role.any:super_admin,org_admin')->group(function (): void {
+            Route::apiResource('users', UserController::class);
+        });
+
+        // ── Rutas de negocio ─────────────────────────────────────────────────
+        // Todas llevan 'tenant': sin organización activa no se llega a ninguna.
+        Route::middleware(['tenant', 'role.any:org_admin,teacher'])->group(function (): void {
             Route::get('/dashboard', DashboardController::class);
 
             Route::apiResource('students', StudentController::class)->only(['index', 'show']);
@@ -29,7 +48,7 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('attendances', AttendanceController::class);
         });
 
-        Route::middleware('role.any:admin')->group(function (): void {
+        Route::middleware(['tenant', 'role.any:org_admin'])->group(function (): void {
             Route::apiResource('guardians', GuardianController::class);
             Route::apiResource('teachers', TeacherController::class);
             Route::apiResource('subjects', SubjectController::class);

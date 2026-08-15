@@ -49,6 +49,10 @@ export function SessionProvider({ children }) {
     token,
     user,
     roleNames,
+    // L'organisation arrive via /me : la réponse de login ne la porte pas. Elle est
+    // nulle pour le super administrateur, qui n'appartient à aucune.
+    organization: user?.organization ?? null,
+    isPlatformAdmin: roleNames.includes('super_admin'),
     isStaff: roleNames.some((role) => staffRoles.includes(role)),
     isAuthenticated: Boolean(token) && !isBooting,
     isBooting,

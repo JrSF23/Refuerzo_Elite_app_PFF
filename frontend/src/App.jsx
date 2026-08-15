@@ -8,8 +8,11 @@ import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { MethodPage } from './pages/MethodPage'
 import { ModulePage } from './pages/ModulePage'
+import { OrganizationsPage } from './pages/Organizations/OrganizationsPage'
+import { OrganizationUsersPage } from './pages/Organizations/OrganizationUsersPage'
 import { PublicHomePage } from './pages/PublicHomePage'
 import { ServicesPage } from './pages/ServicesPage'
+import { UsersPage } from './pages/UsersPage'
 
 function App() {
   return (
@@ -25,13 +28,37 @@ function App() {
         <Route
           path="/espace"
           element={(
-            <RequireAuth allowedRoles={['admin', 'teacher']}>
+            <RequireAuth allowedRoles={['super_admin', 'org_admin', 'teacher']}>
               <AppShell />
             </RequireAuth>
           )}
         >
           <Route index element={<DashboardPage />} />
           <Route path="module/:moduleKey" element={<ModulePage />} />
+          <Route
+            path="comptes"
+            element={(
+              <RequireAuth allowedRoles={['org_admin']}>
+                <UsersPage />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            path="organisations"
+            element={(
+              <RequireAuth allowedRoles={['super_admin']}>
+                <OrganizationsPage />
+              </RequireAuth>
+            )}
+          />
+          <Route
+            path="organisations/:organizationId/comptes"
+            element={(
+              <RequireAuth allowedRoles={['super_admin']}>
+                <OrganizationUsersPage />
+              </RequireAuth>
+            )}
+          />
         </Route>
         <Route path="*" element={<Navigate replace to="/" />} />
       </Routes>

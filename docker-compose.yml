@@ -37,7 +37,13 @@ services:
       CACHE_STORE: database
       SESSION_DRIVER: database
 
+      APP_LOCALE: ${APP_LOCALE:-es}
+      APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-en}
+
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # Sin esta variable el super administrador de plataforma nacería con la
+      # contraseña por defecto que lleva el seeder en el código.
+      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD}
     volumes:
       - backend_storage:/var/www/backend/storage
       - backend_cache:/var/www/backend/bootstrap/cache

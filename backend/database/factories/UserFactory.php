@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -32,7 +33,17 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'is_active' => true,
             'remember_token' => Str::random(10),
+            // Nullable a propósito: es el estado del super administrador de
+            // plataforma, el único usuario sin organización (FR-004).
+            'organization_id' => null,
         ];
+    }
+
+    public function forOrganization(Organization $organization): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'organization_id' => $organization->getKey(),
+        ]);
     }
 
     /**

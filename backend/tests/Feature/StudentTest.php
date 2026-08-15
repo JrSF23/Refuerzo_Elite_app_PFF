@@ -2,39 +2,42 @@
 
 namespace Tests\Feature;
 
+use App\Models\Organization;
 use App\Models\Student;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
+use Tests\Concerns\CreatesOrganizations;
 use Tests\TestCase;
 
 class StudentTest extends TestCase
 {
-    use RefreshDatabase;
+    use CreatesOrganizations, RefreshDatabase;
+
+    private Organization $organization;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        foreach (['admin', 'teacher', 'student'] as $role) {
-            Role::findOrCreate($role, 'web');
-        }
+        $this->ensureRoles();
+        $this->organization = $this->createOrganization();
     }
+
+    // Los alumnos se crean siempre con forOrganization(): la factory, si no se le
+    // dice nada, se crea su propia organización y los datos dejarían de ser
+    // comparables entre sí.
 
     private function actingAsAdmin(): static
     {
-        $user = User::factory()->create(['is_active' => true]);
-        $user->assignRole('admin');
+        $user = $this->createUserFor($this->organization, 'org_admin');
 
-        return $this->withToken($user->createToken('test')->plainTextToken);
+        return $this->withToken($this->tokenFor($user));
     }
 
     private function actingAsTeacher(): static
     {
-        $user = User::factory()->create(['is_active' => true]);
-        $user->assignRole('teacher');
+        $user = $this->createUserFor($this->organization, 'teacher');
 
-        return $this->withToken($user->createToken('test')->plainTextToken);
+        return $this->withToken($this->tokenFor($user));
     }
 
     private function studentPayload(array $overrides = []): array
@@ -50,7 +53,7 @@ class StudentTest extends TestCase
 
     public function test_admin_can_list_students(): void
     {
-        Student::factory()->count(3)->create();
+        Student::factory()->count(3)->forOrganization($this->organization)->create();
 
         $this->actingAsAdmin()
             ->getJson('/api/v1/students')
@@ -60,7 +63,7 @@ class StudentTest extends TestCase
 
     public function test_teacher_can_list_students(): void
     {
-        Student::factory()->count(2)->create();
+        Student::factory()->count(2)->forOrganization($this->organization)->create();
 
         $this->actingAsTeacher()
             ->getJson('/api/v1/students')
@@ -74,8 +77,8 @@ class StudentTest extends TestCase
 
     public function test_list_supports_search(): void
     {
-        Student::factory()->create(['first_name' => 'Beatriz', 'last_name' => 'Álvarez']);
-        Student::factory()->create(['first_name' => 'Carlos',  'last_name' => 'Ruiz']);
+        Student::factory()->forOrganization($this->organization)->create(['first_name' => 'Beatriz', 'last_name' => 'Álvarez']);
+        Student::factory()->forOrganization($this->organization)->create(['first_name' => 'Carlos',  'last_name' => 'Ruiz']);
 
         $response = $this->actingAsAdmin()
             ->getJson('/api/v1/students?search=beatriz')
@@ -122,7 +125,7 @@ class StudentTest extends TestCase
 
     public function test_create_student_rejects_duplicate_email(): void
     {
-        Student::factory()->create(['email' => 'duplicado@test.com']);
+        Student::factory()->forOrganization($this->organization)->create(['email' => 'duplicado@test.com']);
 
         $this->actingAsAdmin()
             ->postJson('/api/v1/students', $this->studentPayload(['email' => 'duplicado@test.com']))
@@ -134,7 +137,7 @@ class StudentTest extends TestCase
 
     public function test_admin_can_view_student(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->forOrganization($this->organization)->create();
 
         $this->actingAsAdmin()
             ->getJson("/api/v1/students/{$student->id}")
@@ -153,7 +156,7 @@ class StudentTest extends TestCase
 
     public function test_admin_can_update_student(): void
     {
-        $student = Student::factory()->create(['status' => 'active']);
+        $student = Student::factory()->forOrganization($this->organization)->create(['status' => 'active']);
 
         $this->actingAsAdmin()
             ->putJson("/api/v1/students/{$student->id}", $this->studentPayload(['status' => 'inactive']))
@@ -165,7 +168,7 @@ class StudentTest extends TestCase
 
     public function test_admin_can_delete_student(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->forOrganization($this->organization)->create();
 
         $this->actingAsAdmin()
             ->deleteJson("/api/v1/students/{$student->id}")
@@ -176,7 +179,7 @@ class StudentTest extends TestCase
 
     public function test_teacher_cannot_delete_student(): void
     {
-        $student = Student::factory()->create();
+        $student = Student::factory()->forOrganization($this->organization)->create();
 
         $this->actingAsTeacher()
             ->deleteJson("/api/v1/students/{$student->id}")

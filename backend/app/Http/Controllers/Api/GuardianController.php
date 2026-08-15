@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Guardian;
+use App\Rules\BelongsToCurrentOrganization;
 use Illuminate\Validation\Rule;
 
 class GuardianController extends BaseApiController
@@ -16,7 +17,7 @@ class GuardianController extends BaseApiController
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', Rule::unique('guardians', 'email')->ignore($id)],
+            'email' => ['nullable', 'email', Rule::unique('guardians', 'email')->ignore($id)->where('organization_id', $this->currentOrganizationId())],
             'phone' => ['required', 'string', 'max:30'],
             'relationship_label' => ['required', 'string', 'max:100'],
             'address' => ['nullable', 'string', 'max:255'],

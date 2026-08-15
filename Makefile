@@ -40,6 +40,12 @@ seed:
 
 setup-db: migrate-fresh seed
 
+# Verifica que ninguna fila de negocio quedó sin organización tras el backfill.
+# Devuelve código de salida distinto de cero si encuentra huérfanas, para poder
+# usarlo como puerta en un despliegue. Ver docs/migration-multi-org.md
+verify-tenancy:
+	docker compose exec laravel php artisan tenancy:verify
+
 # ── Frontend ──────────────────────────────────────────────────────────────────
 build-frontend:
 	cd frontend && npm run build

@@ -1,11 +1,13 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { canAccessModule, moduleDefinitions, roleLabels, sidebarModules } from '../config/modules'
+import { canAccessModule, moduleDefinitions, platformModules, roleLabels, sidebarModules } from '../config/modules'
 import { useSession } from '../context/SessionContext'
 
 export function AppShell() {
   const { logout, roleNames, user } = useSession()
-  const isTeacher = roleNames.includes('teacher') && !roleNames.includes('admin')
+  const isTeacher = roleNames.includes('teacher') && !roleNames.includes('org_admin')
   const visibleModules = sidebarModules.filter((module) => canAccessModule(moduleDefinitions[module.key], roleNames))
+  // Entrées de plateforme : elles ont leurs propres pages, pas ModulePage.
+  const visiblePlatformModules = platformModules.filter((module) => module.roles.some((role) => roleNames.includes(role)))
   const profileLabel = roleNames.map((role) => roleLabels[role] ?? role).join(', ') || 'Aucun rôle'
 
   return (
@@ -27,6 +29,11 @@ export function AppShell() {
 
           <div className="nav-list">
             <NavLink className="nav-link" end to="/espace">Tableau de bord</NavLink>
+            {visiblePlatformModules.map((module) => (
+              <NavLink key={module.key} className="nav-link" to={module.path}>
+                {module.label}
+              </NavLink>
+            ))}
             {visibleModules.map((module) => (
               <NavLink key={module.key} className="nav-link" to={`/espace/module/${module.key}`}>
                 {module.label}

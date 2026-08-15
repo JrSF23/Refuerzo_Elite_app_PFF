@@ -342,7 +342,66 @@ En développement, `docker-compose.override.yml` se charge automatiquement. Il m
 
 ---
 
-## 10. État du projet
+## 10. Architecture multi-organisation (2026-08-14)
+
+Passage d'une application mono-centre à un SaaS multi-organisation, en base de données **partagée** avec un discriminateur `organization_id`. Aucun paquet de tenancy n'a été ajouté : tout repose sur des mécanismes natifs de Laravel.
+
+### Les cinq pièces
+
+**1. `OrganizationScope` — le filtre, au niveau du modèle**
+
+Un *global scope* Eloquent, pas un `where` dans les contrôleurs. La différence est essentielle : il couvre à la fois `BaseApiController` et les requêtes directes du `DashboardController`, et surtout il fait que `findOrFail` sur une ressource d'un autre centre lève `ModelNotFoundException` — le **404** exigé arrive sans écrire une ligne pour cela.
+
+Son comportement en l'absence de contexte est le point le plus important du design :
+
+| Situation | Comportement |
+|---|---|
+| Contexte présent | Filtre sur cette organisation |
+| Pas de contexte, en HTTP | Condition impossible → **résultat vide** |
+| Pas de contexte, en CLI | Ne filtre pas (migrations, seeders, commandes) |
+
+C'est la seule configuration où un oubli produit *zéro* résultat au lieu de *tous*. Si quelqu'un ajoute une route en oubliant le middleware, la panne est visible et gênante plutôt qu'invisible et catastrophique.
+
+**2. `BelongsToOrganization` — le trait**
+
+Enregistre le scope et remplit `organization_id` à la création depuis le contexte. `organization_id` n'est dans le `$fillable` d'**aucun** modèle, volontairement : la valeur vient du serveur, jamais de la requête.
+
+**3. `EnsureTenantContext` — le middleware**
+
+Résout l'organisation à partir de l'utilisateur authentifié, jamais d'un paramètre client. Trois conditions **indépendantes**, toutes requises : l'organisation existe, `deleted_at IS NULL`, et `status = active`. La résolution n'utilise jamais `withTrashed()`.
+
+Comme elle est refaite à chaque requête, suspendre ou supprimer un centre coupe l'accès à la requête suivante, sans révoquer aucun jeton.
+
+**4. `BelongsToCurrentOrganization` — la règle de validation**
+
+Le piège le moins évident de tout le design : `Rule::exists()` et `Rule::unique()` n'utilisent pas Eloquent mais le *query builder*, et **ignorent donc les global scopes**. Sans cette règle, `exists:class_groups,id` accepterait un groupe d'un autre centre — avec l'isolement en apparence fonctionnel. Elle interroge via Eloquent, donc le scope s'applique. Son message est celui de `validation.exists` : un identifiant étranger doit être indistinguable d'un identifiant inexistant.
+
+**5. Les policies**
+
+Le scope garantit l'isolement *entre* organisations ; les policies décident qui, *à l'intérieur* du centre, peut faire quoi. Neuf policies, une par entité exposée. Conséquence à connaître : `authorize()` refuse quand aucune policy n'est enregistrée, donc en ajouter une est obligatoire pour toute entité nouvelle.
+
+### Codes de réponse
+
+| Situation | Code | Pourquoi |
+|---|---|---|
+| Ressource d'une autre organisation | **404** | Ne pas révéler son existence |
+| Hors du périmètre de l'enseignant, dans son centre | **404** | Le filtrage de requête agit avant la policy |
+| Hors du rôle (paiements pour un enseignant) | **403** | Refus explicite |
+| Organisation suspendue ou supprimée | **403** | Avec un message clair |
+
+### Migration
+
+Cinq migrations enchaînées, chacune laissant le système déployable. Le `NOT NULL` est **séparé** du reste et appliqué en dernier, après le trait : l'imposer avant aurait cassé toute écriture par l'API, puisque personne ne remplissait encore la colonne.
+
+Procédure d'exécution complète : [migration-multi-org.md](migration-multi-org.md).
+
+### Deux pièges rencontrés, à connaître
+
+**SQLite reconstruit les tables.** Ajouter une clé étrangère sous SQLite crée une nouvelle table, copie, **supprime l'ancienne** et renomme. Ce `DROP` déclenche les `ON DELETE CASCADE` des tables filles. Laravel s'en protège en désactivant `PRAGMA foreign_keys` — mais ce pragma est sans effet **à l'intérieur d'une transaction**. D'où l'usage de `DatabaseMigrations` et non `RefreshDatabase` dans les tests de migration.
+
+**Les index qui portent une clé étrangère.** `students.guardian_id` et `class_sessions.class_group_id` n'ont pas d'index `_foreign` propre : l'index de performance est le seul à soutenir leur FK. Le supprimer fait échouer la migration avec l'erreur 1553 de MySQL. SQLite, lui, l'accepte sans broncher — d'où l'obligation de valider les migrations contre un moteur MySQL réel.
+
+## 11. État du projet
 
 ### Terminé
 
@@ -352,13 +411,15 @@ En développement, `docker-compose.override.yml` se charge automatiquement. Il m
 - Rate limiting sur les routes authentifiées
 - Index de performance en base de données
 - Données de démo pour les présentations
-- 34 tests automatisés
 - Fix `isAuthenticated` pendant le boot
 - Fix champs nullables en édition
 - Fix 403 sur les modules en lecture seule
-- Tableau de bord distinct par rôle (admin / professeur)
+- Tableau de bord distinct par rôle (administration / professeur)
 - Interface adaptée au rôle dans `AppShell`
 - Conteneurisation Docker complète avec Makefile
+- **Multi-organisation** : isolement au niveau du modèle, trois rôles (`super_admin`, `org_admin`, `teacher`), gestion des organisations et des comptes, périmètre de l'enseignant
+- **241 tests automatisés**, dont la batterie d'isolement A/B sur les 10 entités métier
+- Migration d'une installation existante, avec commande de vérification (`tenancy:verify`) et runbook
 
 ### Améliorations possibles
 

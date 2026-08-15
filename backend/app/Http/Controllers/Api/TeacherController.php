@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Teacher;
+use App\Rules\BelongsToCurrentOrganization;
 use Illuminate\Validation\Rule;
 
 class TeacherController extends BaseApiController
@@ -16,7 +17,7 @@ class TeacherController extends BaseApiController
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', Rule::unique('teachers', 'email')->ignore($id)],
+            'email' => ['nullable', 'email', Rule::unique('teachers', 'email')->ignore($id)->where('organization_id', $this->currentOrganizationId())],
             'phone' => ['nullable', 'string', 'max:30'],
             'specialty' => ['nullable', 'string', 'max:255'],
             'bio' => ['nullable', 'string'],
