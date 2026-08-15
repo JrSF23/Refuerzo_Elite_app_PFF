@@ -170,6 +170,10 @@ php artisan test
 
 **Métier** — `AuthTest`, `StudentTest`, `PaymentTest`
 
+Elles tournent automatiquement sur chaque `push` et chaque pull request via
+`.github/workflows/tests.yml`, avec une garde explicite sur les fichiers d'isolement : les renommer ou
+les supprimer fait échouer le workflow au lieu de laisser le critère silencieusement non tenu.
+
 La plupart utilisent `RefreshDatabase`. Les tests de migration utilisent `DatabaseMigrations` : `RefreshDatabase` enveloppe chaque test dans une transaction, et sous SQLite `PRAGMA foreign_keys` y est sans effet.
 
 ## Migrations et seeders

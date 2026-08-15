@@ -72,6 +72,21 @@ Estado de las puertas de calidad de la constitución para esta feature, comproba
 - [ ] **XI. Feedback real** — N/A, feature previa al piloto
 - [ ] **XII. Internacionalización** — parcial: los textos **nuevos** pasan por `lang/es/tenancy.php` y el idioma por defecto es el español, pero persisten dos deudas anteriores a la constitución — mensajes en francés incrustados en el código, e importes monetarios sin divisa asociada (`payments.amount`, `subjects.monthly_fee`, `enrollments.monthly_fee`)
 
-### Verificaciones pendientes de entorno
+### Verificaciones de entorno — completadas (2026-08-15)
 
-- **T010 / T109** — validación de las migraciones y del guion de punta a punta contra el **MySQL 8.0 del contenedor**. Docker Desktop no arranca en la máquina de desarrollo; las migraciones se validaron contra MariaDB 10.4 con datos preexistentes, que capturó un fallo real (índice 1553) pero no es el motor de producción.
+- **T010** — migraciones validadas contra el **MySQL 8.0.46 del contenedor**, migrando una instalación
+  mono-centro **poblada**: 104 filas asignadas, 2 fichas de profesor vinculadas, rol renombrado, 0
+  huérfanas, 11 claves foráneas, 5 únicos compuestos y 20 índices. Coincide con lo obtenido en SQLite y
+  en MariaDB 10.4, donde el índice que respalda una FK ya había capturado un fallo real (error 1553).
+- **T109** — guion de punta a punta ejecutado contra el stack levantado con dos organizaciones pobladas:
+  **53/53 comprobaciones sin fallos**. SC-003 medido en **2 segundos** frente a los 10 minutos de
+  objetivo.
+- **SC-008** — cubierto por `.github/workflows/tests.yml`: la suite y la batería de aislamiento se
+  ejecutan en cada `push` y cada `pull_request`, de forma desatendida. El workflow incluye una guarda
+  explícita sobre los siete ficheros de aislamiento, para que renombrarlos o borrarlos no deje el
+  criterio incumplido en silencio.
+
+### Pendiente
+
+- **Principio VI** — las tablas de las tres pantallas nuevas necesitan representación móvil propia
+  (T107). Desviación aceptada por escrito en el Complexity Tracking de plan.md.
