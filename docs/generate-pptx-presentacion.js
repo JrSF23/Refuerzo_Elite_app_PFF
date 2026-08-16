@@ -1,3 +1,4 @@
+const path = require("path");
 const pptxgen = require("pptxgenjs");
 
 // ── Couleurs de la marque (sans prefixe #) ────────────────────────
@@ -14,7 +15,9 @@ const C = {
   mint:      "A7F3D0",
 };
 
-const BRAND = "C:/xampp/htdocs/Refuerzo_Elite-Project/refuerzo-elite-v2/frontend/public/brand";
+// Relativa a este fichero: el script se versiona, asi que no puede depender
+// de donde este clonado el repositorio.
+const BRAND = path.join(__dirname, "..", "frontend", "public", "brand");
 const makeShadow = () => ({ type: "outer", color: "000000", blur: 10, offset: 3, angle: 90, opacity: 0.09 });
 
 const pres = new pptxgen();
