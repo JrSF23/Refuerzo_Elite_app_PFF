@@ -1208,3 +1208,25 @@ tbody tr:hover { background: rgba(34, 197, 94, 0.04); }
      este bloque viene a eliminar. */
   .row-actions { flex-wrap: wrap; }
 }
+
+/* ─── Móvil estrecho: el nav público en dos filas ────────────────────────────
+   Los cinco enlaces llevan `white-space: nowrap`, así que el nav no puede
+   encogerse por debajo de su contenido (unos 386 px). Por debajo de este ancho
+   ya no cabe en el header y arrastraba a toda la página a desplazamiento
+   horizontal. Aquí pasa a ocupar el ancho completo y a repartirse en dos filas. */
+@media (max-width: 480px) {
+  .public-header { gap: 12px; }
+
+  .public-nav {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 2px;
+  }
+
+  /* La píldora se posiciona con `offsetLeft` y solo se desplaza en horizontal:
+     con los enlaces en dos filas señalaría el sitio equivocado. Se retira —el
+     enlace activo ya se distingue por color y grosor—. `display` es además lo
+     único que la oculta, porque el efecto de JS fija `opacity` en línea. */
+  .nav-pill { display: none; }
+}
