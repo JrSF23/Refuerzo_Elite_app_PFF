@@ -1,3 +1,8 @@
 node_modules/
 package-lock.json
 rapport-refuerzo-elite-v2.docx
+
+# Presentación: las salidas se regeneran con generate-pptx-presentacion.js,
+# que sí se versiona — igual que generate-rapport.js.
+refuerzo-elite-presentacion.pptx
+refuerzo-elite-presentacion-fr.pptx
