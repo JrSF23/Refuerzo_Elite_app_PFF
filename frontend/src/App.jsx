@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { RequireAuth } from './components/RequireAuth'
 import { SessionProvider } from './context/SessionContext'
@@ -14,19 +14,47 @@ import { PublicHomePage } from './pages/PublicHomePage'
 import { ServicesPage } from './pages/ServicesPage'
 import { UsersPage } from './pages/UsersPage'
 
+// Las dos rutas antiguas con parámetro necesitan leerlo para reconstruir el destino.
+function LegacyModuleRedirect() {
+  const { moduleKey } = useParams()
+  return <Navigate replace to={`/espacio/modulo/${moduleKey}`} />
+}
+
+function LegacyOrganizationUsersRedirect() {
+  const { organizationId } = useParams()
+  return <Navigate replace to={`/espacio/organizaciones/${organizationId}/cuentas`} />
+}
+
 function App() {
   return (
     <SessionProvider>
       <Routes>
         <Route path="/" element={<PublicHomePage />} />
-        <Route path="/centre" element={<CentrePage />} />
-        <Route path="/services" element={<ServicesPage />} />
-        <Route path="/methode" element={<MethodPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/connexion" element={<LoginPage />} />
-        <Route path="/login" element={<Navigate replace to="/connexion" />} />
+        <Route path="/centro" element={<CentrePage />} />
+        <Route path="/servicios" element={<ServicesPage />} />
+        <Route path="/metodo" element={<MethodPage />} />
+        <Route path="/contacto" element={<ContactPage />} />
+        <Route path="/acceso" element={<LoginPage />} />
+
+        {/* Rutas antiguas en francés: el centro puede tener marcadores guardados,
+            así que se mantienen como redirecciones permanentes al equivalente español. */}
+        <Route path="/login" element={<Navigate replace to="/acceso" />} />
+        <Route path="/connexion" element={<Navigate replace to="/acceso" />} />
+        <Route path="/centre" element={<Navigate replace to="/centro" />} />
+        <Route path="/services" element={<Navigate replace to="/servicios" />} />
+        <Route path="/methode" element={<Navigate replace to="/metodo" />} />
+        <Route path="/contact" element={<Navigate replace to="/contacto" />} />
+        <Route path="/espace" element={<Navigate replace to="/espacio" />} />
+        <Route path="/espace/module/:moduleKey" element={<LegacyModuleRedirect />} />
+        <Route path="/espace/comptes" element={<Navigate replace to="/espacio/cuentas" />} />
+        <Route path="/espace/organisations" element={<Navigate replace to="/espacio/organizaciones" />} />
         <Route
-          path="/espace"
+          path="/espace/organisations/:organizationId/comptes"
+          element={<LegacyOrganizationUsersRedirect />}
+        />
+
+        <Route
+          path="/espacio"
           element={(
             <RequireAuth allowedRoles={['super_admin', 'org_admin', 'teacher']}>
               <AppShell />
@@ -34,9 +62,9 @@ function App() {
           )}
         >
           <Route index element={<DashboardPage />} />
-          <Route path="module/:moduleKey" element={<ModulePage />} />
+          <Route path="modulo/:moduleKey" element={<ModulePage />} />
           <Route
-            path="comptes"
+            path="cuentas"
             element={(
               <RequireAuth allowedRoles={['org_admin']}>
                 <UsersPage />
@@ -44,7 +72,7 @@ function App() {
             )}
           />
           <Route
-            path="organisations"
+            path="organizaciones"
             element={(
               <RequireAuth allowedRoles={['super_admin']}>
                 <OrganizationsPage />
@@ -52,7 +80,7 @@ function App() {
             )}
           />
           <Route
-            path="organisations/:organizationId/comptes"
+            path="organizaciones/:organizationId/cuentas"
             element={(
               <RequireAuth allowedRoles={['super_admin']}>
                 <OrganizationUsersPage />

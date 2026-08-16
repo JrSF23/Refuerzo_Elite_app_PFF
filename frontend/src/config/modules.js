@@ -1,24 +1,24 @@
 const statusOptions = [
-  { value: 'active', label: 'Actif' },
-  { value: 'inactive', label: 'Inactif' },
+  { value: 'active', label: 'Activo' },
+  { value: 'inactive', label: 'Inactivo' },
 ]
 
 const attendanceOptions = [
-  { value: 'present', label: 'Présent' },
-  { value: 'absent', label: 'Absent' },
-  { value: 'late', label: 'En retard' },
+  { value: 'present', label: 'Presente' },
+  { value: 'absent', label: 'Ausente' },
+  { value: 'late', label: 'Con retraso' },
 ]
 
 const paymentStatusOptions = [
-  { value: 'paid', label: 'Payé' },
-  { value: 'pending', label: 'En attente' },
-  { value: 'cancelled', label: 'Annulé' },
+  { value: 'paid', label: 'Pagado' },
+  { value: 'pending', label: 'Pendiente' },
+  { value: 'cancelled', label: 'Anulado' },
 ]
 
 const paymentMethodOptions = [
-  { value: 'cash', label: 'Espèces' },
-  { value: 'card', label: 'Carte' },
-  { value: 'transfer', label: 'Virement' },
+  { value: 'cash', label: 'Efectivo' },
+  { value: 'card', label: 'Tarjeta' },
+  { value: 'transfer', label: 'Transferencia' },
 ]
 
 const orgAdminOnlyPermissions = {
@@ -42,229 +42,229 @@ const staffCrudPermissions = {
   delete: ['org_admin', 'teacher'],
 }
 
-// INVARIANT — l'enseignant n'accède à aucune information financière (FR-016).
+// INVARIANTE — el profesor no accede a ninguna información económica (FR-016).
 //
-// Les quatre modules qu'il voit (élèves, groupes, séances, présences) ne portent
-// aucun champ monétaire, et les trois qui en portent (matières, inscriptions,
-// paiements) lui sont fermés. L'API refuse déjà tout cela ; ces permissions font
-// que l'interface ne le lui propose même pas.
+// Los cuatro módulos que ve (alumnos, grupos, sesiones, asistencia) no llevan
+// ningún campo monetario, y los tres que sí (asignaturas, matrículas, pagos) le
+// están cerrados. La API ya lo deniega; estos permisos hacen que la interfaz ni
+// siquiera se lo ofrezca.
 //
-// Avant d'ajouter un champ `monthly_fee`, `amount` ou équivalent à un module en
-// `staffCrudPermissions` ou `orgAdminWriteTeacherReadPermissions`, il faut donc
-// changer d'abord ce qu'autorise le serveur.
+// Antes de añadir un campo `monthly_fee`, `amount` o equivalente a un módulo con
+// `staffCrudPermissions` u `orgAdminWriteTeacherReadPermissions`, hay que cambiar
+// primero lo que autoriza el servidor.
 
 export const roleLabels = {
-  super_admin: 'Plateforme',
-  org_admin: 'Administration',
-  teacher: 'Enseignant',
-  student: 'Élève',
+  super_admin: 'Plataforma',
+  org_admin: 'Administración',
+  teacher: 'Profesor',
+  student: 'Alumno',
 }
 
 export const staffRoles = ['super_admin', 'org_admin', 'teacher']
 
-// Le super administrateur ne gère ni élèves ni paiements : son périmètre se limite
-// aux organisations et aux comptes. Ces entrées ne passent donc pas par
-// ModulePage, elles ont leurs propres pages.
+// El super administrador no gestiona ni alumnos ni pagos: su alcance se limita a
+// las organizaciones y las cuentas. Estas entradas no pasan por ModulePage, tienen
+// sus propias páginas.
 export const platformModules = [
-  { key: 'organizations', label: 'Organisations', path: '/espace/organisations', roles: ['super_admin'] },
-  { key: 'users', label: 'Comptes', path: '/espace/comptes', roles: ['org_admin'] },
+  { key: 'organizations', label: 'Organizaciones', path: '/espacio/organizaciones', roles: ['super_admin'] },
+  { key: 'users', label: 'Cuentas', path: '/espacio/cuentas', roles: ['org_admin'] },
 ]
 
 export const moduleDefinitions = {
   students: {
-    title: 'Élèves',
+    title: 'Alumnos',
     endpoint: 'students',
     permissions: orgAdminWriteTeacherReadPermissions,
     columns: [
-      { key: 'full_name', label: 'Élève' },
-      { key: 'school_name', label: 'Établissement' },
-      { key: 'school_level', label: 'Niveau' },
-      { key: 'status', label: 'Statut' },
+      { key: 'full_name', label: 'Alumno' },
+      { key: 'school_name', label: 'Centro escolar' },
+      { key: 'school_level', label: 'Nivel' },
+      { key: 'status', label: 'Estado' },
     ],
     fields: [
-      { name: 'guardian_id', label: 'Responsable', type: 'select', source: 'guardians', optionLabel: 'full_name', optionValue: 'id' },
-      { name: 'first_name', label: 'Prénom', type: 'text', required: true },
-      { name: 'last_name', label: 'Nom', type: 'text', required: true },
-      { name: 'email', label: 'E-mail', type: 'email' },
-      { name: 'phone', label: 'Téléphone', type: 'text' },
-      { name: 'date_of_birth', label: 'Date de naissance', type: 'date' },
-      { name: 'school_name', label: 'Établissement', type: 'text' },
-      { name: 'school_level', label: 'Niveau scolaire', type: 'text' },
-      { name: 'status', label: 'Statut', type: 'select', options: statusOptions },
-      { name: 'address', label: 'Adresse', type: 'text' },
-      { name: 'notes', label: 'Notes', type: 'textarea' },
+      { name: 'guardian_id', label: 'Tutor', type: 'select', source: 'guardians', optionLabel: 'full_name', optionValue: 'id' },
+      { name: 'first_name', label: 'Nombre', type: 'text', required: true },
+      { name: 'last_name', label: 'Apellidos', type: 'text', required: true },
+      { name: 'email', label: 'Correo', type: 'email' },
+      { name: 'phone', label: 'Teléfono', type: 'text' },
+      { name: 'date_of_birth', label: 'Fecha de nacimiento', type: 'date' },
+      { name: 'school_name', label: 'Centro escolar', type: 'text' },
+      { name: 'school_level', label: 'Curso', type: 'text' },
+      { name: 'status', label: 'Estado', type: 'select', options: statusOptions },
+      { name: 'address', label: 'Dirección', type: 'text' },
+      { name: 'notes', label: 'Observaciones', type: 'textarea' },
     ],
   },
   guardians: {
-    title: 'Responsables',
+    title: 'Tutores',
     endpoint: 'guardians',
     permissions: orgAdminOnlyPermissions,
     columns: [
-      { key: 'full_name', label: 'Responsable' },
-      { key: 'relationship_label', label: 'Lien' },
-      { key: 'phone', label: 'Téléphone' },
-      { key: 'email', label: 'E-mail' },
+      { key: 'full_name', label: 'Tutor' },
+      { key: 'relationship_label', label: 'Parentesco' },
+      { key: 'phone', label: 'Teléfono' },
+      { key: 'email', label: 'Correo' },
     ],
     fields: [
-      { name: 'first_name', label: 'Prénom', type: 'text', required: true },
-      { name: 'last_name', label: 'Nom', type: 'text', required: true },
-      { name: 'email', label: 'E-mail', type: 'email' },
-      { name: 'phone', label: 'Téléphone', type: 'text', required: true },
-      { name: 'relationship_label', label: "Lien avec l'élève", type: 'text', required: true },
-      { name: 'address', label: 'Adresse', type: 'text' },
-      { name: 'notes', label: 'Notes', type: 'textarea' },
+      { name: 'first_name', label: 'Nombre', type: 'text', required: true },
+      { name: 'last_name', label: 'Apellidos', type: 'text', required: true },
+      { name: 'email', label: 'Correo', type: 'email' },
+      { name: 'phone', label: 'Teléfono', type: 'text', required: true },
+      { name: 'relationship_label', label: 'Parentesco con el alumno', type: 'text', required: true },
+      { name: 'address', label: 'Dirección', type: 'text' },
+      { name: 'notes', label: 'Observaciones', type: 'textarea' },
     ],
   },
   teachers: {
-    title: 'Enseignants',
+    title: 'Profesores',
     endpoint: 'teachers',
     permissions: orgAdminOnlyPermissions,
     columns: [
-      { key: 'full_name', label: 'Enseignant' },
-      { key: 'specialty', label: 'Spécialité' },
-      { key: 'phone', label: 'Téléphone' },
-      { key: 'email', label: 'E-mail' },
+      { key: 'full_name', label: 'Profesor' },
+      { key: 'specialty', label: 'Especialidad' },
+      { key: 'phone', label: 'Teléfono' },
+      { key: 'email', label: 'Correo' },
     ],
     fields: [
-      { name: 'first_name', label: 'Prénom', type: 'text', required: true },
-      { name: 'last_name', label: 'Nom', type: 'text', required: true },
-      { name: 'email', label: 'E-mail', type: 'email' },
-      { name: 'phone', label: 'Téléphone', type: 'text' },
-      { name: 'specialty', label: 'Spécialité', type: 'text' },
-      { name: 'bio', label: 'Présentation', type: 'textarea' },
+      { name: 'first_name', label: 'Nombre', type: 'text', required: true },
+      { name: 'last_name', label: 'Apellidos', type: 'text', required: true },
+      { name: 'email', label: 'Correo', type: 'email' },
+      { name: 'phone', label: 'Teléfono', type: 'text' },
+      { name: 'specialty', label: 'Especialidad', type: 'text' },
+      { name: 'bio', label: 'Presentación', type: 'textarea' },
     ],
   },
   subjects: {
-    title: 'Matières',
+    title: 'Asignaturas',
     endpoint: 'subjects',
     permissions: orgAdminOnlyPermissions,
     columns: [
-      { key: 'name', label: 'Matière' },
-      { key: 'code', label: 'Code' },
-      { key: 'level', label: 'Niveau' },
-      { key: 'monthly_fee', label: 'Tarif mensuel' },
+      { key: 'name', label: 'Asignatura' },
+      { key: 'code', label: 'Código' },
+      { key: 'level', label: 'Nivel' },
+      { key: 'monthly_fee', label: 'Tarifa mensual' },
     ],
     fields: [
-      { name: 'name', label: 'Matière', type: 'text', required: true },
-      { name: 'code', label: 'Code', type: 'text', required: true },
-      { name: 'level', label: 'Niveau', type: 'text' },
-      { name: 'monthly_fee', label: 'Tarif mensuel', type: 'number', required: true },
-      { name: 'description', label: 'Description', type: 'textarea' },
+      { name: 'name', label: 'Asignatura', type: 'text', required: true },
+      { name: 'code', label: 'Código', type: 'text', required: true },
+      { name: 'level', label: 'Nivel', type: 'text' },
+      { name: 'monthly_fee', label: 'Tarifa mensual', type: 'number', required: true },
+      { name: 'description', label: 'Descripción', type: 'textarea' },
     ],
   },
   classGroups: {
-    title: 'Groupes',
+    title: 'Grupos',
     endpoint: 'class-groups',
     permissions: orgAdminWriteTeacherReadPermissions,
     columns: [
-      { key: 'name', label: 'Groupe' },
-      { key: 'code', label: 'Code' },
-      { key: 'academic_year', label: 'Année' },
-      { key: 'status', label: 'Statut' },
+      { key: 'name', label: 'Grupo' },
+      { key: 'code', label: 'Código' },
+      { key: 'academic_year', label: 'Curso' },
+      { key: 'status', label: 'Estado' },
     ],
     fields: [
-      { name: 'subject_id', label: 'Matière', type: 'select', source: 'subjects', optionLabel: 'name', optionValue: 'id', required: true },
-      { name: 'teacher_id', label: 'Enseignant', type: 'select', source: 'teachers', optionLabel: 'full_name', optionValue: 'id' },
-      { name: 'name', label: 'Nom du groupe', type: 'text', required: true },
-      { name: 'code', label: 'Code', type: 'text', required: true },
-      { name: 'academic_year', label: 'Année académique', type: 'text', required: true },
-      { name: 'schedule', label: 'Horaire', type: 'text' },
-      { name: 'capacity', label: 'Capacité', type: 'number', required: true },
-      { name: 'start_date', label: 'Début', type: 'date' },
+      { name: 'subject_id', label: 'Asignatura', type: 'select', source: 'subjects', optionLabel: 'name', optionValue: 'id', required: true },
+      { name: 'teacher_id', label: 'Profesor', type: 'select', source: 'teachers', optionLabel: 'full_name', optionValue: 'id' },
+      { name: 'name', label: 'Nombre del grupo', type: 'text', required: true },
+      { name: 'code', label: 'Código', type: 'text', required: true },
+      { name: 'academic_year', label: 'Curso académico', type: 'text', required: true },
+      { name: 'schedule', label: 'Horario', type: 'text' },
+      { name: 'capacity', label: 'Capacidad', type: 'number', required: true },
+      { name: 'start_date', label: 'Inicio', type: 'date' },
       { name: 'end_date', label: 'Fin', type: 'date' },
-      { name: 'status', label: 'Statut', type: 'select', options: statusOptions },
+      { name: 'status', label: 'Estado', type: 'select', options: statusOptions },
     ],
   },
   enrollments: {
-    title: 'Inscriptions',
+    title: 'Matrículas',
     endpoint: 'enrollments',
     permissions: orgAdminOnlyPermissions,
     columns: [
-      { key: 'student.full_name', label: 'Élève' },
-      { key: 'class_group.name', label: 'Groupe' },
-      { key: 'status', label: 'Statut' },
-      { key: 'monthly_fee', label: 'Tarif' },
+      { key: 'student.full_name', label: 'Alumno' },
+      { key: 'class_group.name', label: 'Grupo' },
+      { key: 'status', label: 'Estado' },
+      { key: 'monthly_fee', label: 'Tarifa' },
     ],
     fields: [
-      { name: 'student_id', label: 'Élève', type: 'select', source: 'students', optionLabel: 'full_name', optionValue: 'id', required: true },
-      { name: 'class_group_id', label: 'Groupe', type: 'select', source: 'class-groups', optionLabel: 'name', optionValue: 'id', required: true },
-      { name: 'enrolled_at', label: "Date d'inscription", type: 'date', required: true },
-      { name: 'monthly_fee', label: 'Tarif mensuel', type: 'number', required: true },
-      { name: 'status', label: 'Statut', type: 'select', options: statusOptions, required: true },
-      { name: 'notes', label: 'Notes', type: 'textarea' },
+      { name: 'student_id', label: 'Alumno', type: 'select', source: 'students', optionLabel: 'full_name', optionValue: 'id', required: true },
+      { name: 'class_group_id', label: 'Grupo', type: 'select', source: 'class-groups', optionLabel: 'name', optionValue: 'id', required: true },
+      { name: 'enrolled_at', label: 'Fecha de matrícula', type: 'date', required: true },
+      { name: 'monthly_fee', label: 'Tarifa mensual', type: 'number', required: true },
+      { name: 'status', label: 'Estado', type: 'select', options: statusOptions, required: true },
+      { name: 'notes', label: 'Observaciones', type: 'textarea' },
     ],
   },
   classSessions: {
-    title: 'Séances',
+    title: 'Sesiones',
     endpoint: 'class-sessions',
     permissions: staffCrudPermissions,
     columns: [
-      { key: 'title', label: 'Séance' },
-      { key: 'class_group.name', label: 'Groupe' },
-      { key: 'session_date', label: 'Date' },
-      { key: 'room', label: 'Salle' },
+      { key: 'title', label: 'Sesión' },
+      { key: 'class_group.name', label: 'Grupo' },
+      { key: 'session_date', label: 'Fecha' },
+      { key: 'room', label: 'Aula' },
     ],
     fields: [
-      { name: 'class_group_id', label: 'Groupe', type: 'select', source: 'class-groups', optionLabel: 'name', optionValue: 'id', required: true },
-      { name: 'title', label: 'Titre', type: 'text', required: true },
-      { name: 'session_date', label: 'Date', type: 'date', required: true },
-      { name: 'starts_at', label: 'Heure de début', type: 'time' },
-      { name: 'ends_at', label: 'Heure de fin', type: 'time' },
-      { name: 'room', label: 'Salle', type: 'text' },
-      { name: 'notes', label: 'Notes', type: 'textarea' },
+      { name: 'class_group_id', label: 'Grupo', type: 'select', source: 'class-groups', optionLabel: 'name', optionValue: 'id', required: true },
+      { name: 'title', label: 'Título', type: 'text', required: true },
+      { name: 'session_date', label: 'Fecha', type: 'date', required: true },
+      { name: 'starts_at', label: 'Hora de inicio', type: 'time' },
+      { name: 'ends_at', label: 'Hora de fin', type: 'time' },
+      { name: 'room', label: 'Aula', type: 'text' },
+      { name: 'notes', label: 'Observaciones', type: 'textarea' },
     ],
   },
   attendances: {
-    title: 'Présences',
+    title: 'Asistencia',
     endpoint: 'attendances',
     permissions: staffCrudPermissions,
     columns: [
-      { key: 'student.full_name', label: 'Élève' },
-      { key: 'class_session.title', label: 'Séance' },
-      { key: 'status', label: 'Statut' },
+      { key: 'student.full_name', label: 'Alumno' },
+      { key: 'class_session.title', label: 'Sesión' },
+      { key: 'status', label: 'Estado' },
     ],
     fields: [
-      { name: 'class_session_id', label: 'Séance', type: 'select', source: 'class-sessions', optionLabel: 'title', optionValue: 'id', required: true },
-      { name: 'student_id', label: 'Élève', type: 'select', source: 'students', optionLabel: 'full_name', optionValue: 'id', required: true },
-      { name: 'status', label: 'Statut', type: 'select', options: attendanceOptions, required: true },
-      { name: 'comment', label: 'Commentaire', type: 'textarea' },
+      { name: 'class_session_id', label: 'Sesión', type: 'select', source: 'class-sessions', optionLabel: 'title', optionValue: 'id', required: true },
+      { name: 'student_id', label: 'Alumno', type: 'select', source: 'students', optionLabel: 'full_name', optionValue: 'id', required: true },
+      { name: 'status', label: 'Estado', type: 'select', options: attendanceOptions, required: true },
+      { name: 'comment', label: 'Comentario', type: 'textarea' },
     ],
   },
   payments: {
-    title: 'Paiements',
+    title: 'Pagos',
     endpoint: 'payments',
     permissions: orgAdminOnlyPermissions,
     columns: [
-      { key: 'student.full_name', label: 'Élève' },
-      { key: 'period_label', label: 'Période' },
-      { key: 'amount', label: 'Montant' },
-      { key: 'status', label: 'Statut' },
+      { key: 'student.full_name', label: 'Alumno' },
+      { key: 'period_label', label: 'Periodo' },
+      { key: 'amount', label: 'Importe' },
+      { key: 'status', label: 'Estado' },
     ],
     fields: [
-      { name: 'student_id', label: 'Élève', type: 'select', source: 'students', optionLabel: 'full_name', optionValue: 'id', required: true },
-      { name: 'guardian_id', label: 'Responsable', type: 'select', source: 'guardians', optionLabel: 'full_name', optionValue: 'id' },
-      { name: 'enrollment_id', label: 'Inscription', type: 'select', source: 'enrollments', optionLabel: 'display_label', optionValue: 'id' },
-      { name: 'amount', label: 'Montant', type: 'number', required: true },
-      { name: 'period_label', label: 'Période', type: 'text', required: true },
-      { name: 'paid_at', label: 'Date de paiement', type: 'date', required: true },
-      { name: 'payment_method', label: 'Mode de paiement', type: 'select', options: paymentMethodOptions, required: true },
-      { name: 'status', label: 'Statut', type: 'select', options: paymentStatusOptions, required: true },
-      { name: 'reference', label: 'Référence', type: 'text' },
-      { name: 'notes', label: 'Notes', type: 'textarea' },
+      { name: 'student_id', label: 'Alumno', type: 'select', source: 'students', optionLabel: 'full_name', optionValue: 'id', required: true },
+      { name: 'guardian_id', label: 'Tutor', type: 'select', source: 'guardians', optionLabel: 'full_name', optionValue: 'id' },
+      { name: 'enrollment_id', label: 'Matrícula', type: 'select', source: 'enrollments', optionLabel: 'display_label', optionValue: 'id' },
+      { name: 'amount', label: 'Importe', type: 'number', required: true },
+      { name: 'period_label', label: 'Periodo', type: 'text', required: true },
+      { name: 'paid_at', label: 'Fecha de pago', type: 'date', required: true },
+      { name: 'payment_method', label: 'Forma de pago', type: 'select', options: paymentMethodOptions, required: true },
+      { name: 'status', label: 'Estado', type: 'select', options: paymentStatusOptions, required: true },
+      { name: 'reference', label: 'Referencia', type: 'text' },
+      { name: 'notes', label: 'Observaciones', type: 'textarea' },
     ],
   },
 }
 
 export const sidebarModules = [
-  { key: 'students', label: 'Élèves' },
-  { key: 'guardians', label: 'Responsables' },
-  { key: 'teachers', label: 'Enseignants' },
-  { key: 'subjects', label: 'Matières' },
-  { key: 'classGroups', label: 'Groupes' },
-  { key: 'enrollments', label: 'Inscriptions' },
-  { key: 'classSessions', label: 'Séances' },
-  { key: 'attendances', label: 'Présences' },
-  { key: 'payments', label: 'Paiements' },
+  { key: 'students', label: 'Alumnos' },
+  { key: 'guardians', label: 'Tutores' },
+  { key: 'teachers', label: 'Profesores' },
+  { key: 'subjects', label: 'Asignaturas' },
+  { key: 'classGroups', label: 'Grupos' },
+  { key: 'enrollments', label: 'Matrículas' },
+  { key: 'classSessions', label: 'Sesiones' },
+  { key: 'attendances', label: 'Asistencia' },
+  { key: 'payments', label: 'Pagos' },
 ]
 
 export function getRoleNames(user) {

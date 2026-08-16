@@ -6,33 +6,33 @@ export function PublicHomePage() {
   return (
     <PublicLayout>
       <main>
-        <section className="public-hero" id="accueil">
+        <section className="public-hero" id="inicio">
           <div className="public-hero-centered">
             <div className="hero-stack">
-              <div className="hero-chip">Accompagnement scolaire personnalise</div>
-              <h1 className="hero-title">Une experience plus claire pour decouvrir Refuerzo Elite.</h1>
+              <div className="hero-chip">Apoyo escolar personalizado</div>
+              <h1 className="hero-title">Una forma más clara de conocer Refuerzo Elite.</h1>
               <p className="hero-copy">
-                Le centre accompagne les eleves dans un cadre rassurant, structurant et ambitieux, avec une attention
-                particuliere a la regularite, a la methode et aux progres observables.
+                El centro acompaña a los alumnos en un entorno que da seguridad, ordena el trabajo y mantiene la
+                exigencia, con especial atención a la constancia, al método y a los avances que se pueden observar.
               </p>
 
               <div className="public-actions">
-                <Link className="primary-btn link-btn" to="/contact">Demander des informations</Link>
-                <Link className="secondary-btn link-btn" to="/services">Explorer les services</Link>
+                <Link className="primary-btn link-btn" to="/contacto">Solicitar información</Link>
+                <Link className="secondary-btn link-btn" to="/servicios">Ver los servicios</Link>
               </div>
 
               <div className="metrics-grid">
                 <article className="metric-card">
-                  <div className="section-label">Public</div>
-                  <strong>Primaire, college et lycee</strong>
+                  <div className="section-label">A quién va dirigido</div>
+                  <strong>Primaria, secundaria y bachillerato</strong>
                 </article>
                 <article className="metric-card">
-                  <div className="section-label">Approche</div>
-                  <strong>Suivi, methode et progression durable</strong>
+                  <div className="section-label">Enfoque</div>
+                  <strong>Seguimiento, método y progreso duradero</strong>
                 </article>
                 <article className="metric-card">
-                  <div className="section-label">Relation</div>
-                  <strong>Dialogue clair entre eleves, centre et familles</strong>
+                  <div className="section-label">Relación</div>
+                  <strong>Diálogo claro entre alumnos, centro y familias</strong>
                 </article>
               </div>
             </div>
@@ -42,8 +42,8 @@ export function PublicHomePage() {
         <section className="public-section reveal">
           <div className="section-head public-section-head">
             <div>
-              <div className="section-label">Explorer</div>
-              <h2>Trois facons de comprendre le projet pedagogique du centre.</h2>
+              <div className="section-label">Descubrir</div>
+              <h2>Tres formas de entender el proyecto pedagógico del centro.</h2>
             </div>
           </div>
 
@@ -56,7 +56,7 @@ export function PublicHomePage() {
                   <h3>{card.title}</h3>
                   <p>{card.text}</p>
                   <Link className="ghost-btn link-btn" to={card.to}>
-                    En savoir plus
+                    Saber más
                   </Link>
                 </div>
               </article>
@@ -64,15 +64,15 @@ export function PublicHomePage() {
           </div>
         </section>
 
-        <section className="public-section contact-section reveal" id="contact">
+        <section className="public-section contact-section reveal" id="contacto">
           <div className="section-head public-section-head">
             <div>
-              <div className="section-label">Contact</div>
-              <h2>Parlons du besoin scolaire de votre enfant.</h2>
+              <div className="section-label">Contacto</div>
+              <h2>Hablemos de lo que su hijo necesita.</h2>
             </div>
             <p className="hint">
-              Refuerzo Elite reste disponible pour orienter les familles, presenter ses modalites de suivi et construire
-              un accompagnement adapte.
+              Refuerzo Elite está a disposición de las familias para orientarlas, explicar cómo funciona el seguimiento
+              y diseñar un acompañamiento adaptado.
             </p>
           </div>
 
@@ -87,10 +87,10 @@ export function PublicHomePage() {
 
           <div className="public-actions">
             <a className="primary-btn link-btn" href="https://wa.me/240222862579" rel="noreferrer" target="_blank">
-              Ecrire sur WhatsApp
+              Escribir por WhatsApp
             </a>
             <a className="secondary-btn link-btn" href="mailto:refuerzoelite@gmail.com">
-              Envoyer un e-mail
+              Enviar un correo
             </a>
           </div>
         </section>

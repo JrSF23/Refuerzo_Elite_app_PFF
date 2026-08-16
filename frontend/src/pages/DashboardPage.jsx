@@ -14,17 +14,17 @@ function formatTime(value) {
   return value.slice(0, 5)
 }
 
-const attendanceLabels = { present: 'Présent', absent: 'Absent', late: 'En retard' }
+const attendanceLabels = { present: 'Presente', absent: 'Ausente', late: 'Con retraso' }
 const attendanceBadge = { present: 'badge-ok', absent: 'badge-danger', late: 'badge-warn' }
 
 // ── Admin dashboard ──────────────────────────────────────────────────────────
 
 const adminStatLabels = {
-  students: 'Élèves', teachers: 'Enseignants', groups: 'Groupes',
-  attendances: 'Présences', payments: 'Paiements',
+  students: 'Alumnos', teachers: 'Profesores', groups: 'Grupos',
+  attendances: 'Asistencia', payments: 'Pagos',
 }
 
-const paymentStatusLabels = { paid: 'Payé', pending: 'En attente', cancelled: 'Annulé' }
+const paymentStatusLabels = { paid: 'Pagado', pending: 'Pendiente', cancelled: 'Anulado' }
 const paymentStatusBadge = { paid: 'badge-ok', pending: 'badge-warn', cancelled: 'badge-danger' }
 
 function AdminDashboard({ data, user, roleNames }) {
@@ -33,14 +33,14 @@ function AdminDashboard({ data, user, roleNames }) {
       <section className="dashboard-hero">
         <div className="hero-grid">
           <div className="hero-stack">
-            <div className="hero-chip">Pilotage du centre</div>
-            <h1 className="hero-title">Une administration claire et maîtrisable.</h1>
+            <div className="hero-chip">Gestión del centro</div>
+            <h1 className="hero-title">Una administración clara y manejable.</h1>
             <p className="hero-copy">
-              Vue d'ensemble du centre : élèves, groupes, séances, présences et paiements.
+              Visión general del centro: alumnos, grupos, sesiones, asistencia y pagos.
             </p>
           </div>
           <div className="hero-sidecard">
-            <div className="section-label">Profil connecté</div>
+            <div className="section-label">Perfil conectado</div>
             <p>{user?.name}</p>
             <p className="hint">{roleNames.map((r) => roleLabels[r] ?? r).join(', ')}</p>
           </div>
@@ -60,17 +60,17 @@ function AdminDashboard({ data, user, roleNames }) {
         <article className="module-card">
           <div className="section-head">
             <div>
-              <div className="section-label">Élèves récents</div>
-              <h2>Dernières inscriptions</h2>
+              <div className="section-label">Alumnos recientes</div>
+              <h2>Últimas altas</h2>
             </div>
-            <Link className="ghost-btn link-btn" to="/espace/module/students">Voir tout</Link>
+            <Link className="ghost-btn link-btn" to="/espacio/modulo/students">Ver todo</Link>
           </div>
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Élève</th><th>Responsable</th><th>Niveau</th></tr></thead>
+              <thead><tr><th>Alumno</th><th>Tutor</th><th>Nivel</th></tr></thead>
               <tbody>
                 {data.recentStudents.length === 0
-                  ? <tr><td className="empty-state" colSpan={3}>Aucun enregistrement récent.</td></tr>
+                  ? <tr><td className="empty-state" colSpan={3}>No hay registros recientes.</td></tr>
                   : data.recentStudents.map((s) => (
                     <tr key={s.id}>
                       <td>{s.full_name}</td>
@@ -86,17 +86,17 @@ function AdminDashboard({ data, user, roleNames }) {
         <article className="module-card">
           <div className="section-head">
             <div>
-              <div className="section-label">Séances récentes</div>
-              <h2>Planning du centre</h2>
+              <div className="section-label">Sesiones recientes</div>
+              <h2>Agenda del centro</h2>
             </div>
-            <Link className="ghost-btn link-btn" to="/espace/module/classSessions">Voir tout</Link>
+            <Link className="ghost-btn link-btn" to="/espacio/modulo/classSessions">Ver todo</Link>
           </div>
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Séance</th><th>Groupe</th><th>Date</th></tr></thead>
+              <thead><tr><th>Sesión</th><th>Grupo</th><th>Fecha</th></tr></thead>
               <tbody>
                 {data.recentSessions.length === 0
-                  ? <tr><td className="empty-state" colSpan={3}>Aucune séance récente.</td></tr>
+                  ? <tr><td className="empty-state" colSpan={3}>No hay sesiones recientes.</td></tr>
                   : data.recentSessions.map((s) => (
                     <tr key={s.id}>
                       <td>{s.title}</td>
@@ -112,17 +112,17 @@ function AdminDashboard({ data, user, roleNames }) {
         <article className="module-card">
           <div className="section-head">
             <div>
-              <div className="section-label">Paiements récents</div>
-              <h2>Suivi financier</h2>
+              <div className="section-label">Pagos recientes</div>
+              <h2>Seguimiento económico</h2>
             </div>
-            <Link className="ghost-btn link-btn" to="/espace/module/payments">Voir tout</Link>
+            <Link className="ghost-btn link-btn" to="/espacio/modulo/payments">Ver todo</Link>
           </div>
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Élève</th><th>Période</th><th>Statut</th></tr></thead>
+              <thead><tr><th>Alumno</th><th>Periodo</th><th>Estado</th></tr></thead>
               <tbody>
                 {data.recentPayments.length === 0
-                  ? <tr><td className="empty-state" colSpan={3}>Aucun paiement récent.</td></tr>
+                  ? <tr><td className="empty-state" colSpan={3}>No hay pagos recientes.</td></tr>
                   : data.recentPayments.map((p) => (
                     <tr key={p.id}>
                       <td>{p.student?.full_name || '—'}</td>
@@ -144,7 +144,7 @@ function AdminDashboard({ data, user, roleNames }) {
 function TeacherDashboard({ data, user, roleNames }) {
   const teacher = data.teacher
   const teacherStatLabels = {
-    groups: 'Mes groupes', students: 'Mes élèves', upcoming_sessions: 'Séances à venir',
+    groups: 'Mis grupos', students: 'Mis alumnos', upcoming_sessions: 'Próximas sesiones',
   }
 
   return (
@@ -152,18 +152,18 @@ function TeacherDashboard({ data, user, roleNames }) {
       <section className="dashboard-hero">
         <div className="hero-grid">
           <div className="hero-stack">
-            <div className="hero-chip">Espace enseignant</div>
+            <div className="hero-chip">Espacio del profesor</div>
             <h1 className="hero-title">
-              {teacher ? `Bienvenue, ${teacher.first_name}.` : `Bienvenue, ${user?.name}.`}
+              {teacher ? `Bienvenido/a, ${teacher.first_name}.` : `Bienvenido/a, ${user?.name}.`}
             </h1>
             <p className="hero-copy">
               {teacher?.specialty
-                ? `Spécialité : ${teacher.specialty}. Retrouvez vos groupes, séances à venir et le suivi des présences.`
-                : 'Retrouvez vos groupes, séances à venir et le suivi des présences de vos élèves.'}
+                ? `Especialidad: ${teacher.specialty}. Consulte sus grupos, las próximas sesiones y el seguimiento de la asistencia.`
+                : 'Consulte sus grupos, las próximas sesiones y el seguimiento de la asistencia de sus alumnos.'}
             </p>
           </div>
           <div className="hero-sidecard">
-            <div className="section-label">Profil connecté</div>
+            <div className="section-label">Perfil conectado</div>
             <p>{user?.name}</p>
             <p className="hint">{roleNames.map((r) => roleLabels[r] ?? r).join(', ')}</p>
             {teacher?.specialty && <p className="hint" style={{ marginTop: 4 }}>{teacher.specialty}</p>}
@@ -182,8 +182,8 @@ function TeacherDashboard({ data, user, roleNames }) {
 
       {!teacher && (
         <div className="notice-banner" style={{ margin: '0 0 24px' }}>
-          Votre compte utilisateur n'est pas encore associé à un profil enseignant.
-          Contactez l'administration pour lier votre compte.
+          Su cuenta de usuario todavía no está asociada a una ficha de profesor.
+          Póngase en contacto con la administración para vincularla.
         </div>
       )}
 
@@ -192,17 +192,17 @@ function TeacherDashboard({ data, user, roleNames }) {
         <article className="module-card">
           <div className="section-head">
             <div>
-              <div className="section-label">Mes groupes</div>
-              <h2>Groupes assignés</h2>
+              <div className="section-label">Mis grupos</div>
+              <h2>Grupos asignados</h2>
             </div>
-            <Link className="ghost-btn link-btn" to="/espace/module/classGroups">Voir tout</Link>
+            <Link className="ghost-btn link-btn" to="/espacio/modulo/classGroups">Ver todo</Link>
           </div>
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Groupe</th><th>Matière</th><th>Horaire</th><th>Statut</th></tr></thead>
+              <thead><tr><th>Grupo</th><th>Asignatura</th><th>Horario</th><th>Estado</th></tr></thead>
               <tbody>
                 {data.myGroups.length === 0
-                  ? <tr><td className="empty-state" colSpan={4}>Aucun groupe assigné.</td></tr>
+                  ? <tr><td className="empty-state" colSpan={4}>No tiene ningún grupo asignado.</td></tr>
                   : data.myGroups.map((g) => (
                     <tr key={g.id}>
                       <td><strong>{g.name}</strong></td>
@@ -210,7 +210,7 @@ function TeacherDashboard({ data, user, roleNames }) {
                       <td className="hint">{g.schedule || '—'}</td>
                       <td>
                         <span className={`badge ${g.status === 'active' ? 'badge-ok' : 'badge-muted'}`}>
-                          {g.status === 'active' ? 'Actif' : 'Inactif'}
+                          {g.status === 'active' ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
                     </tr>
@@ -224,17 +224,17 @@ function TeacherDashboard({ data, user, roleNames }) {
         <article className="module-card">
           <div className="section-head">
             <div>
-              <div className="section-label">Séances à venir</div>
-              <h2>Mon planning</h2>
+              <div className="section-label">Próximas sesiones</div>
+              <h2>Mi agenda</h2>
             </div>
-            <Link className="ghost-btn link-btn" to="/espace/module/classSessions">Nouvelle séance</Link>
+            <Link className="ghost-btn link-btn" to="/espacio/modulo/classSessions">Nueva sesión</Link>
           </div>
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Séance</th><th>Groupe</th><th>Date</th><th>Heure</th></tr></thead>
+              <thead><tr><th>Sesión</th><th>Grupo</th><th>Fecha</th><th>Hora</th></tr></thead>
               <tbody>
                 {data.upcomingSessions.length === 0
-                  ? <tr><td className="empty-state" colSpan={4}>Aucune séance à venir.</td></tr>
+                  ? <tr><td className="empty-state" colSpan={4}>No hay próximas sesiones.</td></tr>
                   : data.upcomingSessions.map((s) => (
                     <tr key={s.id}>
                       <td>{s.title}</td>
@@ -254,17 +254,17 @@ function TeacherDashboard({ data, user, roleNames }) {
         <article className="module-card">
           <div className="section-head">
             <div>
-              <div className="section-label">Présences récentes</div>
-              <h2>Suivi des élèves</h2>
+              <div className="section-label">Asistencia reciente</div>
+              <h2>Seguimiento de los alumnos</h2>
             </div>
-            <Link className="ghost-btn link-btn" to="/espace/module/attendances">Saisir présences</Link>
+            <Link className="ghost-btn link-btn" to="/espacio/modulo/attendances">Registrar asistencia</Link>
           </div>
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Élève</th><th>Séance</th><th>Groupe</th><th>Statut</th></tr></thead>
+              <thead><tr><th>Alumno</th><th>Sesión</th><th>Grupo</th><th>Estado</th></tr></thead>
               <tbody>
                 {data.recentAttendances.length === 0
-                  ? <tr><td className="empty-state" colSpan={4}>Aucune présence enregistrée.</td></tr>
+                  ? <tr><td className="empty-state" colSpan={4}>No hay asistencia registrada.</td></tr>
                   : data.recentAttendances.map((a) => (
                     <tr key={a.id}>
                       <td>{a.student?.full_name || '—'}</td>
@@ -296,7 +296,7 @@ export function DashboardPage() {
   useEffect(() => {
     api.get('/dashboard')
       .then(({ data: payload }) => setData(payload))
-      .catch(() => setLoadError('Impossible de charger le tableau de bord. Veuillez recharger la page.'))
+      .catch(() => setLoadError('No se ha podido cargar el panel. Vuelva a cargar la página.'))
   }, [])
 
   if (loadError) {
@@ -304,7 +304,7 @@ export function DashboardPage() {
   }
 
   if (!data) {
-    return <div className="panel-empty">Chargement du tableau de bord...</div>
+    return <div className="panel-empty">Cargando el panel...</div>
   }
 
   if (data.role === 'teacher') {

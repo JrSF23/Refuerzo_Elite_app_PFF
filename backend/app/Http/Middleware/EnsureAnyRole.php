@@ -15,7 +15,7 @@ class EnsureAnyRole
 
         if (!$user || $roles === [] || !$user->hasAnyRole($roles)) {
             return new JsonResponse([
-                'message' => 'Accès refusé pour ce profil.',
+                'message' => 'Acceso denegado para este perfil.',
             ], 403);
         }
 

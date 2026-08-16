@@ -11,7 +11,7 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
 
   if (isAuthenticated && isStaff) {
-    return <Navigate replace to="/espace" />
+    return <Navigate replace to="/espacio" />
   }
 
   async function handleSubmit(event) {
@@ -21,9 +21,9 @@ export function LoginPage() {
 
     try {
       await login(form)
-      navigate(location.state?.from?.pathname || '/espace', { replace: true })
+      navigate(location.state?.from?.pathname || '/espacio', { replace: true })
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "La connexion n'a pas pu etre etablie.")
+      setError(requestError.response?.data?.message || "No se ha podido iniciar sesión.")
     } finally {
       setLoading(false)
     }
@@ -33,33 +33,33 @@ export function LoginPage() {
     <div className="page-shell login-shell">
       <div className="login-card">
         <section className="login-brand">
-          <div className="eyebrow">Connexion equipe</div>
+          <div className="eyebrow">Acceso del equipo</div>
           <img alt="Refuerzo Elite" className="login-logo" src="/brand/logo-refuerzo-elite.png" />
-          <h1>Un acces reserve a l administration et aux enseignants.</h1>
+          <h1>Un acceso reservado a la administración y al profesorado.</h1>
           <p>
-            La page publique reste ouverte aux visiteurs et aux eleves. Cet espace securise sert a piloter les groupes,
-            les seances, les presences et la gestion interne du centre.
+            El sitio público sigue abierto a visitantes y alumnos. Este espacio seguro sirve para gestionar los grupos,
+            las sesiones, la asistencia y la administración interna del centro.
           </p>
 
           <div className="login-points">
-            <div className="login-point">Suivi clair des eleves, des groupes et des presences.</div>
-            <div className="login-point">Interface moderne, inspiree de l identite historique du centre.</div>
-            <div className="login-point">API Laravel securisee avec acces limite selon le role.</div>
+            <div className="login-point">Seguimiento claro de los alumnos, los grupos y la asistencia.</div>
+            <div className="login-point">Interfaz moderna, inspirada en la identidad de siempre del centro.</div>
+            <div className="login-point">API Laravel protegida, con acceso limitado según el rol.</div>
           </div>
         </section>
 
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="login-meta">
-            <div className="section-label">Identification</div>
-            <h2 style={{ margin: '6px 0 0' }}>Se connecter</h2>
-            <p className="hint">Utilisez votre identifiant ou votre adresse e-mail professionnelle.</p>
+            <div className="section-label">Identificación</div>
+            <h2 style={{ margin: '6px 0 0' }}>Iniciar sesión</h2>
+            <p className="hint">Use su nombre de usuario o su correo profesional.</p>
           </div>
 
           {error ? <div className="error-banner">{error}</div> : null}
 
           <div className="field-grid">
             <div className="field">
-              <label htmlFor="login">Identifiant ou e-mail</label>
+              <label htmlFor="login">Usuario o correo</label>
               <input
                 autoComplete="username"
                 id="login"
@@ -69,7 +69,7 @@ export function LoginPage() {
             </div>
 
             <div className="field">
-              <label htmlFor="password">Mot de passe</label>
+              <label htmlFor="password">Contraseña</label>
               <input
                 autoComplete="current-password"
                 id="password"
@@ -81,11 +81,11 @@ export function LoginPage() {
           </div>
 
           <button className="primary-btn login-submit" disabled={loading} type="submit">
-            {loading ? 'Connexion en cours...' : "Entrer dans l espace equipe"}
+            {loading ? 'Acceder en cours...' : "Entrar en el espacio del equipo"}
           </button>
 
           <Link className="text-link" to="/">
-            Retour au site public
+            Volver al sitio public
           </Link>
         </form>
       </div>

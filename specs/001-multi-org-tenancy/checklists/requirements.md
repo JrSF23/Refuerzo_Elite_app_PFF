@@ -64,13 +64,13 @@ Estado de las puertas de calidad de la constitución para esta feature, comproba
 - [x] **III. Reutilización** — se extendieron `BaseApiController`, `EnsureAnyRole` y `RecordsAuditEvents`; ningún modelo se reescribió
 - [x] **IV. Simplicidad (NO NEGOCIABLE)** — trait, global scope, middleware y policies: idioma nativo de Laravel. Sin repositorios, sin DDD, sin paquetes de tenancy
 - [x] **V. Seguridad por diseño (NO NEGOCIABLE)** — filtro a nivel de modelo, 404 en acceso cruzado, batería A/B sobre las 10 entidades. **241 tests en verde**
-- [ ] **VI. Mobile-first** — ver T107: las tablas de las pantallas nuevas se apoyan en desplazamiento horizontal, que el principio declara inaceptable. Pendiente de una representación móvil propia
+- [x] **VI. Mobile-first** — resuelto en T107: las tablas de las pantallas nuevas usan el patrón `.stacked-table` y cada fila pasa a ser una tarjeta por debajo de 768 px. Verificado renderizando a 360 px en Chrome headless: `scrollWidth == clientWidth`, cero elementos desbordando
 - [x] **VII. Bajo coste** — cero dependencias nuevas, cero servicios externos
 - [x] **VIII. Producción real** — backfill en transacción con aborto y reversión, runbook con copia verificada, comando `tenancy:verify`, auditoría de las operaciones de plataforma
 - [x] **IX. Multi-tenancy desde el núcleo** — FK explícita en las 10 entidades, organización resuelta del usuario autenticado, pertenencia única sin tabla intermedia
 - [x] **X. Evolución incremental** — cinco migraciones, cada una desplegable. El `NOT NULL` se separó precisamente para no romper este principio
 - [ ] **XI. Feedback real** — N/A, feature previa al piloto
-- [ ] **XII. Internacionalización** — parcial: los textos **nuevos** pasan por `lang/es/tenancy.php` y el idioma por defecto es el español, pero persisten dos deudas anteriores a la constitución — mensajes en francés incrustados en el código, e importes monetarios sin divisa asociada (`payments.amount`, `subjects.monthly_fee`, `enrollments.monthly_fee`)
+- [ ] **XII. Internacionalización** — parcial. Los textos **nuevos** de esta feature van en español: el backend por `lang/es/tenancy.php`, el frontend traducido en las tres pantallas nuevas. Pero **el resto de la interfaz sigue íntegramente en francés y sin sistema de traducción** (15 ficheros de `frontend/src`), y los importes se almacenan sin divisa. Deuda preexistente, de mayor alcance del que el plan describía al principio; corresponde a una feature propia
 
 ### Verificaciones de entorno — completadas (2026-08-15)
 
@@ -88,5 +88,6 @@ Estado de las puertas de calidad de la constitución para esta feature, comproba
 
 ### Pendiente
 
-- **Principio VI** — las tablas de las tres pantallas nuevas necesitan representación móvil propia
-  (T107). Desviación aceptada por escrito en el Complexity Tracking de plan.md.
+Ninguna tarea. Las dos únicas puertas sin cumplir —los textos en francés incrustados y los importes sin
+divisa— son **anteriores a la constitución**, no las introduce esta feature, y están aceptadas por escrito
+en el Complexity Tracking de plan.md.

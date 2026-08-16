@@ -39,7 +39,7 @@ export function OrganizationUsersPage() {
       setOrganization(organizationResponse.data)
       setUsers(usersResponse.data.data ?? [])
     } catch {
-      setError('Impossible de charger cette organisation.')
+      setError('No se ha podido cargar esta organización.')
     } finally {
       setIsLoading(false)
     }
@@ -54,7 +54,7 @@ export function OrganizationUsersPage() {
 
     try {
       await api.post('/users', { ...form, organization_id: Number(organizationId) })
-      setNotice(`Compte « ${form.username} » créé. Communiquez-lui ses identifiants.`)
+      setNotice(`Cuenta «${form.username}» creada. Comuníquele sus credenciales.`)
       setForm(EMPTY_FORM)
       await load()
     } catch (requestError) {
@@ -63,7 +63,7 @@ export function OrganizationUsersPage() {
         return
       }
 
-      setError('La création du compte a échoué.')
+      setError('La creación de la cuenta ha fallado.')
     }
   }
 
@@ -75,22 +75,22 @@ export function OrganizationUsersPage() {
       await api.put(`/users/${user.id}`, { is_active: !user.is_active })
       await load()
     } catch {
-      setError('Le changement de statut a échoué.')
+      setError('El cambio de estado ha fallado.')
     }
   }
 
   if (isLoading) {
-    return <section className="module-layout"><p className="table-loading">Chargement...</p></section>
+    return <section className="module-layout"><p className="table-loading">Cargando...</p></section>
   }
 
   return (
     <section className="module-layout">
       <div className="section-head">
         <div>
-          <p className="section-label">Plateforme</p>
-          <h1>Comptes — {organization?.name}</h1>
+          <p className="section-label">Plataforma</p>
+          <h1>Cuentas — {organization?.name}</h1>
           <p className="hint">
-            <Link className="link-btn" to="/espace/organisations">← Retour aux organisations</Link>
+            <Link className="link-btn" to="/espacio/organizaciones">← Volver a organizaciones</Link>
           </p>
         </div>
       </div>
@@ -99,29 +99,29 @@ export function OrganizationUsersPage() {
       {error ? <div className="error-banner">{error}</div> : null}
 
       <form className="form-card" onSubmit={handleSubmit}>
-        <h2>Nouveau compte</h2>
+        <h2>Nueva cuenta</h2>
 
         <div className="module-grid">
           <label className="field">
-            <span>Nom complet *</span>
+            <span>Nombre completo *</span>
             <input onChange={(event) => setForm({ ...form, name: event.target.value })} required type="text" value={form.name} />
             {errors.name ? <small className="hint">{errors.name[0]}</small> : null}
           </label>
 
           <label className="field">
-            <span>Identifiant de connexion *</span>
+            <span>Usuario de acceso *</span>
             <input onChange={(event) => setForm({ ...form, username: event.target.value })} required type="text" value={form.username} />
             {errors.username ? <small className="hint">{errors.username[0]}</small> : null}
           </label>
 
           <label className="field">
-            <span>Email *</span>
+            <span>Correo *</span>
             <input onChange={(event) => setForm({ ...form, email: event.target.value })} required type="email" value={form.email} />
             {errors.email ? <small className="hint">{errors.email[0]}</small> : null}
           </label>
 
           <label className="field">
-            <span>Mot de passe provisoire *</span>
+            <span>Contraseña provisional *</span>
             <input
               minLength={8}
               onChange={(event) => setForm({ ...form, password: event.target.value })}
@@ -133,53 +133,53 @@ export function OrganizationUsersPage() {
           </label>
 
           <label className="field">
-            <span>Rôle *</span>
+            <span>Rol *</span>
             <select onChange={(event) => setForm({ ...form, role: event.target.value })} value={form.role}>
-              <option value="org_admin">Administration du centre</option>
-              <option value="teacher">Enseignant</option>
+              <option value="org_admin">Administración del centro</option>
+              <option value="teacher">Profesor</option>
             </select>
             {errors.role ? <small className="hint">{errors.role[0]}</small> : null}
           </label>
         </div>
 
         <div className="row-actions">
-          <button className="primary-btn" type="submit">Créer le compte</button>
+          <button className="primary-btn" type="submit">Crear la cuenta</button>
         </div>
 
         <p className="hint">
-          L&apos;email doit être unique sur toute la plateforme : une même personne travaillant dans deux
-          centres a besoin de deux comptes avec des emails distincts.
+          El correo debe ser único en toda la plataforma: una misma persona que trabaje en dos
+          centros necesita dos cuentas con correos distintos.
         </p>
       </form>
 
       <div className="table-wrap">
         {users.length === 0 ? (
-          <p className="empty-state">Aucun compte dans cette organisation.</p>
+          <p className="empty-state">No hay ninguna cuenta en esta organización.</p>
         ) : (
-          <table>
+          <table className="stacked-table">
             <thead>
               <tr>
-                <th>Compte</th>
-                <th>Email</th>
-                <th>Rôles</th>
-                <th>Statut</th>
-                <th>Actions</th>
+                <th>Cuenta</th>
+                <th>Correo</th>
+                <th>Roles</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
                 <tr key={user.id}>
-                  <td>{user.name}<br /><small className="hint">{user.username}</small></td>
-                  <td>{user.email}</td>
-                  <td>{(user.roles ?? []).map((role) => role.name).join(', ')}</td>
-                  <td>
+                  <td data-label="Cuenta">{user.name}<br /><small className="hint">{user.username}</small></td>
+                  <td data-label="Correo">{user.email}</td>
+                  <td data-label="Roles">{(user.roles ?? []).map((role) => role.name).join(', ')}</td>
+                  <td data-label="Estado">
                     <span className={`badge ${user.is_active ? 'ok' : 'muted'}`}>
-                      {user.is_active ? 'Actif' : 'Inactif'}
+                      {user.is_active ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
-                  <td className="row-actions">
+                  <td className="row-actions" data-label="Acciones">
                     <button className="ghost-btn" onClick={() => toggleActive(user)} type="button">
-                      {user.is_active ? 'Désactiver' : 'Réactiver'}
+                      {user.is_active ? 'Desactivar' : 'Reactivar'}
                     </button>
                   </td>
                 </tr>

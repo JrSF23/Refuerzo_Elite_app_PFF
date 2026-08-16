@@ -26,7 +26,7 @@ export function OrganizationsPage() {
       setOrganizations(data.data ?? [])
       setMeta({ current_page: data.current_page, last_page: data.last_page, total: data.total })
     } catch {
-      setError("Impossible de charger les organisations.")
+      setError("No se han podido cargar las organizaciones.")
     } finally {
       setIsLoading(false)
     }
@@ -52,10 +52,10 @@ export function OrganizationsPage() {
     try {
       if (editingId) {
         await api.put(`/organizations/${editingId}`, payload)
-        setNotice('Organisation mise à jour.')
+        setNotice('Organización actualizada.')
       } else {
         await api.post('/organizations', payload)
-        setNotice('Organisation créée. Vous pouvez maintenant créer son administrateur.')
+        setNotice('Organización creada. Ya puede dar de alta a su administrador.')
       }
 
       resetForm()
@@ -66,7 +66,7 @@ export function OrganizationsPage() {
         return
       }
 
-      setError("L'opération a échoué.")
+      setError("La operación ha fallado.")
     }
   }
 
@@ -88,11 +88,11 @@ export function OrganizationsPage() {
     try {
       await api.post(`/organizations/${organization.id}/${action}`)
       setNotice(action === 'suspend'
-        ? `« ${organization.name} » suspendue. Ses utilisateurs perdent l'accès à la prochaine requête.`
-        : `« ${organization.name} » réactivée.`)
+        ? `«${organization.name}» suspendida. Sus usuarios pierden el acceso en la siguiente petición.`
+        : `«${organization.name}» reactivada.`)
       await load()
     } catch {
-      setError("Le changement de statut a échoué.")
+      setError("El cambio de estado ha fallado.")
     }
   }
 
@@ -102,14 +102,14 @@ export function OrganizationsPage() {
 
     try {
       await api.delete(`/organizations/${organization.id}`)
-      setNotice(`« ${organization.name} » supprimée. Ses données restent récupérables.`)
+      setNotice(`«${organization.name}» eliminada. Sus datos siguen siendo recuperables.`)
       await load()
     } catch (requestError) {
-      // 409: l'organisation a encore des utilisateurs actifs. Il faut d'abord la
-      // suspendre — c'est l'acte qui coupe l'accès de son personnel.
+      // 409: la organización todavía tiene usuarios activos. Primero hay que
+      // suspenderla, que es el acto que corta el acceso de su personal.
       setError(requestError.response?.status === 409
-        ? "Cette organisation a encore des utilisateurs actifs. Suspendez-la d'abord."
-        : 'La suppression a échoué.')
+        ? "Esta organización todavía tiene usuarios activos. Suspéndala primero."
+        : 'La eliminación ha fallado.')
     }
   }
 
@@ -117,9 +117,9 @@ export function OrganizationsPage() {
     <section className="module-layout">
       <div className="section-head">
         <div>
-          <p className="section-label">Plateforme</p>
-          <h1>Organisations</h1>
-          <p className="hint">{meta.total} organisation(s) enregistrée(s).</p>
+          <p className="section-label">Plataforma</p>
+          <h1>Organizaciones</h1>
+          <p className="hint">{meta.total} organización(es) registrada(s).</p>
         </div>
       </div>
 
@@ -131,21 +131,21 @@ export function OrganizationsPage() {
         onSubmit={(event) => { event.preventDefault(); setPage(1); setSearchTerm(search) }}
       >
         <input
-          aria-label="Rechercher une organisation"
+          aria-label="Buscar una organización"
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Nom ou identifiant..."
+          placeholder="Nombre o identificador..."
           type="search"
           value={search}
         />
-        <button className="ghost-btn" type="submit">Rechercher</button>
+        <button className="ghost-btn" type="submit">Buscar</button>
       </form>
 
       <form className="form-card" onSubmit={handleSubmit}>
-        <h2>{editingId ? "Modifier l'organisation" : 'Nouvelle organisation'}</h2>
+        <h2>{editingId ? "Editar la organización" : 'Nueva organización'}</h2>
 
         <div className="module-grid">
           <label className="field">
-            <span>Nom *</span>
+            <span>Nombre *</span>
             <input
               onChange={(event) => setForm({ ...form, name: event.target.value })}
               required
@@ -156,10 +156,10 @@ export function OrganizationsPage() {
           </label>
 
           <label className="field">
-            <span>Identifiant lisible</span>
+            <span>Identificador legible</span>
             <input
               onChange={(event) => setForm({ ...form, slug: event.target.value })}
-              placeholder="déduit du nom si vide"
+              placeholder="se deriva del nombre si se deja vacío"
               type="text"
               value={form.slug}
             />
@@ -167,7 +167,7 @@ export function OrganizationsPage() {
           </label>
 
           <label className="field">
-            <span>Email de contact</span>
+            <span>Correo de contacto</span>
             <input
               onChange={(event) => setForm({ ...form, contact_email: event.target.value })}
               type="email"
@@ -177,7 +177,7 @@ export function OrganizationsPage() {
           </label>
 
           <label className="field">
-            <span>Téléphone de contact</span>
+            <span>Teléfono de contacto</span>
             <input
               onChange={(event) => setForm({ ...form, contact_phone: event.target.value })}
               type="text"
@@ -188,65 +188,65 @@ export function OrganizationsPage() {
         </div>
 
         <div className="row-actions">
-          <button className="primary-btn" type="submit">{editingId ? 'Enregistrer' : 'Créer'}</button>
-          {editingId ? <button className="ghost-btn" onClick={resetForm} type="button">Annuler</button> : null}
+          <button className="primary-btn" type="submit">{editingId ? 'Guardar' : 'Crear'}</button>
+          {editingId ? <button className="ghost-btn" onClick={resetForm} type="button">Cancelar</button> : null}
         </div>
 
         <p className="hint">
-          Toute organisation est créée active. La suspension est une action délibérée et tracée.
+          Toda organización se crea activa. Suspenderla es una acción deliberada y queda registrada.
         </p>
       </form>
 
       <div className="table-wrap">
-        {isLoading ? <p className="table-loading">Chargement...</p> : null}
+        {isLoading ? <p className="table-loading">Cargando...</p> : null}
 
         {!isLoading && organizations.length === 0 ? (
-          <p className="empty-state">Aucune organisation.</p>
+          <p className="empty-state">No hay ninguna organización.</p>
         ) : null}
 
         {!isLoading && organizations.length > 0 ? (
-          <table>
+          <table className="stacked-table">
             <thead>
               <tr>
-                <th>Organisation</th>
-                <th>Identifiant</th>
-                <th>Statut</th>
-                <th>Comptes</th>
-                <th>Actions</th>
+                <th>Organización</th>
+                <th>Identificador</th>
+                <th>Estado</th>
+                <th>Cuentas</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {organizations.map((organization) => (
                 <tr key={organization.id}>
-                  <td>
+                  <td data-label="Organización">
                     {organization.name}
                     {organization.contact_email ? <><br /><small className="hint">{organization.contact_email}</small></> : null}
                   </td>
-                  <td><code>{organization.slug}</code></td>
-                  <td>
+                  <td data-label="Identificador"><code>{organization.slug}</code></td>
+                  <td data-label="Estado">
                     <span className={`badge ${organization.status === 'active' ? 'ok' : 'warn'}`}>
-                      {organization.status === 'active' ? 'Active' : 'Suspendue'}
+                      {organization.status === 'active' ? 'Activa' : 'Suspendida'}
                     </span>
                   </td>
-                  <td>{organization.users_count}</td>
-                  <td className="row-actions">
-                    <Link className="ghost-btn link-btn" to={`/espace/organisations/${organization.id}/comptes`}>
-                      Comptes
+                  <td data-label="Cuentas">{organization.users_count}</td>
+                  <td className="row-actions" data-label="Acciones">
+                    <Link className="ghost-btn link-btn" to={`/espacio/organizaciones/${organization.id}/cuentas`}>
+                      Cuentas
                     </Link>
                     <button className="ghost-btn" onClick={() => startEdit(organization)} type="button">
-                      Modifier
+                      Editar
                     </button>
                     {organization.status === 'active' ? (
                       <button className="ghost-btn" onClick={() => changeStatus(organization, 'suspend')} type="button">
-                        Suspendre
+                        Suspender
                       </button>
                     ) : (
                       <button className="ghost-btn" onClick={() => changeStatus(organization, 'activate')} type="button">
-                        Réactiver
+                        Reactivar
                       </button>
                     )}
                     <button className="danger-btn" onClick={() => remove(organization)} type="button">
-                      Supprimer
+                      Eliminar
                     </button>
                   </td>
                 </tr>
@@ -259,11 +259,11 @@ export function OrganizationsPage() {
       {meta.last_page > 1 ? (
         <div className="pagination">
           <button className="ghost-btn" disabled={page <= 1} onClick={() => setPage(page - 1)} type="button">
-            Précédent
+            Anterior
           </button>
-          <span className="pagination-info">Page {meta.current_page} / {meta.last_page}</span>
+          <span className="pagination-info">Página {meta.current_page} / {meta.last_page}</span>
           <button className="ghost-btn" disabled={page >= meta.last_page} onClick={() => setPage(page + 1)} type="button">
-            Suivant
+            Siguiente
           </button>
         </div>
       ) : null}

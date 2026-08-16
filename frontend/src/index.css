@@ -1130,4 +1130,81 @@ tbody tr:hover { background: rgba(34, 197, 94, 0.04); }
   }
 
   .hero-title, .login-brand h1 { font-size: clamp(2rem, 9vw, 3rem); }
+
+  /* ─── Tablas de datos apiladas ────────────────────────────────────────────
+     El Principio VI de la constitución es explícito: el desplazamiento
+     horizontal no es una solución aceptable para una tabla de datos. Cada fila
+     pasa a ser una tarjeta y cada celda lleva su rótulo vía `data-label`; el
+     encabezado queda oculto visualmente pero presente en el DOM, para los
+     lectores de pantalla. */
+  .stacked-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .stacked-table,
+  .stacked-table tbody,
+  .stacked-table tr,
+  .stacked-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .stacked-table tr {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 6px 14px 12px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .stacked-table tr:last-child { margin-bottom: 0; }
+
+  /* La celda sigue siendo un bloque: convertirla en contenedor flex rompería
+     los `<br>` internos —nombre y correo quedarían uno al lado del otro— e
+     impediría partir el texto largo. El rótulo va encima del valor. */
+  .stacked-table td {
+    display: block;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+    overflow-wrap: anywhere;
+  }
+
+  .stacked-table td:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .stacked-table td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Las acciones envuelven bajo su rótulo: el listado de organizaciones
+     lleva cuatro. */
+  .stacked-table td.row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+    padding-top: 12px;
+  }
+
+  .stacked-table td.row-actions::before {
+    flex-basis: 100%;
+    margin-bottom: 0;
+  }
+
+  /* Sin esto, una fila de botones desborda la página, que es justo lo que
+     este bloque viene a eliminar. */
+  .row-actions { flex-wrap: wrap; }
 }

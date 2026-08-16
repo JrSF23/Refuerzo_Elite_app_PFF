@@ -3,18 +3,18 @@ import { publicImages, serviceBenefits, servicePrograms } from '../content/publi
 
 export function ServicesPage() {
   return (
-    <PublicLayout contactHref="/#contact">
+    <PublicLayout contactHref="/#contacto">
       <main>
         <section
           className="public-section page-hero"
           style={{ backgroundImage: `url(${publicImages.services})` }}
         >
           <div className="page-copy">
-            <div className="section-label">Services</div>
-            <h1>Des formes d'accompagnement adaptees aux besoins scolaires les plus frequents.</h1>
+            <div className="section-label">Servicios</div>
+            <h1>Formas de acompañamiento adaptadas a las necesidades escolares más habituales.</h1>
             <p>
-              Le centre articule renforcement academique, methodologie et communication avec les familles pour aider
-              l'eleve a reprendre le controle de son travail et a retrouver de la solidite dans ses apprentissages.
+              El centro combina refuerzo académico, metodología y comunicación con las familias para que el alumno
+              recupere el control de su trabajo y vuelva a asentar lo que aprende.
             </p>
           </div>
         </section>
@@ -22,8 +22,8 @@ export function ServicesPage() {
         <section className="public-section reveal">
           <div className="section-head public-section-head">
             <div>
-              <div className="section-label">Parcours proposes</div>
-              <h2>Chaque service repond a un besoin concret du quotidien scolaire.</h2>
+              <div className="section-label">Itinerarios disponibles</div>
+              <h2>Cada servicio responde a una necesidad concreta del día a día escolar.</h2>
             </div>
           </div>
 
@@ -41,8 +41,8 @@ export function ServicesPage() {
         <section className="public-section reveal">
           <div className="content-card cta-panel">
             <div>
-              <div className="section-label">Ce que les familles recherchent</div>
-              <h2>Une aide lisible, suivie et utile sur la duree.</h2>
+              <div className="section-label">Lo que buscan las familias</div>
+              <h2>Una ayuda clara, con seguimiento y útil a lo largo del tiempo.</h2>
             </div>
             <ul className="bullet-list">
               {serviceBenefits.map((item) => (

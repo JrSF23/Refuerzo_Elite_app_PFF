@@ -49,8 +49,8 @@ export function SessionProvider({ children }) {
     token,
     user,
     roleNames,
-    // L'organisation arrive via /me : la réponse de login ne la porte pas. Elle est
-    // nulle pour le super administrateur, qui n'appartient à aucune.
+    // La organización llega por /me: la respuesta del login no la incluye. Es nula
+    // para el super administrador, que no pertenece a ninguna.
     organization: user?.organization ?? null,
     isPlatformAdmin: roleNames.includes('super_admin'),
     isStaff: roleNames.some((role) => staffRoles.includes(role)),

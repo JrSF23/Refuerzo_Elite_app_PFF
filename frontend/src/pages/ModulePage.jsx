@@ -54,7 +54,7 @@ function extractRequestError(error) {
     }
   }
 
-  return error?.response?.data?.message || "L'enregistrement n'a pas pu être sauvegardé."
+  return error?.response?.data?.message || "No se ha podido guardar el registro."
 }
 
 function formatDisplayValue(value) {
@@ -63,17 +63,17 @@ function formatDisplayValue(value) {
   }
 
   const labels = {
-    active: 'Actif',
-    inactive: 'Inactif',
-    paid: 'Payé',
-    pending: 'En attente',
-    cancelled: 'Annulé',
-    present: 'Présent',
-    absent: 'Absent',
-    late: 'En retard',
-    cash: 'Espèces',
-    card: 'Carte',
-    transfer: 'Virement',
+    active: 'Activo',
+    inactive: 'Inactivo',
+    paid: 'Pagado',
+    pending: 'Pendiente',
+    cancelled: 'Anulado',
+    present: 'Presente',
+    absent: 'Ausente',
+    late: 'Con retraso',
+    cash: 'Efectivo',
+    card: 'Tarjeta',
+    transfer: 'Transferencia',
   }
 
   if (typeof value === 'string' && /^\d{2}:\d{2}:\d{2}$/.test(value)) {
@@ -140,7 +140,7 @@ export function ModulePage() {
       })
     } catch (err) {
       if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
-        setLoadError('Impossible de charger les enregistrements. Veuillez réessayer.')
+        setLoadError('No se han podido cargar los registros. Inténtelo de nuevo.')
       }
     } finally {
       setIsLoading(false)
@@ -172,7 +172,7 @@ export function ModulePage() {
       )
         .then((entries) => setSupportingData(Object.fromEntries(entries)))
         .catch(() => {
-          setError('Impossible de charger les données des listes déroulantes.')
+          setError('No se han podido cargar los datos de los desplegables.')
         })
     }
 
@@ -185,11 +185,11 @@ export function ModulePage() {
   }, [definition, dependencies])
 
   if (!definition) {
-    return <div className="panel-empty">Module introuvable.</div>
+    return <div className="panel-empty">Módulo no encontrado.</div>
   }
 
   if (!canAccess) {
-    return <Navigate replace to="/espace" />
+    return <Navigate replace to="/espacio" />
   }
 
   function handleSearch(event) {
@@ -226,10 +226,10 @@ export function ModulePage() {
     try {
       if (editingId) {
         await api.put(`/${definition.endpoint}/${editingId}`, payload)
-        setMessage('Enregistrement mis à jour.')
+        setMessage('Registro actualizado.')
       } else {
         await api.post(`/${definition.endpoint}`, payload)
-        setMessage('Enregistrement créé.')
+        setMessage('Registro creado.')
       }
 
       setForm({})
@@ -252,7 +252,7 @@ export function ModulePage() {
 
     try {
       await api.delete(`/${definition.endpoint}/${id}`)
-      setMessage('Enregistrement supprimé.')
+      setMessage('Registro eliminado.')
       if (editingId === id) {
         setEditingId(null)
         setForm({})
@@ -288,14 +288,14 @@ export function ModulePage() {
       {message ? <div className="notice-banner">{message}</div> : null}
       {error ? <div className="error-banner">{error}</div> : null}
 
-      {/* Confirmation de suppression */}
+      {/* Confirmación de borrado */}
       {confirmDeleteId !== null ? (
         <div className="confirm-overlay">
           <div className="confirm-card">
-            <p>Confirmez-vous la suppression de cet enregistrement ? Cette action est irréversible.</p>
+            <p>¿Confirma que desea eliminar este registro? Esta acción es irreversible.</p>
             <div className="row-actions">
-              <button className="danger-btn" onClick={confirmDelete} type="button">Oui, supprimer</button>
-              <button className="ghost-btn" onClick={() => setConfirmDeleteId(null)} type="button">Annuler</button>
+              <button className="danger-btn" onClick={confirmDelete} type="button">Sí, eliminar</button>
+              <button className="ghost-btn" onClick={() => setConfirmDeleteId(null)} type="button">Cancelar</button>
             </div>
           </div>
         </div>
@@ -305,27 +305,27 @@ export function ModulePage() {
         <section className="module-card">
           <div className="toolbar">
             <div>
-              <div className="section-label">Liste</div>
+              <div className="section-label">Listado</div>
               <h2>{definition.title}</h2>
             </div>
 
             <form className="search-form" onSubmit={handleSearch}>
               <div className="field">
-                <label htmlFor="search">Recherche</label>
+                <label htmlFor="search">Búsqueda</label>
                 <input
                   id="search"
-                  placeholder="Rechercher..."
+                  placeholder="Buscar..."
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                 />
               </div>
-              <button className="ghost-btn" type="submit">Rechercher</button>
+              <button className="ghost-btn" type="submit">Buscar</button>
             </form>
           </div>
 
           <div className="table-wrap">
             {isLoading ? (
-              <div className="table-loading">Chargement des enregistrements...</div>
+              <div className="table-loading">Cargando los registros...</div>
             ) : loadError ? (
               <div className="error-banner">{loadError}</div>
             ) : (
@@ -333,20 +333,20 @@ export function ModulePage() {
                 <thead>
                   <tr>
                     {definition.columns.map((column) => <th key={column.key}>{column.label}</th>)}
-                    {(canEdit || canDelete) ? <th>Actions</th> : null}
+                    {(canEdit || canDelete) ? <th>Acciones</th> : null}
                   </tr>
                 </thead>
                 <tbody>
                   {records.length === 0 ? (
-                    <tr><td className="empty-state" colSpan={colSpan}>Aucun enregistrement pour le moment.</td></tr>
+                    <tr><td className="empty-state" colSpan={colSpan}>Todavía no hay registros.</td></tr>
                   ) : records.map((record) => (
                     <tr key={record.id}>
                       {definition.columns.map((column) => <td key={`${record.id}-${column.key}`}>{formatDisplayValue(getValue(record, column.key))}</td>)}
                       {(canEdit || canDelete) ? (
                         <td>
                           <div className="row-actions">
-                            {canEdit ? <button className="ghost-btn" onClick={() => startEditing(record)} type="button">Modifier</button> : null}
-                            {canDelete ? <button className="danger-btn" onClick={() => requestDelete(record.id)} type="button">Supprimer</button> : null}
+                            {canEdit ? <button className="ghost-btn" onClick={() => startEditing(record)} type="button">Editar</button> : null}
+                            {canDelete ? <button className="danger-btn" onClick={() => requestDelete(record.id)} type="button">Eliminar</button> : null}
                           </div>
                         </td>
                       ) : null}
@@ -366,11 +366,11 @@ export function ModulePage() {
                 onClick={() => handlePageChange(currentPage - 1)}
                 type="button"
               >
-                ← Précédent
+                ← Anterior
               </button>
               <span className="pagination-info">
-                Page {pagination.currentPage} sur {pagination.lastPage}
-                {pagination.total ? ` · ${pagination.total} enregistrement${pagination.total > 1 ? 's' : ''}` : ''}
+                Página {pagination.currentPage} de {pagination.lastPage}
+                {pagination.total ? ` · ${pagination.total} registro${pagination.total > 1 ? 's' : ''}` : ''}
               </span>
               <button
                 className="ghost-btn"
@@ -378,12 +378,12 @@ export function ModulePage() {
                 onClick={() => handlePageChange(currentPage + 1)}
                 type="button"
               >
-                Suivant →
+                Siguiente →
               </button>
             </div>
           ) : pagination && pagination.total > 0 ? (
             <div className="pagination-info" style={{ padding: '8px 0', fontSize: '0.85em', color: 'var(--color-muted)' }}>
-              {pagination.total} enregistrement{pagination.total > 1 ? 's' : ''}
+              {pagination.total} registro{pagination.total > 1 ? 's' : ''}
             </div>
           ) : null}
         </section>
@@ -392,10 +392,10 @@ export function ModulePage() {
           <section className="module-card">
             <div className="section-head">
               <div>
-                <div className="section-label">Formulaire</div>
-                <h2>{editingId ? 'Mettre à jour' : 'Nouvel enregistrement'}</h2>
+                <div className="section-label">Formulario</div>
+                <h2>{editingId ? 'Actualizar' : 'Nuevo registro'}</h2>
               </div>
-              {editingId ? <button className="ghost-btn" onClick={() => { setEditingId(null); setForm({}) }} type="button">Nouveau</button> : null}
+              {editingId ? <button className="ghost-btn" onClick={() => { setEditingId(null); setForm({}) }} type="button">Nuevo</button> : null}
             </div>
 
             <form className="form-card" onSubmit={handleSubmit}>
@@ -407,7 +407,7 @@ export function ModulePage() {
                     <textarea id={field.name} required={field.required} value={form[field.name] ?? ''} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))} />
                   ) : field.type === 'select' ? (
                     <select id={field.name} required={field.required} value={form[field.name] ?? ''} onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))}>
-                      <option value="">Sélectionner</option>
+                      <option value="">Seleccione</option>
                       {(field.options ?? supportingData[field.source] ?? []).map((option) => {
                         const value = typeof option === 'string' ? option : option.value ?? option[field.optionValue ?? 'id']
                         const label = typeof option === 'string' ? formatDisplayValue(option) : option.label ?? option[field.optionLabel ?? 'name']
@@ -427,14 +427,14 @@ export function ModulePage() {
                 </div>
               ))}
 
-              <button className="primary-btn" type="submit">{editingId ? 'Enregistrer les modifications' : 'Créer'}</button>
+              <button className="primary-btn" type="submit">{editingId ? 'Guardar los cambios' : 'Crear'}</button>
             </form>
           </section>
         ) : (
           <section className="module-card read-only-card">
-            <div className="section-label">Accès enseignant</div>
-            <h2>Consultation uniquement</h2>
-            <p className="hint">Ce module reste visible pour suivre les informations du centre, mais sa modification est réservée à l'administration.</p>
+            <div className="section-label">Acceso de profesor</div>
+            <h2>Solo consulta</h2>
+            <p className="hint">Este módulo permanece visible para consultar la información del centro, pero su modificación está reservada a la administración.</p>
           </section>
         )}
       </div>
