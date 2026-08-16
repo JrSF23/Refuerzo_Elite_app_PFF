@@ -4,8 +4,8 @@ import { useSession } from '../context/SessionContext'
 
 export function PublicLayout({ children, contactHref }) {
   const { isAuthenticated, isStaff } = useSession()
-  const staffLink = isAuthenticated && isStaff ? '/espace' : '/connexion'
-  const staffLabel = isAuthenticated && isStaff ? "Espace equipe" : 'Connexion'
+  const staffLink = isAuthenticated && isStaff ? '/espacio' : '/acceso'
+  const staffLabel = isAuthenticated && isStaff ? "Acceso del equipo" : 'Acceder'
   const location = useLocation()
   const navRef = useRef(null)
   const pillRef = useRef(null)
@@ -41,18 +41,18 @@ export function PublicLayout({ children, contactHref }) {
         <Link className="public-brand" to="/">
           <img alt="Refuerzo Elite" className="public-logo" src="/brand/logo-refuerzo-elite.png" />
           <div>
-            <div className="eyebrow">Centre d accompagnement scolaire</div>
+            <div className="eyebrow">Centro de apoyo escolar</div>
             <strong>Refuerzo Elite</strong>
           </div>
         </Link>
 
         <nav className="public-nav" ref={navRef}>
           <span aria-hidden="true" className="nav-pill" ref={pillRef} />
-          <NavLink className={({ isActive }) => `public-nav-link${isActive ? ' active' : ''}`} end to="/">Accueil</NavLink>
-          <NavLink className={({ isActive }) => `public-nav-link${isActive ? ' active' : ''}`} to="/centre">Le centre</NavLink>
-          <NavLink className={({ isActive }) => `public-nav-link${isActive ? ' active' : ''}`} to="/services">Services</NavLink>
-          <NavLink className={({ isActive }) => `public-nav-link${isActive ? ' active' : ''}`} to="/methode">Methode</NavLink>
-          <NavLink className={({ isActive }) => `public-nav-link${isActive ? ' active' : ''}`} to="/contact">Contact</NavLink>
+          <NavLink className={({ isActive }) => `public-nav-link${isActive ? ' active' : ''}`} end to="/">Inicio</NavLink>
+          <NavLink className={({ isActive }) => `public-nav-link${isActive ? ' active' : ''}`} to="/centro">El centro</NavLink>
+          <NavLink className={({ isActive }) => `public-nav-link${isActive ? ' active' : ''}`} to="/servicios">Servicios</NavLink>
+          <NavLink className={({ isActive }) => `public-nav-link${isActive ? ' active' : ''}`} to="/metodo">Método</NavLink>
+          <NavLink className={({ isActive }) => `public-nav-link${isActive ? ' active' : ''}`} to="/contacto">Contacto</NavLink>
         </nav>
 
         <Link className="primary-btn link-btn nav-cta" to={staffLink}>{staffLabel}</Link>
@@ -61,7 +61,7 @@ export function PublicLayout({ children, contactHref }) {
       {children}
 
       <footer className="public-footer">
-        <p>Refuerzo Elite &mdash; Centre d accompagnement scolaire</p>
+        <p>Refuerzo Elite &mdash; Centro de apoyo escolar</p>
       </footer>
     </div>
   )

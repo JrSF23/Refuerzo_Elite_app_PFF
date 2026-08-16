@@ -6,9 +6,9 @@ export function AppShell() {
   const { logout, roleNames, user } = useSession()
   const isTeacher = roleNames.includes('teacher') && !roleNames.includes('org_admin')
   const visibleModules = sidebarModules.filter((module) => canAccessModule(moduleDefinitions[module.key], roleNames))
-  // Entrées de plateforme : elles ont leurs propres pages, pas ModulePage.
+  // Entradas de plataforma: tienen sus propias páginas, no pasan por ModulePage.
   const visiblePlatformModules = platformModules.filter((module) => module.roles.some((role) => roleNames.includes(role)))
-  const profileLabel = roleNames.map((role) => roleLabels[role] ?? role).join(', ') || 'Aucun rôle'
+  const profileLabel = roleNames.map((role) => roleLabels[role] ?? role).join(', ') || 'Sin rol'
 
   return (
     <div className="page-shell">
@@ -17,32 +17,32 @@ export function AppShell() {
           <div className="sidebar-brand">
             <img alt="Refuerzo Elite" className="sidebar-logo" src="/brand/logo-refuerzo-elite.png" />
             <div>
-              <div className="eyebrow">{isTeacher ? 'Espace enseignant' : 'Espace équipe'}</div>
+              <div className="eyebrow">{isTeacher ? 'Espacio del profesor' : 'Espacio del equipo'}</div>
               <h2>Refuerzo Elite</h2>
               <p>
                 {isTeacher
-                  ? 'Gérez vos séances, suivez les présences et consultez vos groupes.'
-                  : 'Gestion quotidienne du centre, des groupes, des séances et du suivi pédagogique.'}
+                  ? 'Gestione sus sesiones, registre la asistencia y consulte sus grupos.'
+                  : 'Gestión diaria del centro: grupos, sesiones y seguimiento pedagógico.'}
               </p>
             </div>
           </div>
 
           <div className="nav-list">
-            <NavLink className="nav-link" end to="/espace">Tableau de bord</NavLink>
+            <NavLink className="nav-link" end to="/espacio">Panel</NavLink>
             {visiblePlatformModules.map((module) => (
               <NavLink key={module.key} className="nav-link" to={module.path}>
                 {module.label}
               </NavLink>
             ))}
             {visibleModules.map((module) => (
-              <NavLink key={module.key} className="nav-link" to={`/espace/module/${module.key}`}>
+              <NavLink key={module.key} className="nav-link" to={`/espacio/modulo/${module.key}`}>
                 {module.label}
               </NavLink>
             ))}
           </div>
 
           <div className="sidebar-footer">
-            <div className="section-label">Session</div>
+            <div className="section-label">Sesión</div>
             <p>{user?.name}</p>
             <p className="hint">{profileLabel}</p>
             <button className="ghost-btn" onClick={() => void logout()} type="button">
@@ -54,15 +54,15 @@ export function AppShell() {
         <main className="workspace-panel">
           <div className="workspace-topbar">
             <div>
-              <div className="section-label">{isTeacher ? 'Enseignant' : 'Administration'}</div>
+              <div className="section-label">{isTeacher ? 'Profesor' : 'Administración'}</div>
               <p className="workspace-copy">
                 {isTeacher
-                  ? 'Cet espace est réservé aux enseignants pour la gestion des séances et le suivi pédagogique.'
-                  : "Le site public reste accessible aux visiteurs et aux élèves, tandis que cet espace est réservé à l'équipe."}
+                  ? 'Este espacio está reservado al profesorado para gestionar las sesiones y el seguimiento pedagógico.'
+                  : 'El sitio público sigue abierto a visitantes y alumnos, mientras que este espacio queda reservado al equipo.'}
               </p>
             </div>
             <Link className="ghost-btn link-btn" to="/">
-              Voir le site public
+              Ver el sitio public
             </Link>
           </div>
           <Outlet />

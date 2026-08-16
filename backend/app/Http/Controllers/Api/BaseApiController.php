@@ -158,6 +158,6 @@ abstract class BaseApiController extends Controller
 
         $this->recordAudit('deleted', $this->entityLabel, $id, $snapshot);
 
-        return response()->json(['message' => ucfirst($this->entityLabel).' supprimé avec succès.']);
+        return response()->json(['message' => 'Registro eliminado correctamente.']);
     }
 }

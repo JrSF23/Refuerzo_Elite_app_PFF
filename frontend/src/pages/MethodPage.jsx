@@ -3,18 +3,18 @@ import { methodTimeline, methodTools, publicImages } from '../content/publicCont
 
 export function MethodPage() {
   return (
-    <PublicLayout contactHref="/#contact">
+    <PublicLayout contactHref="/#contacto">
       <main>
         <section
           className="public-section page-hero"
           style={{ backgroundImage: `url(${publicImages.method})` }}
         >
           <div className="page-copy">
-            <div className="section-label">Methode</div>
-            <h1>Une pedagogie simple a lire, active dans la pratique et suivie dans le temps.</h1>
+            <div className="section-label">Método</div>
+            <h1>Una pedagogía sencilla de entender, activa en la práctica y con seguimiento en el tiempo.</h1>
             <p>
-              La methode de Refuerzo Elite cherche a rendre l'apprentissage concret. On observe, on planifie, on fait
-              travailler l'eleve activement et l'on mesure regulierement ce qui change vraiment.
+              El método de Refuerzo Elite busca hacer concreto el aprendizaje: se observa, se planifica, se hace
+              trabajar al alumno de forma activa y se mide con regularidad lo que de verdad cambia.
             </p>
           </div>
         </section>
@@ -22,8 +22,8 @@ export function MethodPage() {
         <section className="public-section reveal">
           <div className="section-head public-section-head">
             <div>
-              <div className="section-label">Progression</div>
-              <h2>Quatre etapes pour transformer le soutien en progression durable.</h2>
+              <div className="section-label">Progresión</div>
+              <h2>Cuatro etapas para convertir el apoyo en progreso duradero.</h2>
             </div>
           </div>
 

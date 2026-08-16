@@ -31,7 +31,7 @@ class AuthController extends Controller
         // en M3; `super_admin` entra para poder gestionar organizaciones.
         if (!$user->hasAnyRole(['super_admin', 'org_admin', 'teacher'])) {
             return response()->json([
-                'message' => "Cet espace est réservé à l'administration et aux enseignants.",
+                'message' => 'Este espacio está reservado a la administración y al profesorado.',
             ], 403);
         }
 
@@ -111,6 +111,6 @@ class AuthController extends Controller
 
         $user->currentAccessToken()?->delete();
 
-        return response()->json(['message' => 'Session fermée.']);
+        return response()->json(['message' => 'Sesión cerrada.']);
     }
 }
