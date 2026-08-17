@@ -924,6 +924,125 @@
   gap: var(--space-4);
 }
 
+/* ═══ Panel ════════════════════════════════════════════════════════════════ */
+
+/* `auto-fit` con `minmax`: las tarjetas se reparten según el ancho disponible,
+   sin puntos de ruptura de pantalla (FR-060).
+
+   El mínimo es 150 px y no 180 por una razón medida: a 360 px de viewport el
+   contenido tiene ~328 px útiles, y con 180 solo entraba UNA tarjeta por fila,
+   de modo que los cinco indicadores ocupaban ~500 px de desplazamiento antes de
+   llegar a la actividad reciente. Con 150 entran dos (150·2 + 12 = 312 ≤ 328) y
+   la altura se reduce a la mitad. En escritorio no cambia nada: los cinco
+   siguen repartiéndose en una fila. */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--transition-color), box-shadow var(--transition-color);
+}
+
+.stat--link:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+
+.stat__label {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.stat__value {
+  color: var(--color-text);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+/* Tres bloques de actividad. El mínimo de 320 px es el ancho por debajo del cual
+   una fila de «nombre + dato secundario + distintivo» deja de ser legible. */
+.panels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.recent__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.recent__text {
+  display: flex;
+  flex-direction: column;
+  /* Sin esto, un nombre largo empuja al distintivo fuera de la tarjeta en lugar
+     de truncarse. */
+  min-width: 0;
+}
+
+.recent__primary {
+  overflow: hidden;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent__secondary {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent__trailing {
+  flex: 0 0 auto;
+}
+
+/* Importe sobre estado: la cifra alineada a la derecha permite comparar la
+   columna de un vistazo, que es para lo que sirve el panel de cobros. */
+.recent__amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+/* El aviso de cuenta sin ficha encabeza la pantalla del profesor. */
+.alert--warn p {
+  margin-top: var(--space-1);
+}
+
+.alert strong + p {
+  font-weight: var(--weight-normal);
+}
+
+.content > .alert {
+  margin-bottom: var(--space-5);
+}
+
 /* ═══ Puntos de ruptura ════════════════════════════════════════════════════
    Derivados del contenido, no de dispositivos (FR-060). El de 1024 px sale de
    264 de barra + ~720 de tabla útil + espaciado.

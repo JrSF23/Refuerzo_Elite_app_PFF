@@ -139,15 +139,43 @@ Cerrada el 2026-08-17. Verificado contra el stack Docker con datos sembrados.
 
 **Independent Test**: escenario 3 de `quickstart.md`.
 
-- [ ] T036 [US2] Crear `hooks/useDashboard.js`: una sola petición a `GET /dashboard`, con sus tres estados (FR-014, FR-015)
-- [ ] T037 [US2] `components/dashboard/StatCard.jsx`, con enlace a la sección cuando exista equivalente (FR-017)
-- [ ] T038 [US2] `components/dashboard/RecentPanel.jsx`: bloque de actividad reciente con estado vacío propio y enlace a su sección (FR-017, FR-043)
-- [ ] T039 [US2] `pages/DashboardPage.jsx` con la variante de administración: 5 indicadores y los bloques de alumnos, sesiones y pagos recientes
-- [ ] T040 [US2] Variante de profesor: 3 indicadores, sus grupos, próximas sesiones y asistencia reciente, eligiendo por el campo `role` de la respuesta y no por los roles del usuario (FR-016)
-- [ ] T041 [US2] Aviso de cuenta de profesor sin ficha vinculada, distinguible de «no hay datos» (US2.3)
-- [ ] T042 [P] [US2] Añadir el espacio `dashboard` completo a `i18n/locales/es.js`
+- [X] T036 [US2] Crear `hooks/useDashboard.js`: una sola petición a `GET /dashboard`, con sus tres estados (FR-014, FR-015)
+- [X] T037 [US2] `components/dashboard/StatCard.jsx`, con enlace a la sección cuando exista equivalente (FR-017)
+- [X] T038 [US2] `components/dashboard/RecentPanel.jsx`: bloque de actividad reciente con estado vacío propio y enlace a su sección (FR-017, FR-043)
+- [X] T039 [US2] `pages/DashboardPage.jsx` con la variante de administración: 5 indicadores y los bloques de alumnos, sesiones y pagos recientes
+- [X] T040 [US2] Variante de profesor: 3 indicadores, sus grupos, próximas sesiones y asistencia reciente, eligiendo por el campo `role` de la respuesta y no por los roles del usuario (FR-016)
+- [X] T041 [US2] Aviso de cuenta de profesor sin ficha vinculada, distinguible de «no hay datos» (US2.3)
+- [X] T042 [P] [US2] Añadir el espacio `dashboard` completo a `i18n/locales/es.js`
 
 **Checkpoint 2**: escenario 3 completo · una sola petición verificada en la pestaña de red · dashboard sin desbordamiento a 360 px.
+
+### Resultado y desviaciones de la Fase 2
+
+Cerrada el 2026-08-17. Verificada contra el stack Docker con datos sembrados.
+
+**Comprobado**
+
+- Variante de administración: 5 indicadores con cifras reales (8 alumnos, 2 profesores, 4 grupos, 24 asistencias,
+  21 pagos) y los tres bloques de actividad con 5 registros cada uno.
+- Variante de profesor: 3 indicadores, sus grupos, próximas sesiones y asistencia reciente, elegida por el campo `role`
+  de la respuesta.
+- **Una sola petición a `/dashboard`**, medida interceptando `XMLHttpRequest` en la página: las únicas dos llamadas son
+  `/me` —arranque de sesión— y `/dashboard`. Ninguna agregación recorriendo listados (FR-014, FR-015).
+- Aviso de cuenta de profesor sin ficha vinculada: se creó una cuenta real sin `teacher_id`, y la pantalla muestra el
+  aviso **más** los tres estados vacíos, distinguible de «no hay datos» (US2.3).
+- Desbordamiento 0 en los diez anchos, de 360 a 1920 px.
+
+**Desviaciones**
+
+- **Añadido no previsto: el importe en el bloque de pagos.** El panel mostraba alumno, periodo y estado, pero no la
+  cifra, que es justo el dato que se busca en un panel de cobros. Se añade con `formatAmount` —separador de millar y dos
+  decimales—, lo que además ejercita SC-010.
+- **Corrección medida del `stats-grid`.** Con un mínimo de 180 px, a 360 px de viewport entraba **una sola** tarjeta por
+  fila y los cinco indicadores ocupaban unos 500 px de desplazamiento antes de llegar a la actividad reciente. Bajado a
+  150 px entran dos (150·2 + 12 = 312 ≤ 328 útiles). Verificado: 2 columnas a 360 y 414 px, 4 a 768, 5 a 1280.
+- **`RecentPanel` no usa `DataTable`.** Cinco registros de vistazo no son una tabla: `DataTable` arrastra paginación,
+  búsqueda y cambio a tarjetas, maquinaria que aquí no tiene consumidor, y cambiaría de forma en móvil sin necesidad
+  porque estas filas ya son legibles a 360 px.
 
 ---
 

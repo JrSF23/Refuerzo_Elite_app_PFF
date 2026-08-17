@@ -145,6 +145,7 @@ export const es = {
     emptyGroups: 'No tiene ningún grupo asignado.',
     emptyUpcoming: 'No tiene sesiones próximas.',
     emptyAttendances: 'Todavía no hay asistencia registrada.',
+    noGuardian: 'Sin tutor asignado',
   },
 
   /* ── Secciones ───────────────────────────────────────────────────────────────

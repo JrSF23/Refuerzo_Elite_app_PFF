@@ -6,6 +6,7 @@ import { RequireAuth, RequireSection } from './components/RequireAuth.jsx'
 import { AppShell } from './components/layout/AppShell.jsx'
 import { SECTIONS } from './lib/permissions.js'
 import { LoginPage } from './pages/LoginPage.jsx'
+import { DashboardPage } from './pages/DashboardPage.jsx'
 import { PlaceholderPage } from './pages/PlaceholderPage.jsx'
 
 /**
@@ -14,7 +15,6 @@ import { PlaceholderPage } from './pages/PlaceholderPage.jsx'
  * Se irán vaciando fase a fase. Al cerrar la fase 5 la lista debe quedar vacía.
  */
 const PENDING_SECTIONS = [
-  'dashboard',
   'students', 'guardians', 'teachers', 'subjects',
   'groups', 'enrollments', 'sessions', 'attendance',
   'payments', 'users', 'organizations',
@@ -46,6 +46,15 @@ function AppRoutes() {
         path="/"
       >
         <Route element={<HomeRedirect />} index />
+
+        <Route
+          element={(
+            <RequireSection section="dashboard">
+              <DashboardPage />
+            </RequireSection>
+          )}
+          path={SECTIONS.dashboard.path.slice(1)}
+        />
 
         {PENDING_SECTIONS.map((key) => (
           <Route
