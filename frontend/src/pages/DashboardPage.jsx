@@ -20,38 +20,33 @@ import { ErrorState, LoadingState } from '../components/data/states.jsx'
  * servidor.
  */
 export function DashboardPage() {
-  const { data, error, isLoading, retry } = useDashboard()
+  const { status, data, error, retry } = useDashboard()
   const { roleNames } = useSession()
 
   // Un indicador solo enlaza si el rol puede entrar en la sección; si no, sería
   // un enlace que acaba en redirección (FR-017).
   const linkTo = (key) => (canAccess(key, roleNames) ? SECTIONS[key].path : undefined)
 
-  if (isLoading) {
-    return (
-      <>
-        <h1 className="page-title">{t('dashboard.title')}</h1>
-        <LoadingState rows={4} />
-      </>
-    )
-  }
-
-  if (error) {
-    return (
-      <>
-        <h1 className="page-title">{t('dashboard.title')}</h1>
-        <ErrorState message={error.message} onRetry={retry} />
-      </>
-    )
-  }
-
+  // Se decide sobre UN solo estado, no encadenando comprobaciones de tres
+  // valores sueltos. La versión anterior preguntaba `if (isLoading)` y luego
+  // `if (error)`, y una combinación que no debía existir —ni cargando, ni
+  // error, ni datos— se colaba hasta `data.role` sobre un `null`. Con este
+  // `switch` no hay hueco por donde pasar: los datos solo se leen en 'ready'.
   return (
     <>
       <h1 className="page-title">{t('dashboard.title')}</h1>
 
-      {data.role === 'teacher'
-        ? <TeacherDashboard data={data} linkTo={linkTo} />
-        : <AdminDashboard data={data} linkTo={linkTo} />}
+      {status === 'loading' ? <LoadingState rows={4} /> : null}
+
+      {status === 'error' ? (
+        <ErrorState message={error?.message} onRetry={retry} />
+      ) : null}
+
+      {status === 'ready' ? (
+        data.role === 'teacher'
+          ? <TeacherDashboard data={data} linkTo={linkTo} />
+          : <AdminDashboard data={data} linkTo={linkTo} />
+      ) : null}
     </>
   )
 }

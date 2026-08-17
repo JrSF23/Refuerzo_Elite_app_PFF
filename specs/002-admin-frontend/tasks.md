@@ -173,6 +173,21 @@ Cerrada el 2026-08-17. Verificada contra el stack Docker con datos sembrados.
 - **Corrección medida del `stats-grid`.** Con un mínimo de 180 px, a 360 px de viewport entraba **una sola** tarjeta por
   fila y los cinco indicadores ocupaban unos 500 px de desplazamiento antes de llegar a la actividad reciente. Bajado a
   150 px entran dos (150·2 + 12 = 312 ≤ 328 útiles). Verificado: 2 columnas a 360 y 414 px, 4 a 768, 5 a 1280.
+- **Corrección posterior a la entrega: pantalla en blanco al entrar.** Reportada al probar. El error real era
+  «Cannot read properties of null (reading 'role')» en `DashboardPage`, y el `null` era `data`, **no el usuario**: el
+  único acceso sin proteger de todo el frontend era `data.role`; todo lo de sesión ya estaba encadenado.
+
+  Origen: `useDashboard` exponía `data`, `error` e `isLoading` como tres valores sueltos, lo que permitía representar
+  «ni cargando, ni error, ni datos». Se llegaba ahí porque el `.catch` descartaba las cancelaciones con un `return`
+  temprano mientras el `.finally` sacaba del estado de carga igualmente. Y las cancelaciones no son raras: StrictMode
+  monta, desmonta y remonta cada efecto en desarrollo, así que la primera petición **siempre** se aborta. Que se viera
+  dependía de si el `finally` de la abortada corría antes que la respuesta de la segunda: una carrera, y de ahí que
+  fuera intermitente.
+
+  Corregido haciendo esa combinación irrepresentable —un único `status` y un identificador de petición vigente—, no con
+  encadenamiento opcional, que habría tapado el síntoma dejando la causa viva. Cubierto por una prueba de regresión que
+  **falla contra el código anterior** con el mismo error exacto.
+
 - **`RecentPanel` no usa `DataTable`.** Cinco registros de vistazo no son una tabla: `DataTable` arrastra paginación,
   búsqueda y cambio a tarjetas, maquinaria que aquí no tiene consumidor, y cambiaría de forma en móvil sin necesidad
   porque estas filas ya son legibles a 360 px.

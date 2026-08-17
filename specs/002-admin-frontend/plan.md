@@ -28,16 +28,23 @@ está en la calidad de las primitivas, no en el número de pantallas.
 
 **Language/Version**: JavaScript (ES2022), React 19.2
 
-**Primary Dependencies**: react-router-dom 7.13, axios 1.14, Vite 8, y `@fontsource-variable/inter` 5.3.0 como único
-añadido —solo ficheros de fuente, ningún código; ver Complexity Tracking—. **No se añade ninguna librería**: ni de
-componentes, ni de estado, ni de formularios, ni de i18n, ni de tablas.
+**Primary Dependencies**: en producción, react-router-dom 7.13, axios 1.14, Vite 8 y `@fontsource-variable/inter` 5.3.0
+—este último solo ficheros de fuente, ningún código—. En desarrollo, `vitest`, `jsdom` y `@testing-library/react`, que
+no entran en el bundle. Las tres adiciones están en *Complexity Tracking*. **No se añade ninguna librería de
+aplicación**: ni de componentes, ni de estado, ni de formularios, ni de i18n, ni de tablas.
 
 **Storage**: N/A en el frontend. El token de sesión sigue en el almacenamiento del navegador, como hoy.
 
-**Testing**: verificación manual guiada por `quickstart.md` contra el stack Docker, y render headless con Chrome para
-las comprobaciones de ancho y desbordamiento, que es el método que ya se usó y que en la feature anterior corrigió dos
-conclusiones equivocadas. El proyecto no tiene hoy runner de pruebas de frontend; introducirlo se evalúa en la Fase 6 y
-no se da por supuesto.
+**Testing**: tres niveles, cada uno para lo que el anterior no alcanza.
+
+1. **Verificación manual** guiada por `quickstart.md` contra el stack Docker.
+2. **Render headless con Chrome** para anchos, desbordamiento, enrutado y permisos, que es el método que en la feature
+   anterior corrigió dos conclusiones equivocadas.
+3. **`vitest` con `@testing-library/react`** para lo que no se puede provocar a mano: restauración de sesión, carreras
+   entre peticiones y ramas de error. Introducido en la Fase 2 —no en la 6, como decía el plan inicial— porque un fallo
+   dependiente del orden de resolución de dos promesas se escapó a los otros dos niveles. Ver research.md D11.a.
+
+La suite del backend (246 pruebas) sigue siendo la que cubre el aislamiento, que es lo no negociable.
 
 **Target Platform**: navegadores actuales de escritorio y móvil. Referencia mínima de ancho: 360 px.
 
@@ -60,7 +67,7 @@ Constitución `.specify/memory/constitution.md`, v1.1.0. Se evalúan las once pu
 | 1 | Necesidad real y rol que la solicita | **PASS** | El producto dejó de ser un centro único y pasó a SaaS administrativo en la feature 001. El frontend seguía siendo el del concepto anterior. Los roles que la solicitan son `org_admin` y `teacher`. |
 | 2 | Necesaria para el piloto | **PASS** | Sin interfaz administrativa usable no hay piloto que instalar. Informes queda fuera precisamente por aplicar el Principio II. |
 | 3 | Reutilización documentada | **PASS** | Se reutilizan la API completa, el modelo de sesión, el cliente axios, el patrón de tabla apilada del T107 y la definición de módulos como fuente de campos. Ver *Reutilización*. |
-| 4 | Sin capas no justificadas (**NO NEGOCIABLE**) | **PASS con dos entradas registradas** | Ninguna librería nueva. Las dos únicas adiciones están justificadas por escrito en *Complexity Tracking*: el catálogo de textos, que exige la puerta 11 y se resuelve con un objeto y una función, y `@fontsource-variable/inter`, que solo distribuye ficheros de fuente y ningún código. |
+| 4 | Sin capas no justificadas (**NO NEGOCIABLE**) | **PASS con tres entradas registradas** | Ninguna librería nueva en el código de producción. Las tres adiciones están justificadas por escrito en *Complexity Tracking*: el catálogo de textos, que exige la puerta 11; `@fontsource-variable/inter`, que solo distribuye ficheros de fuente; y el runner de pruebas, que es dependencia de desarrollo y no entra en el bundle. |
 | 5 | Prueba de aislamiento entre organizaciones (**NO NEGOCIABLE**) | **PASS (por herencia, sin regresión)** | La feature **no toca backend**, donde vive el aislamiento y sus 21 ficheros de prueba. El frontend nunca envía `organization_id` en escrituras de negocio (FR-063). La suite del backend debe seguir en verde al cerrar cada fase. |
 | 6 | Verificada a 360 px | **PASS por diseño** | FR-028 prohíbe el desplazamiento horizontal, SC-003 lo mide y la Fase 6 lo audita. La verificación es por render headless, no por inspección visual. |
 | 7 | Sin coste recurrente | **PASS** | Ninguna dependencia ni servicio de pago. La tipografía se sirve localmente, lo que además elimina la petición a un tercero. |
@@ -241,6 +248,7 @@ El frontend lo evita enviando siempre la cabecera (FR-062).
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |---|---|---|
 | **Dependencia `@fontsource-variable/inter`** | FR-058 exige Inter servida desde el propio origen, sin peticiones a terceros. El stack no tiene forma de producir un `woff2`, y no había ningún fichero de la fuente en el proyecto ni en el sistema. El paquete distribuye **solo ficheros de fuente y ningún código**: no añade superficie de API, ni configuración, ni comportamiento en ejecución. | Se rechazó **Google Fonts**, que es lo que hacía el frontend anterior: pone un tercero en la ruta crítica de renderizado, se degrada con mala conectividad —el escenario real del mercado inicial— y envía datos de navegación de los usuarios fuera. Se rechazó **comprometer los binarios a mano**, que exige obtenerlos igualmente y convierte cada actualización en un trabajo manual. Se rechazó **renunciar a Inter** y usar solo la pila del sistema, que contradice la dirección tipográfica acordada. Nota: el plan afirmaba «cero dependencias nuevas» y esa afirmación era insostenible frente a FR-058; se corrige aquí en lugar de dejarla en pie. |
+| **Runner de pruebas de frontend**: `vitest`, `jsdom`, `@testing-library/react` | Un fallo real —«Cannot read properties of null (reading 'role')», la pantalla en blanco al entrar— resultó ser una **carrera** entre una petición cancelada por el doble montaje de StrictMode y la que la sustituía. El arnés de navegador no lo reprodujo en cuatro intentos con las cuatro cuentas: dependía del orden de resolución de dos promesas, que a mano no se controla. Con un doble de la API el orden es exacto y el caso se reproduce siempre. | Se rechazó **seguir solo con verificación por navegador**: acaba de demostrarse que no alcanza esta clase de defecto. Se rechazó **arreglar con encadenamiento opcional** (`data?.role`), que era el parche disponible: habría ocultado el síntoma dejando viva la combinación de estado imposible que lo causaba, y el siguiente lector del código no habría sabido por qué estaba ahí. La corrección real fue hacer esa combinación irrepresentable, con un único `status` en vez de tres booleanos sueltos. **Alcance deliberadamente estrecho**: no se busca cobertura amplia, solo los estados que dependen del tiempo y las garantías que no deben romperse. |
 | Capa propia de textos (`i18n/`) por encima de los literales de React | La puerta 11 y el Principio XII.a la exigen: ningún texto visible puede estar escrito en el código. La feature 001 dejó esta deuda abierta y reescribir el frontend entero es el momento de menor coste para saldarla, porque los componentes se escriben de cero igualmente. | Se rechazó **escribir los textos en los componentes**, que es lo que hay hoy: multiplicaría la deuda por el tamaño del frontend nuevo, mayor que el actual. Se rechazó también **una librería de i18n** (`react-i18next` y equivalentes): con un solo idioma no resuelve ningún problema real, y el Principio IV exige nombrar el problema concreto que justifica cada capa. El mecanismo es un objeto anidado y una función de resolución. |
 | **Preexistente, heredada — XII.b**: los importes se muestran sin divisa asociada | El dato se almacena sin moneda desde antes de la constitución. El frontend no puede inventarla sin acoplarse a un país, que es justo lo que XII prohíbe. | Se rechazó fijar la divisa en el frontend. La moneda debe ser configuración de la organización, y eso es una feature de backend con su propia spec. Esta feature **no agrava** la deuda: formatea con la configuración regional y no introduce ningún importe nuevo. |
 | **Preexistente, heredada**: el token de sesión vive en el almacenamiento del navegador | Es el mecanismo actual y funciona con Sanctum tal como está configurado. | Se rechazó pasar a cookies de sesión con `SameSite` y CSRF: es más robusto frente a XSS, pero exige cambios de configuración y de rutas en el backend, que esta feature tiene explícitamente vedado. Queda anotado como endurecimiento futuro. |

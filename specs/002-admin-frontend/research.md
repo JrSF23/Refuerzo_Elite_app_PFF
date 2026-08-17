@@ -190,6 +190,27 @@ pruebas, sigue cubriendo el aislamiento, que es lo que el Principio V declara no
 visual llevó **dos veces** a conclusiones equivocadas sobre desbordamientos, y solo medir en un navegador real las
 corrigió.
 
+### D11.a — Revisión: se introduce el runner en la Fase 2, no en la 6
+
+**Decisión revisada el 2026-08-17.** Se añaden `vitest`, `jsdom` y `@testing-library/react` como dependencias de
+desarrollo, y `npm test` a los scripts.
+
+**Qué la forzó**: un fallo en producción de desarrollo —«Cannot read properties of null (reading 'role')»— que dejaba la
+aplicación en blanco al entrar. Era **intermitente**, porque dependía de una carrera entre una petición cancelada y la
+que la sustituía. El arnés de navegador headless no lo reprodujo en cuatro intentos con las cuatro cuentas: pasaba
+siempre.
+
+Un fallo que depende del orden de resolución de dos promesas no se puede provocar a mano con fiabilidad. Con un doble de
+la API, en cambio, el orden se controla exactamente y el caso se reproduce siempre. La prueba de regresión escrita
+**falla con el código anterior** y pasa con el corregido; eso es lo que la hace valer.
+
+**Por qué esto sí nombra un problema concreto** (Principio IV): la verificación por navegador cubre lo que se ve —anchos,
+enrutado, permisos— y es insustituible para eso. No cubre estados que dependen del tiempo. Son dos herramientas para dos
+clases de defecto, y la segunda acaba de demostrar que hacía falta.
+
+**Alcance**: no se pretende cobertura amplia. Se prueban los estados que no se pueden provocar a mano —restauración de
+sesión, carreras de peticiones, ramas de error— y las garantías que no deben romperse nunca.
+
 ---
 
 ## D12 — Estrategia de sustitución
