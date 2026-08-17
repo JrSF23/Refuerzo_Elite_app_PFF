@@ -199,21 +199,56 @@ Cerrada el 2026-08-17.
 
 **Independent Test**: escenario 8 de `quickstart.md`.
 
-- [ ] T046 [US2] Añadir el campo de grupo tutorial al formulario de alumno, como `RelationSelect` acotado al centro (FR-024)
-- [ ] T047 [US3] Crear `frontend/src/pages/students/groupStudents.js`: función pura que reparte los alumnos en bloques por su grupo, ordena los bloques por `sort_order` y los alumnos por apellidos y nombre (FR-031, FR-036)
-- [ ] T048 [US3] Prueba de `groupStudents`: agrupación, orden no alfabético, grupo sin alumnos ausente, alumnos sin grupo en su bloque propio. Es lógica pura y se prueba sin navegador
-- [ ] T049 [US3] Crear `frontend/src/components/data/GroupedList.jsx`: bloques con cabecera y la tabla existente dentro. **Reutiliza `DataTable`**, no lo duplica
-- [ ] T050 [US3] Cabecera del bloque: nombre y turno a la izquierda; tutor a la derecha; recuento de alumnos. «Sin asignar» cuando falte el tutor (FR-026, FR-027)
-- [ ] T051 [US3] Bloques plegables con estado recordado: con cientos de alumnos, una lista plana es inmanejable (plan.md §Exigencia)
-- [ ] T052 [US3] Bloque propio para los alumnos sin grupo, marcado como pendientes de asignar. **No deben ocultarse** (FR-029)
-- [ ] T053 [US3] Omitir del listado los grupos sin alumnos (FR-028)
-- [ ] T054 [US3] Quitar la columna de grupo de las tablas: ya lo dice la cabecera (FR-030)
-- [ ] T055 [US4] Comprobar que la búsqueda sigue operando sobre todos los alumnos y que los bloques se recomponen (FR-032)
-- [ ] T056 [US4] Comprobar que crear, editar y eliminar siguen funcionando igual (FR-033)
-- [ ] T057 [US3] Advertir de que los bloques corresponden a la página mostrada mientras la paginación sea global (FR-037)
-- [ ] T058 [P] [US3] Añadir al catálogo los textos de la vista agrupada
+- [X] T046 [US2] Añadir el campo de grupo tutorial al formulario de alumno, como `RelationSelect` acotado al centro (FR-024)
+- [X] T047 [US3] Crear `frontend/src/pages/students/groupStudents.js`: función pura que reparte los alumnos en bloques por su grupo, ordena los bloques por `sort_order` y los alumnos por apellidos y nombre (FR-031, FR-036)
+- [X] T048 [US3] Prueba de `groupStudents`: agrupación, orden no alfabético, grupo sin alumnos ausente, alumnos sin grupo en su bloque propio. Es lógica pura y se prueba sin navegador
+- [X] T049 [US3] Crear `frontend/src/components/data/GroupedList.jsx`: bloques con cabecera y la tabla existente dentro. **Reutiliza `DataTable`**, no lo duplica
+- [X] T050 [US3] Cabecera del bloque: nombre y turno a la izquierda; tutor a la derecha; recuento de alumnos. «Sin asignar» cuando falte el tutor (FR-026, FR-027)
+- [X] T051 [US3] Bloques plegables con estado recordado: con cientos de alumnos, una lista plana es inmanejable (plan.md §Exigencia)
+- [X] T052 [US3] Bloque propio para los alumnos sin grupo, marcado como pendientes de asignar. **No deben ocultarse** (FR-029)
+- [X] T053 [US3] Omitir del listado los grupos sin alumnos (FR-028)
+- [X] T054 [US3] Quitar la columna de grupo de las tablas: ya lo dice la cabecera (FR-030)
+- [X] T055 [US4] Comprobar que la búsqueda sigue operando sobre todos los alumnos y que los bloques se recomponen (FR-032)
+- [X] T056 [US4] Comprobar que crear, editar y eliminar siguen funcionando igual (FR-033)
+- [X] T057 [US3] Advertir de que los bloques corresponden a la página mostrada mientras la paginación sea global (FR-037)
+- [X] T058 [P] [US3] Añadir al catálogo los textos de la vista agrupada
 
 **Checkpoint 4**: escenario 8 completo · los alumnos sin grupo visibles · buscar, crear, editar y eliminar intactos.
+
+### Resultado y desviaciones de la Fase 4
+
+Cerrada el 2026-08-18. Es el objetivo visible de la feature.
+
+**Comprobado en navegador con datos reales**
+
+```
+1º ESO — Mañana  [2 alumnos]        Profesor tutor: Sin asignar
+1º ESO — Tarde   [1 alumno]         Profesor tutor: Carlos Martínez Ruiz
+4º ESO — Mañana  [2 alumnos]        Profesor tutor: María García López
+Sin grupo asignado [3 alumnos]      Asigne un grupo a estos alumnos desde su ficha.
+```
+
+- Cuatro bloques con nombre y turno a la izquierda, tutor a la derecha y recuento. Suman los 8 alumnos.
+- **El grupo sin alumnos —2º Bachiller— no aparece**, y no porque se filtre: la agrupación se construye desde los
+  alumnos, así que no existe por construcción.
+- Las tablas **no llevan columna de grupo**: Alumno, Tutor, Teléfono, Estado, Acciones.
+- Plegado: al plegar un bloque, las tablas pasan de 4 a 3 —el bloque plegado **no renderiza** la suya— y
+  `aria-expanded` cambia a `false`.
+- Búsqueda: «Moreno» recompone los bloques a 2, y **conserva el plegado** entre búsquedas.
+- A 360 px: 0 tablas, 8 tarjetas, desbordamiento 0.
+- 17 pruebas de frontend y 273 de backend en verde.
+
+**Decisiones tomadas durante la fase**
+
+- **El bloque plegado no renderiza su tabla**, en lugar de ocultarla por CSS. Con cientos de alumnos, mantener todas las
+  tablas montadas cuesta memoria y tiempo de render sin ninguna ventaja.
+- **Se guarda qué está PLEGADO, no qué está desplegado.** Así un grupo nuevo aparece abierto sin tener que registrarlo
+  antes en ningún sitio.
+- **Los alumnos sin grupo van al final y con fondo de aviso**: son una tarea pendiente, no un curso más.
+- **Desempate por nombre y turno en el orden de bloques.** Sin él, dos grupos con el mismo `sort_order` podrían
+  intercambiarse entre cargas y la lista parecería moverse sola. Cubierto por prueba.
+- **`DataTable` gana bloques en lugar de duplicarse.** La barra de herramientas y la paginación siguen siendo únicas:
+  la búsqueda y las páginas son del listado entero, no de cada bloque.
 
 ---
 

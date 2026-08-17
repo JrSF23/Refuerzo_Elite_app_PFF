@@ -39,6 +39,15 @@ export function DataTable({
   emptyBody,
   emptyAction,
   getRowKey = (record) => record.id,
+  /**
+   * Bloques ya construidos: `[{ key, header, records }]`. Cuando se pasan, la
+   * tabla se renderiza una vez POR BLOQUE en lugar de una sola.
+   *
+   * La barra de herramientas y la paginación siguen siendo únicas: la búsqueda
+   * y las páginas son del listado entero, no de cada bloque.
+   */
+  blocks = null,
+  renderBlockHeader,
 }) {
   const [containerRef, containerWidth] = useContainerWidth()
 
@@ -73,20 +82,46 @@ export function DataTable({
           : <EmptyState action={emptyAction} body={emptyBody} title={emptyTitle} />
       ) : null}
 
+      {/* Mientras la paginación sea global, un grupo puede continuar en la
+          página siguiente. Decirlo es más honesto que dejar que el usuario
+          cuente y crea que faltan alumnos (FR-037). */}
+      {status === 'ready' && blocks && pagination?.lastPage > 1 ? (
+        <p className="blocks-notice">{t('students.pagedBlocksNotice')}</p>
+      ) : null}
+
       {status === 'ready' && records.length > 0 ? (
-        asCards
-          ? <CardList
+        blocks
+          ? (
+            <div className="blocks">
+              {blocks.map((block) => (
+                <section className="block" key={block.key}>
+                  {renderBlockHeader?.(block)}
+
+                  {/* Los bloques plegados no renderizan su tabla: con cientos de
+                      alumnos, mantenerlas todas montadas y solo ocultas por CSS
+                      cuesta memoria y tiempo de render sin ninguna ventaja. */}
+                  {block.isCollapsed ? null : (
+                    <Rows
+                      asCards={asCards}
+                      columns={columns}
+                      getRowKey={getRowKey}
+                      records={block.records}
+                      rowActions={rowActions}
+                    />
+                  )}
+                </section>
+              ))}
+            </div>
+          )
+          : (
+            <Rows
+              asCards={asCards}
               columns={columns}
               getRowKey={getRowKey}
               records={records}
               rowActions={rowActions}
             />
-          : <TableView
-              columns={columns}
-              getRowKey={getRowKey}
-              records={records}
-              rowActions={rowActions}
-            />
+          )
       ) : null}
 
       {status === 'ready' && pagination ? (
@@ -101,6 +136,12 @@ export function DataTable({
       ) : null}
     </div>
   )
+}
+
+/** Elige entre tabla y tarjetas. Extraído para que bloques y listado plano
+ *  compartan exactamente la misma decisión. */
+function Rows({ asCards, ...props }) {
+  return asCards ? <CardList {...props} /> : <TableView {...props} />
 }
 
 function cellValue(record, column) {

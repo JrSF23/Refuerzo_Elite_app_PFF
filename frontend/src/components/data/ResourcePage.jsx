@@ -36,6 +36,9 @@ export function ResourcePage({
   emptyTitle,
   emptyBody,
   perPage,
+  /** Convierte la página cargada en bloques. Si no se pasa, listado plano. */
+  buildBlocks,
+  renderBlockHeader,
 }) {
   const { roleNames } = useSession()
   const toast = useToast()
@@ -107,6 +110,7 @@ export function ResourcePage({
       </div>
 
       <DataTable
+        blocks={buildBlocks ? buildBlocks(list.records) : null}
         columns={columns}
         emptyAction={canModify ? (
           <Button onClick={openCreate} variant="primary">{t(`${section}.create`)}</Button>
@@ -129,6 +133,7 @@ export function ResourcePage({
             </Button>
           </>
         ) : undefined}
+        renderBlockHeader={renderBlockHeader}
         search={list.search}
         searchable={definition.searchable}
         status={list.status}

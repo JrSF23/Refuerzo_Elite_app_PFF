@@ -171,11 +171,18 @@ export const es = {
     edit: 'Editar alumno',
     emptyTitle: 'Todavía no hay alumnos',
     emptyBody: 'Dé de alta el primer alumno para empezar a matricular y pasar lista.',
+    unassignedGroup: 'Sin grupo asignado',
+    unassignedHint: 'Asigne un grupo a estos alumnos desde su ficha.',
+    countOne: '{count} alumno',
+    countMany: '{count} alumnos',
+    pagedBlocksNotice: 'Los bloques corresponden a la página mostrada. Un grupo con muchos alumnos puede continuar en la siguiente.',
     fields: {
       fullName: 'Alumno',
       dateOfBirth: 'Fecha de nacimiento',
       schoolName: 'Centro escolar',
       schoolLevel: 'Curso',
+      tutorGroup: 'Grupo',
+      tutorGroupHint: 'El aula a la que pertenece. Distinto de los grupos de asignatura.',
     },
   },
 
