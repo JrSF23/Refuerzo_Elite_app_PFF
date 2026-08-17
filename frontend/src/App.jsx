@@ -9,6 +9,10 @@ import { SECTIONS } from './lib/permissions.js'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 import { PlaceholderPage } from './pages/PlaceholderPage.jsx'
+import { StudentsPage } from './pages/students/StudentsPage.jsx'
+import { GuardiansPage } from './pages/guardians/GuardiansPage.jsx'
+import { TeachersPage } from './pages/teachers/TeachersPage.jsx'
+import { SubjectsPage } from './pages/subjects/SubjectsPage.jsx'
 
 /**
  * Secciones que todavía no tienen pantalla propia.
@@ -16,10 +20,18 @@ import { PlaceholderPage } from './pages/PlaceholderPage.jsx'
  * Se irán vaciando fase a fase. Al cerrar la fase 5 la lista debe quedar vacía.
  */
 const PENDING_SECTIONS = [
-  'students', 'guardians', 'teachers', 'subjects',
   'groups', 'enrollments', 'sessions', 'attendance',
   'payments', 'users', 'organizations',
 ]
+
+/** Secciones que ya tienen su pantalla. */
+const BUILT_SECTIONS = {
+  dashboard: DashboardPage,
+  students: StudentsPage,
+  guardians: GuardiansPage,
+  teachers: TeachersPage,
+  subjects: SubjectsPage,
+}
 
 /**
  * Envía a la ruta de inicio del rol.
@@ -48,14 +60,17 @@ function AppRoutes() {
       >
         <Route element={<HomeRedirect />} index />
 
-        <Route
-          element={(
-            <RequireSection section="dashboard">
-              <DashboardPage />
-            </RequireSection>
-          )}
-          path={SECTIONS.dashboard.path.slice(1)}
-        />
+        {Object.entries(BUILT_SECTIONS).map(([key, Screen]) => (
+          <Route
+            element={(
+              <RequireSection section={key}>
+                <Screen />
+              </RequireSection>
+            )}
+            key={key}
+            path={SECTIONS[key].path.slice(1)}
+          />
+        ))}
 
         {PENDING_SECTIONS.map((key) => (
           <Route

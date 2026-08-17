@@ -203,22 +203,49 @@ siguientes.
 
 ### 3a. Patrón compartido
 
-- [ ] T043 `hooks/useResourceList.js`: paginación contra servidor con tope de 50, búsqueda que reinicia a la página 1, cancelación con `AbortController` y los tres estados (FR-023, FR-025, FR-065)
-- [ ] T044 `hooks/useResourceForm.js`: envío, reparto de los errores 422 campo a campo, foco al primer campo con error y bloqueo de doble envío (FR-030, FR-031, FR-036)
-- [ ] T045 `components/data/DataTable.jsx`: barra de herramientas, tabla, paginación, y los cuatro estados. La caja de búsqueda solo se renderiza si la pantalla la declara soportada (FR-024)
-- [ ] T046 Añadir a `DataTable` la representación por tarjetas, con el cambio de forma decidido por el ancho **del propio contenedor** mediante `ResizeObserver`, no por ancho de ventana (FR-028, FR-060, D8)
-- [ ] T047 `components/data/ResourcePage.jsx`: compone `DataTable`, formulario en `Drawer`, `ConfirmDialog` y avisos, dejando a cada pantalla sus columnas, campos y permisos
+- [X] T043 `hooks/useResourceList.js`: paginación contra servidor con tope de 50, búsqueda que reinicia a la página 1, cancelación con `AbortController` y los tres estados (FR-023, FR-025, FR-065)
+- [X] T044 `hooks/useResourceForm.js`: envío, reparto de los errores 422 campo a campo, foco al primer campo con error y bloqueo de doble envío (FR-030, FR-031, FR-036)
+- [X] T045 `components/data/DataTable.jsx`: barra de herramientas, tabla, paginación, y los cuatro estados. La caja de búsqueda solo se renderiza si la pantalla la declara soportada (FR-024)
+- [X] T046 Añadir a `DataTable` la representación por tarjetas, con el cambio de forma decidido por el ancho **del propio contenedor** mediante `ResizeObserver`, no por ancho de ventana (FR-028, FR-060, D8)
+- [X] T047 `components/data/ResourcePage.jsx`: compone `DataTable`, formulario en `Drawer`, `ConfirmDialog` y avisos, dejando a cada pantalla sus columnas, campos y permisos
 
 ### 3b. Pantallas
 
-- [ ] T048 [US3] `pages/students/`: listado con búsqueda, formulario con los 11 campos y sus obligatorios, borrado confirmado (contracts §3)
-- [ ] T049 [US3] Recorte de solo lectura para el profesor en alumnos: sin acciones de crear, editar ni borrar (US3.4)
-- [ ] T050 [P] [US3] `pages/guardians/`: listado con búsqueda y formulario de 7 campos
-- [ ] T051 [P] [US4] `pages/teachers/`: listado con búsqueda y formulario de 6 campos
-- [ ] T052 [P] [US4] `pages/subjects/`: listado con búsqueda y formulario de 5 campos, con la tarifa mensual formateada como importe (FR-073, SC-010)
-- [ ] T053 [P] [US3] [US4] Añadir los espacios `students`, `guardians`, `teachers` y `subjects` a `i18n/locales/es.js`
+- [X] T048 [US3] `pages/students/`: listado con búsqueda, formulario con los 11 campos y sus obligatorios, borrado confirmado (contracts §3)
+- [X] T049 [US3] Recorte de solo lectura para el profesor en alumnos: sin acciones de crear, editar ni borrar (US3.4)
+- [X] T050 [P] [US3] `pages/guardians/`: listado con búsqueda y formulario de 7 campos
+- [X] T051 [P] [US4] `pages/teachers/`: listado con búsqueda y formulario de 6 campos
+- [X] T052 [P] [US4] `pages/subjects/`: listado con búsqueda y formulario de 5 campos, con la tarifa mensual formateada como importe (FR-073, SC-010)
+- [X] T053 [P] [US3] [US4] Añadir los espacios `students`, `guardians`, `teachers` y `subjects` a `i18n/locales/es.js`
 
 **Checkpoint 3**: escenarios 4 y 5 sobre estas secciones · el profesor ve alumnos en lectura y no alcanza profesores ni asignaturas · tablas en tarjetas a 360 px.
+
+### Resultado y desviaciones de la Fase 3
+
+Cerrada el 2026-08-17. Verificada contra el stack Docker con datos sembrados.
+
+**Comprobado**
+
+- Las cuatro pantallas con datos reales: 8 alumnos, 5 tutores, 2 profesores, 3 asignaturas.
+- **Recorte del profesor**: `mgarcia.a` ve **6** alumnos frente a los 8 del administrador, sin botón de crear, sin
+  acciones de fila y sin columna de acciones (US3.4).
+- Búsqueda contra servidor: «Isabel» → 1 de 8, «Moreno» → 2 de 8, término inexistente → 0 con el estado vacío
+  **de búsqueda**, distinto del inicial (FR-043).
+- Cambio a tarjetas por ancho del contenedor, no de ventana: alumnos (5 columnas) cambia entre 768 y 900 px;
+  profesores (4 columnas) entre 640 y 768. **Tablas distintas cambian en momentos distintos**, que es lo que pide
+  FR-060.
+- El caso que valida la decisión: a **1024 px se muestran tarjetas** aunque a 900 px se muestre tabla. No es un fallo
+  —en 1024 aparece la barra lateral y se lleva 264 px, así que la tabla deja de caber de verdad—. Una media query de
+  ventana lo habría resuelto mal.
+- Desbordamiento 0 en todos los anchos probados.
+
+**Desviaciones**
+
+- **`RelationSelect` adelantado de la Fase 4.** El alumno lleva `guardian_id` y los tutores se construyen en esta misma
+  fase; sin el componente, el formulario de alumno no podía asignar tutor. Era un hueco del plan, no del alcance.
+- **`useContainerWidth` no estaba en las tareas.** T046 pedía decidir por el ancho del contenedor con `ResizeObserver`;
+  se extrajo a su propio gancho para que lo compartan todas las tablas. Incluye caída controlada cuando no hay
+  `ResizeObserver`, que es el caso de jsdom en las pruebas.
 
 ---
 

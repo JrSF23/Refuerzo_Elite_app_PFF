@@ -1085,6 +1085,162 @@
   margin-bottom: var(--space-5);
 }
 
+/* ═══ Pantalla de entidad ══════════════════════════════════════════════════ */
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.page-head .page-title {
+  margin-bottom: 0;
+}
+
+.table-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* ═══ Tabla ════════════════════════════════════════════════════════════════ */
+
+.table-wrap {
+  width: 100%;
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.table-wrap th {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table-wrap td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  /* Un correo o unas observaciones largas deben partirse, no empujar la tabla
+     fuera del contenedor. */
+  overflow-wrap: anywhere;
+}
+
+.table-wrap tr:last-child td {
+  border-bottom: none;
+}
+
+.table-wrap tbody tr:hover {
+  background: var(--color-surface-sunken);
+}
+
+.cell-actions {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ═══ Tarjetas de registro ═════════════════════════════════════════════════
+   Sustituyen a la tabla cuando el ancho del contenedor no da (FR-028). El
+   desplazamiento horizontal no es una alternativa aceptable (Principio VI).
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.record-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.record-card {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.record-card__title {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.record-card__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Rótulo encima del valor, no al lado: en horizontal, un valor largo empuja al
+   rótulo y ambos quedan ilegibles a 360 px. */
+.record-card__field dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.record-card__field dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.record-card__actions {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ═══ Formulario de entidad ════════════════════════════════════════════════ */
+
+.resource-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.resource-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
 /* ═══ Puntos de ruptura ════════════════════════════════════════════════════
    Derivados del contenido, no de dispositivos (FR-060). El de 1024 px sale de
    264 de barra + ~720 de tabla útil + espaciado.

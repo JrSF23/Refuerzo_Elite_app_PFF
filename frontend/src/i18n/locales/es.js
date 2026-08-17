@@ -66,6 +66,12 @@ export const es = {
     forbiddenTitle: 'Sin acceso',
     tooManyRequests: 'Demasiados intentos. Espere un momento antes de volver a probar.',
 
+    // Resultado de las acciones de escritura
+    created: 'Registro creado.',
+    savedChanges: 'Cambios guardados.',
+    deleted: 'Registro eliminado.',
+    noRecordsTitle: 'Todavía no hay registros',
+
     // Confirmación de borrado
     deleteTitle: 'Eliminar {name}',
     deleteBody: '¿Confirma que desea eliminar «{name}»? Esta acción no se puede deshacer.',
@@ -158,10 +164,58 @@ export const es = {
      que muestra la navegación y el encabezado de la pantalla. El resto de claves
      de cada dominio se añade en la fase que construye esa pantalla.
      ───────────────────────────────────────────────────────────────────────── */
-  students:      { title: 'Alumnos' },
-  guardians:     { title: 'Tutores' },
-  teachers:      { title: 'Profesores' },
-  subjects:      { title: 'Asignaturas' },
+  students: {
+    title: 'Alumnos',
+    create: 'Nuevo alumno',
+    edit: 'Editar alumno',
+    emptyTitle: 'Todavía no hay alumnos',
+    emptyBody: 'Dé de alta el primer alumno para empezar a matricular y pasar lista.',
+    fields: {
+      fullName: 'Alumno',
+      dateOfBirth: 'Fecha de nacimiento',
+      schoolName: 'Centro escolar',
+      schoolLevel: 'Curso',
+    },
+  },
+
+  guardians: {
+    title: 'Tutores',
+    create: 'Nuevo tutor',
+    edit: 'Editar tutor',
+    emptyTitle: 'Todavía no hay tutores',
+    emptyBody: 'Los tutores son los responsables de contacto de cada alumno.',
+    fields: {
+      fullName: 'Tutor',
+      relationship: 'Parentesco',
+      relationshipHint: 'Por ejemplo: madre, padre, abuela, tutor legal.',
+    },
+  },
+
+  teachers: {
+    title: 'Profesores',
+    create: 'Nuevo profesor',
+    edit: 'Editar profesor',
+    emptyTitle: 'Todavía no hay profesores',
+    emptyBody: 'Las fichas de profesor son necesarias para poder asignar grupos.',
+    fields: {
+      fullName: 'Profesor',
+      specialty: 'Especialidad',
+      bio: 'Presentación',
+    },
+  },
+
+  subjects: {
+    title: 'Asignaturas',
+    create: 'Nueva asignatura',
+    edit: 'Editar asignatura',
+    emptyTitle: 'Todavía no hay asignaturas',
+    emptyBody: 'Cada grupo se imparte sobre una asignatura, así que son el primer paso.',
+    fields: {
+      monthlyFee: 'Tarifa mensual',
+      codeHint: 'Identificador corto y único dentro del centro.',
+    },
+  },
+
   groups:        { title: 'Grupos' },
   enrollments:   { title: 'Matrículas' },
   sessions:      { title: 'Sesiones' },
