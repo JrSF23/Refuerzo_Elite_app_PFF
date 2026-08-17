@@ -74,6 +74,11 @@ export const es = {
     noResultsTitle: 'Sin resultados',
     noResultsBody: 'No hay ningún registro que coincida con «{term}».',
 
+    // Límite de error: lo que se ve cuando algo falla durante el render.
+    crashTitle: 'Algo ha fallado',
+    crashBody: 'Se ha producido un error inesperado y la pantalla no ha podido mostrarse. Puede reintentar o volver al inicio.',
+    backToStart: 'Volver al inicio',
+
     // Andamio de la fase 1: desaparece cuando cada sección tiene su pantalla.
     sectionPendingTitle: 'Sección en construcción',
     sectionPendingBody: 'Esta sección estará disponible en una próxima entrega.',

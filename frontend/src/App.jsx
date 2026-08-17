@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { SessionProvider, useSession } from './context/SessionContext.jsx'
 import { ToastProvider } from './context/ToastContext.jsx'
+import { ErrorBoundary } from './components/ErrorBoundary.jsx'
 import { RequireAuth, RequireSection } from './components/RequireAuth.jsx'
 import { AppShell } from './components/layout/AppShell.jsx'
 import { SECTIONS } from './lib/permissions.js'
@@ -82,10 +83,15 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <SessionProvider>
-      <ToastProvider>
-        <AppRoutes />
-      </ToastProvider>
-    </SessionProvider>
+    // Envuelve TODO, proveedores incluidos: un fallo al restaurar la sesión o al
+    // montar el contexto también dejaría la página en blanco, y es justo el
+    // momento en que menos información tiene el usuario.
+    <ErrorBoundary>
+      <SessionProvider>
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
+      </SessionProvider>
+    </ErrorBoundary>
   )
 }
