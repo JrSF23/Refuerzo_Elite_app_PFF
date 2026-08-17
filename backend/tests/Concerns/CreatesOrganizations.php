@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
+use App\Models\TutorGroup;
 use App\Models\User;
 use App\Support\OrganizationContext;
 use Illuminate\Support\Str;
@@ -95,6 +96,18 @@ trait CreatesOrganizations
     {
         return Student::factory()->create(array_merge([
             'organization_id' => $organization->getKey(),
+        ], $overrides));
+    }
+
+    protected function createTutorGroup(Organization $organization, array $overrides = []): TutorGroup
+    {
+        return TutorGroup::forceCreate(array_merge([
+            'organization_id' => $organization->getKey(),
+            'name' => '1º ESO '.Str::upper(Str::random(4)),
+            'shift' => TutorGroup::SHIFT_MORNING,
+            'academic_year' => '2025-2026',
+            'sort_order' => 10,
+            'status' => TutorGroup::STATUS_ACTIVE,
         ], $overrides));
     }
 

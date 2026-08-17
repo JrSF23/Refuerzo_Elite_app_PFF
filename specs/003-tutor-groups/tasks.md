@@ -78,37 +78,67 @@ primera fue en `MigrationBackfillTest` de la feature 001.
 
 ### 2a. Controlador y reglas
 
-- [ ] T011 Crear `backend/app/Http/Controllers/Api/TutorGroupController.php` sobre `BaseApiController`: `$searchable = ['name']`, `$with = ['tutor','representative']`, `$entityLabel = 'tutor_group'`
-- [ ] T012 Reglas de validación del grupo: nombre, turno, curso académico, orden y estado (contracts §1)
-- [ ] T013 Acotar la unicidad de `name` a la organización activa **en el servidor**, con `shift` y `academic_year`. Si se dejara al índice SQL, el error de clave duplicada revelaría un registro de otro centro (FR-004)
-- [ ] T014 Validar `tutor_teacher_id` con `BelongsToCurrentOrganization`, que consulta por Eloquent para que el global scope aplique
-- [ ] T015 Crear la regla del delegado: debe ser alumno de la organización **y de este grupo**. Dos fallos distintos — el ajeno, indistinguible de «no existe»; el de otro grupo, con mensaje explicativo, porque ahí no hay nada que ocultar (FR-003c, data-model §5)
-- [ ] T016 Rechazar con explicación el delegado al **crear** un grupo, que aún no tiene alumnos (US1.2c)
-- [ ] T017 Crear `backend/app/Policies/TutorGroupPolicy.php`. **No puede extender `OrganizationAdminOnlyPolicy` en vacío** como las demás: el profesor tiene lectura y no escritura (FR-020, contracts §3)
-- [ ] T018 Registrar la policy en `AppServiceProvider`
-- [ ] T019 Añadir las rutas a `backend/routes/api.php` en los dos grupos de middleware —lectura para `org_admin` y `teacher`, escritura solo para `org_admin`— siguiendo el reparto que ya usan `students` y `class-groups`
-- [ ] T020 Añadir `tutor_group_id` a las reglas de `StudentController`, validado con `BelongsToCurrentOrganization` (FR-017)
-- [ ] T021 Ampliar `StudentController::$with` a `['guardian','tutorGroup.tutor']` (FR-016)
-- [ ] T022 Añadir el filtro `tutor_group_id` **solo** en `StudentController`, no genérico en `BaseApiController`: sin un segundo consumidor sería una capa sin justificar (Principio IV, FR-021)
-- [ ] T023 Validar el filtro: un grupo de otra organización NO debe devolver el listado completo por haberse ignorado el parámetro (contracts §2)
-- [ ] T024 [P] Añadir a `backend/lang/es/tenancy.php` los mensajes propios de la feature
+- [X] T011 Crear `backend/app/Http/Controllers/Api/TutorGroupController.php` sobre `BaseApiController`: `$searchable = ['name']`, `$with = ['tutor','representative']`, `$entityLabel = 'tutor_group'`
+- [X] T012 Reglas de validación del grupo: nombre, turno, curso académico, orden y estado (contracts §1)
+- [X] T013 Acotar la unicidad de `name` a la organización activa **en el servidor**, con `shift` y `academic_year`. Si se dejara al índice SQL, el error de clave duplicada revelaría un registro de otro centro (FR-004)
+- [X] T014 Validar `tutor_teacher_id` con `BelongsToCurrentOrganization`, que consulta por Eloquent para que el global scope aplique
+- [X] T015 Crear la regla del delegado: debe ser alumno de la organización **y de este grupo**. Dos fallos distintos — el ajeno, indistinguible de «no existe»; el de otro grupo, con mensaje explicativo, porque ahí no hay nada que ocultar (FR-003c, data-model §5)
+- [X] T016 Rechazar con explicación el delegado al **crear** un grupo, que aún no tiene alumnos (US1.2c)
+- [X] T017 Crear `backend/app/Policies/TutorGroupPolicy.php`. **No puede extender `OrganizationAdminOnlyPolicy` en vacío** como las demás: el profesor tiene lectura y no escritura (FR-020, contracts §3)
+- [X] T018 Registrar la policy en `AppServiceProvider`
+- [X] T019 Añadir las rutas a `backend/routes/api.php` en los dos grupos de middleware —lectura para `org_admin` y `teacher`, escritura solo para `org_admin`— siguiendo el reparto que ya usan `students` y `class-groups`
+- [X] T020 Añadir `tutor_group_id` a las reglas de `StudentController`, validado con `BelongsToCurrentOrganization` (FR-017)
+- [X] T021 Ampliar `StudentController::$with` a `['guardian','tutorGroup.tutor']` (FR-016)
+- [X] T022 Añadir el filtro `tutor_group_id` **solo** en `StudentController`, no genérico en `BaseApiController`: sin un segundo consumidor sería una capa sin justificar (Principio IV, FR-021)
+- [X] T023 Validar el filtro: un grupo de otra organización NO debe devolver el listado completo por haberse ignorado el parámetro (contracts §2)
+- [X] T024 [P] Añadir a `backend/lang/es/tenancy.php` los mensajes propios de la feature
 
 ### 2b. Pruebas obligatorias
 
-- [ ] T025 `TutorGroupIsolationTest`: listar, ver, editar y borrar grupos de otra organización responde **404**, y el registro ajeno queda intacto (quickstart 2.1–2.4)
-- [ ] T026 `TutorGroupCrossReferenceTest`: las tres vías de fuga por referencia —alumno→grupo, grupo→tutor, grupo→delegado— rechazan lo ajeno de forma indistinguible de «no existe» (quickstart 2.5–2.7)
-- [ ] T027 Prueba del filtro: `tutor_group_id` de otra organización nunca devuelve alumnos ajenos ni el listado completo (quickstart 2.8)
-- [ ] T028 Prueba de unicidad: el mismo nombre se acepta entre centros y entre turnos, y se rechaza dentro del mismo centro, turno y curso (quickstart 2.9, 3.2, 3.3, 3.4)
-- [ ] T029 Prueba de la regla del delegado: alumno de otro grupo del mismo centro rechazado con mensaje explicativo (quickstart 3.5)
-- [ ] T030 `TutorGroupDeletionTest`: borrar un grupo con alumnos no borra ni desactiva alumnos, y el recuento del centro no cambia (quickstart 4.1, 4.2)
-- [ ] T031 Borrar al profesor tutor deja el grupo sin tutor; borrar al alumno delegado lo deja sin delegado. **En borrado lógico y físico** (quickstart 4.3–4.5)
-- [ ] T032 `TutorGroupQueryCountTest`: contar consultas con `DB::listen` al listar alumnos y al listar grupos; ninguna por alumno ni por grupo (quickstart 5.1, 5.2)
-- [ ] T033 Sembrar 100 alumnos y comprobar que el número de consultas **no crece**. Con 8, un N+1 pasa desapercibido (quickstart 5.3, SC-002)
-- [ ] T034 Prueba de permisos: el profesor lee pero no escribe; el `super_admin` recibe 403 (quickstart 6.1–6.3)
-- [ ] T035 **Comprobar que las pruebas prueban algo**: quitar el filtro del global scope y confirmar que T025 falla. Si pasa sin el filtro, no comprueba nada (quickstart 2.10)
-- [ ] T036 Usar `actingWithToken()` en todas las pruebas que cambien de usuario. Con `withToken()` a secas, el guard de Sanctum cachea el usuario y toda la batería puede pasar en falso. Ya ocurrió en la feature 001
+- [X] T025 `TutorGroupIsolationTest`: listar, ver, editar y borrar grupos de otra organización responde **404**, y el registro ajeno queda intacto (quickstart 2.1–2.4)
+- [X] T026 `TutorGroupCrossReferenceTest`: las tres vías de fuga por referencia —alumno→grupo, grupo→tutor, grupo→delegado— rechazan lo ajeno de forma indistinguible de «no existe» (quickstart 2.5–2.7)
+- [X] T027 Prueba del filtro: `tutor_group_id` de otra organización nunca devuelve alumnos ajenos ni el listado completo (quickstart 2.8)
+- [X] T028 Prueba de unicidad: el mismo nombre se acepta entre centros y entre turnos, y se rechaza dentro del mismo centro, turno y curso (quickstart 2.9, 3.2, 3.3, 3.4)
+- [X] T029 Prueba de la regla del delegado: alumno de otro grupo del mismo centro rechazado con mensaje explicativo (quickstart 3.5)
+- [X] T030 `TutorGroupDeletionTest`: borrar un grupo con alumnos no borra ni desactiva alumnos, y el recuento del centro no cambia (quickstart 4.1, 4.2)
+- [X] T031 Borrar al profesor tutor deja el grupo sin tutor; borrar al alumno delegado lo deja sin delegado. **En borrado lógico y físico** (quickstart 4.3–4.5)
+- [X] T032 `TutorGroupQueryCountTest`: contar consultas con `DB::listen` al listar alumnos y al listar grupos; ninguna por alumno ni por grupo (quickstart 5.1, 5.2)
+- [X] T033 Sembrar 100 alumnos y comprobar que el número de consultas **no crece**. Con 8, un N+1 pasa desapercibido (quickstart 5.3, SC-002)
+- [X] T034 Prueba de permisos: el profesor lee pero no escribe; el `super_admin` recibe 403 (quickstart 6.1–6.3)
+- [X] T035 **Comprobar que las pruebas prueban algo**: quitar el filtro del global scope y confirmar que T025 falla. Si pasa sin el filtro, no comprueba nada (quickstart 2.10)
+- [X] T036 Usar `actingWithToken()` en todas las pruebas que cambien de usuario. Con `withToken()` a secas, el guard de Sanctum cachea el usuario y toda la batería puede pasar en falso. Ya ocurrió en la feature 001
 
 **Checkpoint 2**: escenarios 2 a 6 completos · **puerta 5 cerrada** · suite completa en verde.
+
+### Resultado y desviaciones de la Fase 2
+
+Cerrada el 2026-08-17. **Puerta 5 cerrada.**
+
+**Comprobado**
+
+- **273 pruebas en verde**: las 246 anteriores más 27 nuevas, con 687 aserciones.
+- Permisos contra la API viva: el `org_admin` obtiene 200/201/200 en listar, crear y editar; el `teacher` obtiene 200
+  al leer y **403 en las tres escrituras**; el `super_admin`, 403.
+- Tutor y delegado llegan cargados de antemano en el listado, sin consulta por grupo.
+- **T035, la comprobación que da valor al resto**: desactivado el filtro de organización del global scope,
+  **7 pruebas fallan**. Si hubieran seguido pasando, no estarían comprobando nada. El filtro se restauró desde git y se
+  verificó que no quedaban restos.
+
+**Defectos y correcciones durante la fase**
+
+- **Caché de rutas.** El endpoint devolvía 404 pese a estar bien registrado: el contenedor servía rutas cacheadas de
+  antes del cambio. Resuelto con `route:clear`. Conviene recordarlo al añadir rutas en Docker.
+- **El contador de consultas se contaba a sí mismo.** `DB::listen` no se puede desregistrar, así que registrarlo antes
+  de cada medición dejaba dos escuchas activas y la segunda cuenta salía al doble. Se registra una sola vez.
+- **La primera petición del proceso mide de más.** Sin calentamiento, las consultas bajaban de 10 a 8 entre medición y
+  medición —la tabla de permisos de Spatie se cachea—, y la comparación no decía nada sobre el N+1. Se añade una
+  petición de calentamiento antes de medir.
+
+**Desviación**
+
+- **`RepresentativeBelongsToGroup` es una regla propia**, no prevista como fichero separado en el plan. Hacía falta
+  porque debe fallar de **dos formas distintas**: indistinguible de «no existe» para un alumno ajeno, y con mensaje
+  explicativo para un alumno del centro que está en otro grupo. Ninguna regla existente cubre esa doble semántica.
 
 ---
 

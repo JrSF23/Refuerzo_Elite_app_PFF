@@ -26,6 +26,12 @@ return [
         'deleted' => 'Registro eliminado correctamente.',
     ],
 
+    // ── Grupos tutoriales ────────────────────────────────────────────────────
+    'tutor_groups' => [
+        'representative_on_create' => 'No se puede designar delegado al crear el grupo: todavía no tiene alumnos. Cree el grupo, adscriba alumnos y designe después.',
+        'representative_other_group' => 'El alumno seleccionado pertenece a otro grupo. El delegado debe ser alumno de este grupo.',
+    ],
+
     // ── Pagos ────────────────────────────────────────────────────────────────
     'payments' => [
         'enrollment_mismatch' => 'La matrícula seleccionada no pertenece a este alumno.',
