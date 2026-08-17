@@ -83,8 +83,33 @@ usarse como color de texto sobre blanco**. Cumplen el 3:1 de elementos de interf
 fondos de distintivo, pero el texto de un distintivo debe ir en un tono oscurecido de la misma familia sobre el fondo
 suave, no en el color puro. Es la trampa más común de esta paleta y la que haría fallar SC-006 al final.
 
+Por eso cada estado tiene tres tokens: el color puro para relleno e icono, una variante `-text` que sí cumple contraste
+de texto, y una `-soft` de fondo. Ratios verificados de las variantes `-text`:
+
+| Variante | Sobre blanco | Sobre su `-soft` |
+|---|---|---|
+| `--color-success-text` `#15803D` | 5,02:1 | 4,79:1 |
+| `--color-warning-text` `#B45309` | 5,02:1 | 4,84:1 |
+| `--color-error-text` `#B91C1C` | 6,47:1 | 5,91:1 |
+| `--color-info-text` `#036AA1` | 5,87:1 | 5,50:1 |
+
 `--color-text-muted` pasa por poco en ambos fondos, así que **no debe usarse por debajo de 14 px** ni para información
 esencial: queda para texto de apoyo.
+
+### Los dos bordes no son intercambiables
+
+WCAG 1.4.11 exige **3:1 al límite de un control** —campo, desplegable, casilla—, porque un borde que no se percibe deja
+al usuario sin saber dónde escribir. No impone mínimo a un separador decorativo.
+
+El `#E5E7EB` de la paleta da 1,24:1: sirve como separador, **no como borde de campo**. Se midieron los grises claros
+habituales y ninguno llega: `#CBD5E1` da 1,48:1 y `#94A3B8` da 2,56:1. El primero que cumple es `#64748B`, con 4,76:1.
+
+| Token | Valor | Uso | Contraste sobre blanco |
+|---|---|---|---|
+| `--color-border` | `#E5E7EB` | Separadores de tabla, límite de tarjeta | 1,24:1 — sin mínimo aplicable |
+| `--color-border-control` | `#64748B` | Borde de campo, desplegable, casilla | 4,76:1 — cumple 1.4.11 |
+
+Resulta un borde de campo más marcado de lo que se estila en este tipo de interfaz. Es lo que el criterio exige.
 
 ## 2. Tipografía
 

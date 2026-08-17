@@ -27,12 +27,17 @@ coincidía con los seeders provocó 33 fallos falsos.
 | Rol | Usuario | Contraseña | Organización |
 |---|---|---|---|
 | `super_admin` | `superadmin` | `SUPER_ADMIN_PASSWORD` del entorno; por defecto `ChangeMe_Super123!` | ninguna |
-| `org_admin` | `admin.a` | `Admin12345!` | Centro Piloto Malabo |
-| `teacher` | `mgarcia.a` | `Teacher12345!` | Centro Piloto Malabo |
-| `org_admin` (centro B) | `admin.b` | `Admin12345!` | segundo centro |
-| `teacher` (centro B) | `lnvono.b` | `Teacher12345!` | segundo centro |
+| `org_admin` | `admin.a` | `Admin12345!` | Refuerzo Elite (id 1) |
+| `teacher` | `mgarcia.a` | `Teacher12345!` | Refuerzo Elite (id 1) |
+| `org_admin` (centro B) | `admin.b` | `Admin12345!` | Centro Piloto Malabo (id 2) |
+| `teacher` (centro B) | `lnvono.b` | `Teacher12345!` | Centro Piloto Malabo (id 2) |
 
 El campo de acceso admite usuario **o** correo. Los correos siguen el patrón `admin.a@refuerzoelite.test`.
+
+Comprobado ejecutando el seeder el 2026-08-17: el sufijo `.a` corresponde a **Refuerzo Elite**, no a Centro Piloto
+Malabo, que es el `.b`. Existe además una cuenta `admin` sin sufijo, también en Refuerzo Elite. La contraseña del super
+administrador la fija `SUPER_ADMIN_PASSWORD` en `.env.docker`, que en el entorno local ya tiene un valor propio: el
+`ChangeMe_Super123!` del código solo aplica si la variable no está definida.
 
 ### Arnés de anchos
 

@@ -1,97 +1,82 @@
-import { Navigate, Route, Routes, useParams } from 'react-router-dom'
-import { AppShell } from './components/AppShell'
-import { RequireAuth } from './components/RequireAuth'
-import { SessionProvider } from './context/SessionContext'
-import { CentrePage } from './pages/CentrePage'
-import { ContactPage } from './pages/ContactPage'
-import { DashboardPage } from './pages/DashboardPage'
-import { LoginPage } from './pages/LoginPage'
-import { MethodPage } from './pages/MethodPage'
-import { ModulePage } from './pages/ModulePage'
-import { OrganizationsPage } from './pages/Organizations/OrganizationsPage'
-import { OrganizationUsersPage } from './pages/Organizations/OrganizationUsersPage'
-import { PublicHomePage } from './pages/PublicHomePage'
-import { ServicesPage } from './pages/ServicesPage'
-import { UsersPage } from './pages/UsersPage'
+import { Navigate, Route, Routes } from 'react-router-dom'
 
-// Las dos rutas antiguas con parámetro necesitan leerlo para reconstruir el destino.
-function LegacyModuleRedirect() {
-  const { moduleKey } = useParams()
-  return <Navigate replace to={`/espacio/modulo/${moduleKey}`} />
+import { SessionProvider, useSession } from './context/SessionContext.jsx'
+import { ToastProvider } from './context/ToastContext.jsx'
+import { RequireAuth, RequireSection } from './components/RequireAuth.jsx'
+import { AppShell } from './components/layout/AppShell.jsx'
+import { SECTIONS } from './lib/permissions.js'
+import { LoginPage } from './pages/LoginPage.jsx'
+import { PlaceholderPage } from './pages/PlaceholderPage.jsx'
+
+/**
+ * Secciones que todavía no tienen pantalla propia.
+ *
+ * Se irán vaciando fase a fase. Al cerrar la fase 5 la lista debe quedar vacía.
+ */
+const PENDING_SECTIONS = [
+  'dashboard',
+  'students', 'guardians', 'teachers', 'subjects',
+  'groups', 'enrollments', 'sessions', 'attendance',
+  'payments', 'users', 'organizations',
+]
+
+/**
+ * Envía a la ruta de inicio del rol.
+ *
+ * Vive dentro del árbol de sesión porque necesita saber el rol: el super
+ * administrador va a organizaciones y no al panel, ya que `GET /dashboard` le
+ * responde 403 (FR-003).
+ */
+function HomeRedirect() {
+  const { homePath } = useSession()
+  return <Navigate replace to={homePath} />
 }
 
-function LegacyOrganizationUsersRedirect() {
-  const { organizationId } = useParams()
-  return <Navigate replace to={`/espacio/organizaciones/${organizationId}/cuentas`} />
-}
-
-function App() {
+function AppRoutes() {
   return (
-    <SessionProvider>
-      <Routes>
-        <Route path="/" element={<PublicHomePage />} />
-        <Route path="/centro" element={<CentrePage />} />
-        <Route path="/servicios" element={<ServicesPage />} />
-        <Route path="/metodo" element={<MethodPage />} />
-        <Route path="/contacto" element={<ContactPage />} />
-        <Route path="/acceso" element={<LoginPage />} />
+    <Routes>
+      <Route element={<LoginPage />} path="/login" />
 
-        {/* Rutas antiguas en francés: el centro puede tener marcadores guardados,
-            así que se mantienen como redirecciones permanentes al equivalente español. */}
-        <Route path="/login" element={<Navigate replace to="/acceso" />} />
-        <Route path="/connexion" element={<Navigate replace to="/acceso" />} />
-        <Route path="/centre" element={<Navigate replace to="/centro" />} />
-        <Route path="/services" element={<Navigate replace to="/servicios" />} />
-        <Route path="/methode" element={<Navigate replace to="/metodo" />} />
-        <Route path="/contact" element={<Navigate replace to="/contacto" />} />
-        <Route path="/espace" element={<Navigate replace to="/espacio" />} />
-        <Route path="/espace/module/:moduleKey" element={<LegacyModuleRedirect />} />
-        <Route path="/espace/comptes" element={<Navigate replace to="/espacio/cuentas" />} />
-        <Route path="/espace/organisations" element={<Navigate replace to="/espacio/organizaciones" />} />
-        <Route
-          path="/espace/organisations/:organizationId/comptes"
-          element={<LegacyOrganizationUsersRedirect />}
-        />
+      <Route
+        element={(
+          <RequireAuth>
+            <AppShell />
+          </RequireAuth>
+        )}
+        path="/"
+      >
+        <Route element={<HomeRedirect />} index />
 
-        <Route
-          path="/espacio"
-          element={(
-            <RequireAuth allowedRoles={['super_admin', 'org_admin', 'teacher']}>
-              <AppShell />
-            </RequireAuth>
-          )}
-        >
-          <Route index element={<DashboardPage />} />
-          <Route path="modulo/:moduleKey" element={<ModulePage />} />
+        {PENDING_SECTIONS.map((key) => (
           <Route
-            path="cuentas"
             element={(
-              <RequireAuth allowedRoles={['org_admin']}>
-                <UsersPage />
-              </RequireAuth>
+              <RequireSection section={key}>
+                <PlaceholderPage section={key} />
+              </RequireSection>
             )}
+            key={key}
+            // `path` sin la barra inicial: es una ruta hija de "/".
+            path={SECTIONS[key].path.slice(1)}
           />
-          <Route
-            path="organizaciones"
-            element={(
-              <RequireAuth allowedRoles={['super_admin']}>
-                <OrganizationsPage />
-              </RequireAuth>
-            )}
-          />
-          <Route
-            path="organizaciones/:organizationId/cuentas"
-            element={(
-              <RequireAuth allowedRoles={['super_admin']}>
-                <OrganizationUsersPage />
-              </RequireAuth>
-            )}
-          />
-        </Route>
-        <Route path="*" element={<Navigate replace to="/" />} />
-      </Routes>
-    </SessionProvider>
+        ))}
+      </Route>
+
+      {/* El concepto anterior era un sitio público con landing, servicios,
+          método y contacto. Ya no existe superficie pública (FR-001), así que
+          esas rutas y sus antiguas variantes francesas dejan de servir contenido
+          y caen aquí (FR-009). Cualquier ruta desconocida va al inicio, que
+          redirige según haya sesión o no. */}
+      <Route element={<Navigate replace to="/" />} path="*" />
+    </Routes>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <SessionProvider>
+      <ToastProvider>
+        <AppRoutes />
+      </ToastProvider>
+    </SessionProvider>
+  )
+}

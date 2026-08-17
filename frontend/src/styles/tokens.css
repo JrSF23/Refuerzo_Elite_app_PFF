@@ -1,0 +1,148 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Tokens del sistema visual.
+
+   Fuente ÚNICA de color, tipografía, espaciado, radio, sombra y layout. Ningún
+   componente debe escribir un valor suelto (FR-054): si algo no está aquí, se
+   añade aquí. Ver specs/002-admin-frontend/design-system.md.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Superficies ─────────────────────────────────────────────────────────── */
+  --color-bg:             #F8FAFC;
+  --color-surface:        #FFFFFF;
+  --color-surface-sunken: #F1F5F9;  /* cabecera de tabla, filas alternas */
+  --color-sidebar:        #111827;
+  --color-sidebar-hover:  #1F2937;
+
+  /* ── Texto ───────────────────────────────────────────────────────────────── */
+  --color-text:           #111827;
+  --color-text-muted:     #64748B;
+  --color-text-inverse:   #F8FAFC;
+
+  /* ── Estructura ──────────────────────────────────────────────────────────────
+     Dos bordes con propósitos distintos, y no son intercambiables:
+
+     `--color-border` (1,24:1 sobre blanco) es un separador DECORATIVO —divisiones
+     de tabla, límites de tarjeta—. WCAG no le impone mínimo porque no transmite
+     información: la estructura se entiende sin él.
+
+     `--color-border-control` es el límite de un CONTROL —campo, desplegable,
+     casilla—. WCAG 1.4.11 le exige 3:1, porque si no se percibe, no se sabe
+     dónde hay que escribir. Se midieron los candidatos habituales y ninguno de
+     los grises claros llega: #CBD5E1 da 1,48:1 y #94A3B8 da 2,56:1. El primero
+     de la escala que cumple es #64748B, con 4,76:1. Es un borde más marcado de
+     lo que se estila, y es lo que hace falta.
+     ───────────────────────────────────────────────────────────────────────── */
+  --color-border:         #E5E7EB;
+  --color-border-control:  #64748B;
+
+  /* ── Acento ──────────────────────────────────────────────────────────────── */
+  --color-primary:        #2563EB;
+  --color-primary-hover:  #1D4ED8;
+  --color-primary-soft:   #EFF6FF;
+
+  /* ── Estados ─────────────────────────────────────────────────────────────────
+     Los cuatro colores puros NO alcanzan 4,5:1 sobre blanco salvo el de error.
+     Medidos: info 4,10:1 · éxito 3,30:1 · aviso 3,19:1 · error 4,83:1.
+     Por eso cada uno lleva una variante `-text`, oscurecida hasta cumplir el
+     contraste de texto, y una `-soft` para el fondo del distintivo. El color
+     puro queda para bordes, iconos y rellenos, nunca para texto sobre blanco.
+
+     Contraste verificado de las variantes `-text`, sobre blanco y sobre su
+     propio fondo suave:
+       éxito #15803D → 5,02:1 y 4,79:1
+       aviso #B45309 → 5,02:1 y 4,84:1
+       error #B91C1C → 6,47:1 y 5,91:1
+       info  #036AA1 → 5,87:1 y 5,50:1
+     ───────────────────────────────────────────────────────────────────────── */
+  --color-success:        #16A34A;
+  --color-success-text:   #15803D;
+  --color-success-soft:   #F0FDF4;
+
+  --color-warning:        #D97706;
+  --color-warning-text:   #B45309;
+  --color-warning-soft:   #FFFBEB;
+
+  --color-error:          #DC2626;
+  --color-error-text:     #B91C1C;
+  --color-error-soft:     #FEF2F2;
+
+  --color-info:           #0284C7;
+  --color-info-text:      #036AA1;
+  --color-info-soft:      #F0F9FF;
+
+  /* ── Tipografía ──────────────────────────────────────────────────────────── */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;   /* tamaño de trabajo: tablas y texto de apoyo */
+  --text-base: 1rem;       /* mínimo en campos: por debajo, iOS hace zoom */
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+
+  --weight-normal:   400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  --leading-tight:  1.25;
+  --leading-normal: 1.5;
+
+  /* ── Espaciado — escala de 4 px ──────────────────────────────────────────── */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* ── Radio ───────────────────────────────────────────────────────────────── */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-full: 9999px;
+
+  /* ── Elevación ───────────────────────────────────────────────────────────────
+     Deliberadamente sobria: en software administrativo la jerarquía se lee
+     mejor por borde y superficie que por sombra. La grande se reserva a lo que
+     de verdad flota.
+     ───────────────────────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.08);
+  --shadow-lg: 0 10px 20px -5px rgb(15 23 42 / 0.12);
+
+  /* ── Layout ──────────────────────────────────────────────────────────────── */
+  --sidebar-width: 264px;
+  --header-height: 56px;
+  --content-max:   1440px;
+
+  /* ── Movimiento ──────────────────────────────────────────────────────────── */
+  --transition-color: 150ms ease;
+  --transition-move:  200ms ease;
+  --transition-panel: 250ms cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* ── Superposición ───────────────────────────────────────────────────────── */
+  --z-drawer:  100;
+  --z-modal:   200;
+  --z-toast:   300;
+  --overlay:   rgb(15 23 42 / 0.45);
+
+  /* ── Foco ────────────────────────────────────────────────────────────────── */
+  --focus-ring: 2px solid var(--color-primary);
+  --focus-offset: 2px;
+}
+
+/* Puntos de ruptura, documentados aquí para que exista un único sitio donde
+   consultarlos. CSS no permite usar variables en `@media`, así que los valores
+   se repiten en las media queries; estas declaraciones son la referencia.
+
+   --bp-sidebar: 1024px  → 264 de barra + 720 de tabla útil + espaciado
+   --bp-form:     640px  → dos campos legibles de ~280 px más separación
+
+   Las tablas NO usan estos puntos: cada una decide según el ancho de su propio
+   contenedor (FR-060). */

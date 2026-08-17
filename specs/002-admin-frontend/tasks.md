@@ -41,55 +41,95 @@ todos los anchos. Es la fase que fija el marco del que cuelga todo lo demás.
 
 ### 1a. Limpieza y sistema visual
 
-- [ ] T001 Retirar el concepto público: borrar `pages/PublicHomePage.jsx`, `CentrePage.jsx`, `ServicesPage.jsx`, `MethodPage.jsx`, `ContactPage.jsx`, `components/PublicLayout.jsx`, `content/publicContent.js`, `App.css` y `assets/hero.png`, `assets/react.svg`, `assets/vite.svg`
-- [ ] T002 Crear `styles/tokens.css` con los tokens de color, tipografía, espaciado, radio, sombra y layout de design-system.md §1–§4
-- [ ] T003 Crear `styles/base.css` con reset, elementos base, foco visible global y `prefers-reduced-motion`
-- [ ] T004 [P] Incorporar Inter como fuente local en `public/fonts/` (woff2, grosores 400/500/600/700) y declararla con `@font-face` y `font-display: swap` — sin peticiones externas (FR-058)
-- [ ] T005 Sustituir `index.css` por la nueva base y eliminar el `@import` de Google Fonts y la paleta verde del concepto anterior
-- [ ] T006 Actualizar `frontend/index.html`: `lang="es"`, título de la aplicación y color de tema (FR-053)
+- [X] T001 Retirar el concepto público: borrar `pages/PublicHomePage.jsx`, `CentrePage.jsx`, `ServicesPage.jsx`, `MethodPage.jsx`, `ContactPage.jsx`, `components/PublicLayout.jsx`, `content/publicContent.js`, `App.css` y `assets/hero.png`, `assets/react.svg`, `assets/vite.svg`
+- [X] T002 Crear `styles/tokens.css` con los tokens de color, tipografía, espaciado, radio, sombra y layout de design-system.md §1–§4
+- [X] T003 Crear `styles/base.css` con reset, elementos base, foco visible global y `prefers-reduced-motion`
+- [X] T004 [P] Incorporar Inter como fuente local en `public/fonts/` (woff2, grosores 400/500/600/700) y declararla con `@font-face` y `font-display: swap` — sin peticiones externas (FR-058)
+- [X] T005 Sustituir `index.css` por la nueva base y eliminar el `@import` de Google Fonts y la paleta verde del concepto anterior
+- [X] T006 Actualizar `frontend/index.html`: `lang="es"`, título de la aplicación y color de tema (FR-053)
 
 ### 1b. Catálogo de textos
 
-- [ ] T007 Crear `i18n/index.js` con `t(clave, params)`: resolución sobre objeto anidado, interpolación por parámetro con nombre, aviso en consola en desarrollo y degradación a la clave en producción (FR-066, FR-071, FR-072)
-- [ ] T008 Añadir a `i18n/index.js` los formateadores `formatDate`, `formatTime`, `formatNumber` y `formatCurrency` sobre `Intl`, con la configuración regional del idioma activo (FR-073)
-- [ ] T009 Crear `i18n/locales/es.js` con el espacio `common` — guardar, cancelar, eliminar, confirmar, buscar, cargando, sin resultados, reintentar, acciones, valor vacío (FR-067)
-- [ ] T010 [P] Sembrar `i18n/locales/es.js` con los espacios `auth`, `nav`, `dashboard` y los estados de dominio (asistencia, pago, organización, activo/inactivo), tomando como material las etiquetas ya validadas de `config/modules.js`
+- [X] T007 Crear `i18n/index.js` con `t(clave, params)`: resolución sobre objeto anidado, interpolación por parámetro con nombre, aviso en consola en desarrollo y degradación a la clave en producción (FR-066, FR-071, FR-072)
+- [X] T008 Añadir a `i18n/index.js` los formateadores `formatDate`, `formatTime`, `formatNumber` y `formatCurrency` sobre `Intl`, con la configuración regional del idioma activo (FR-073)
+- [X] T009 Crear `i18n/locales/es.js` con el espacio `common` — guardar, cancelar, eliminar, confirmar, buscar, cargando, sin resultados, reintentar, acciones, valor vacío (FR-067)
+- [X] T010 [P] Sembrar `i18n/locales/es.js` con los espacios `auth`, `nav`, `dashboard` y los estados de dominio (asistencia, pago, organización, activo/inactivo), tomando como material las etiquetas ya validadas de `config/modules.js`
 
 ### 1c. Cliente de API y sesión
 
-- [ ] T011 Reescribir `lib/api.js` sobre el axios actual: `Accept: application/json` siempre (FR-062) e interceptor que normaliza todo error a `{ status, message, fieldErrors }` (research.md D5)
-- [ ] T012 Añadir al interceptor el tratamiento de 401 —cerrar sesión y llevar a `/login` conservando el destino— y distinguir `CanceledError` de un error real, para no mostrar error por una cancelación deliberada (FR-007, D4)
-- [ ] T013 Crear `lib/auth.js` con la persistencia del token y su restauración al arrancar (FR-006)
-- [ ] T014 Adaptar `context/SessionContext.jsx`: cargar `/me`, exponer usuario, roles y organización activa, y el cierre de sesión contra `POST /logout` (FR-008, FR-021)
-- [ ] T015 Crear `lib/permissions.js` con la matriz de secciones y acciones por rol, reproduciendo la de contracts/api-usage.md §7 (FR-004, D7)
+- [X] T011 Reescribir `lib/api.js` sobre el axios actual: `Accept: application/json` siempre (FR-062) e interceptor que normaliza todo error a `{ status, message, fieldErrors }` (research.md D5)
+- [X] T012 Añadir al interceptor el tratamiento de 401 —cerrar sesión y llevar a `/login` conservando el destino— y distinguir `CanceledError` de un error real, para no mostrar error por una cancelación deliberada (FR-007, D4)
+- [X] T013 Crear `lib/auth.js` con la persistencia del token y su restauración al arrancar (FR-006)
+- [X] T014 Adaptar `context/SessionContext.jsx`: cargar `/me`, exponer usuario, roles y organización activa, y el cierre de sesión contra `POST /logout` (FR-008, FR-021)
+- [X] T015 Crear `lib/permissions.js` con la matriz de secciones y acciones por rol, reproduciendo la de contracts/api-usage.md §7 (FR-004, D7)
 
 ### 1d. Primitivas de interfaz
 
-- [ ] T016 [P] `components/ui/Button.jsx`: variantes primary, secondary, ghost, danger; estado de carga que conserva el ancho y deshabilita (FR-036)
-- [ ] T017 [P] `components/ui/Field.jsx` más `Input`, `Select` y `Textarea`: etiqueta asociada, texto de ayuda y error enlazados con `aria-describedby`, `aria-invalid` y `aria-required` (FR-032, FR-033)
-- [ ] T018 [P] `components/ui/Badge.jsx` con los cinco tonos y la correspondencia de estados de design-system.md §5 — siempre con texto (FR-051)
-- [ ] T019 [P] `components/ui/Card.jsx` y `components/ui/Spinner.jsx`
-- [ ] T020 `components/ui/Modal.jsx`: foco atrapado, cierre con `Escape` y al pulsar fuera, devolución del foco al disparador, `role="dialog"` y `aria-modal` (FR-049)
-- [ ] T021 `components/ui/Drawer.jsx` sobre la misma base de foco y cierre que Modal (FR-019)
-- [ ] T022 [P] `components/ui/Dropdown.jsx` navegable con teclado
-- [ ] T023 `context/ToastContext.jsx` y `components/ui/Toast.jsx` con región `aria-live` — `polite` en general, `assertive` en errores (FR-045, FR-046)
-- [ ] T024 [P] `components/ui/Pagination.jsx`: anterior, siguiente, posición y total; oculto con una sola página (FR-027)
-- [ ] T025 [P] `components/ui/SearchInput.jsx` con retardo de escritura y botón de limpiar
-- [ ] T026 [P] `components/data/EmptyState.jsx`, `ErrorState.jsx` y `LoadingState.jsx`, visualmente distinguibles entre sí; el vacío distingue inicial de búsqueda sin resultados (FR-041, FR-043, FR-044)
-- [ ] T027 `components/data/ConfirmDialog.jsx` sobre Modal, nombrando qué se elimina (FR-035)
+- [X] T016 [P] `components/ui/Button.jsx`: variantes primary, secondary, ghost, danger; estado de carga que conserva el ancho y deshabilita (FR-036)
+- [X] T017 [P] `components/ui/Field.jsx` más `Input`, `Select` y `Textarea`: etiqueta asociada, texto de ayuda y error enlazados con `aria-describedby`, `aria-invalid` y `aria-required` (FR-032, FR-033)
+- [X] T018 [P] `components/ui/Badge.jsx` con los cinco tonos y la correspondencia de estados de design-system.md §5 — siempre con texto (FR-051)
+- [X] T019 [P] `components/ui/Card.jsx` y `components/ui/Spinner.jsx`
+- [X] T020 `components/ui/Modal.jsx`: foco atrapado, cierre con `Escape` y al pulsar fuera, devolución del foco al disparador, `role="dialog"` y `aria-modal` (FR-049)
+- [X] T021 `components/ui/Drawer.jsx` sobre la misma base de foco y cierre que Modal (FR-019)
+- [X] T022 [P] `components/ui/Dropdown.jsx` navegable con teclado
+- [X] T023 `context/ToastContext.jsx` y `components/ui/Toast.jsx` con región `aria-live` — `polite` en general, `assertive` en errores (FR-045, FR-046)
+- [X] T024 [P] `components/ui/Pagination.jsx`: anterior, siguiente, posición y total; oculto con una sola página (FR-027)
+- [X] T025 [P] `components/ui/SearchInput.jsx` con retardo de escritura y botón de limpiar
+- [X] T026 [P] `components/data/EmptyState.jsx`, `ErrorState.jsx` y `LoadingState.jsx`, visualmente distinguibles entre sí; el vacío distingue inicial de búsqueda sin resultados (FR-041, FR-043, FR-044)
+- [X] T027 `components/data/ConfirmDialog.jsx` sobre Modal, nombrando qué se elimina (FR-035)
 
 ### 1e. Shell y enrutado
 
-- [ ] T028 `components/layout/Sidebar.jsx`: secciones filtradas por `lib/permissions.js`, sección activa marcada sin depender solo del color (FR-004, FR-020)
-- [ ] T029 `components/layout/Header.jsx`: organización activa, identidad y rol, cierre de sesión y botón de navegación en anchos estrechos (FR-021)
-- [ ] T030 [P] `components/layout/Breadcrumbs.jsx` (FR-022)
-- [ ] T031 `components/layout/AppShell.jsx`: barra lateral fija en escritorio y panel deslizante por debajo de `--bp-sidebar`, con la capa de oscurecimiento (FR-018)
-- [ ] T032 Reescribir `pages/LoginPage.jsx`: un solo campo de usuario o correo, sin recuperación ni registro, errores del servidor junto al formulario (FR-010, FR-011, FR-013)
-- [ ] T033 Reescribir `App.jsx`: rutas en español, guarda de autenticación con destino conservado, y redirección por rol —`super_admin` a `/organizaciones`, el resto a `/dashboard`— (FR-002, FR-003, FR-005)
-- [ ] T034 Añadir en `App.jsx` la guarda por rol: una sección no permitida redirige a la ruta de inicio del rol, no muestra un 403 sin tratar (FR-004)
-- [ ] T035 Retirar las rutas del concepto anterior y sus redirecciones francesas, sustituyéndolas por el destino que corresponda según haya sesión (FR-009)
+- [X] T028 `components/layout/Sidebar.jsx`: secciones filtradas por `lib/permissions.js`, sección activa marcada sin depender solo del color (FR-004, FR-020)
+- [X] T029 `components/layout/Header.jsx`: organización activa, identidad y rol, cierre de sesión y botón de navegación en anchos estrechos (FR-021)
+- [X] T030 [P] `components/layout/Breadcrumbs.jsx` (FR-022)
+- [X] T031 `components/layout/AppShell.jsx`: barra lateral fija en escritorio y panel deslizante por debajo de `--bp-sidebar`, con la capa de oscurecimiento (FR-018)
+- [X] T032 Reescribir `pages/LoginPage.jsx`: un solo campo de usuario o correo, sin recuperación ni registro, errores del servidor junto al formulario (FR-010, FR-011, FR-013)
+- [X] T033 Reescribir `App.jsx`: rutas en español, guarda de autenticación con destino conservado, y redirección por rol —`super_admin` a `/organizaciones`, el resto a `/dashboard`— (FR-002, FR-003, FR-005)
+- [X] T034 Añadir en `App.jsx` la guarda por rol: una sección no permitida redirige a la ruta de inicio del rol, no muestra un 403 sin tratar (FR-004)
+- [X] T035 Retirar las rutas del concepto anterior y sus redirecciones francesas, sustituyéndolas por el destino que corresponda según haya sesión (FR-009)
 
 **Checkpoint 1**: `npm run build` limpio · escenarios 1 y 2 de quickstart completos · shell sin desbordamiento en los diez anchos · `php artisan test` en verde.
+
+### Resultado y desviaciones de la Fase 1
+
+Cerrada el 2026-08-17. Verificado contra el stack Docker con datos sembrados.
+
+**Comprobado**
+
+- Enrutado por rol en navegador real: `admin.a` y `mgarcia.a` → `/dashboard`; `superadmin` → `/organizaciones`.
+- Matriz de permisos contrastada contra la API viva, no solo leída de las rutas. Confirma la spec, incluido el punto
+  central: `GET /dashboard` responde **403** al `super_admin`.
+- Ocho accesos por URL a secciones vedadas: los ocho redirigen a la ruta de inicio del rol.
+- Desbordamiento horizontal **0** en 360, 375, 414, 480, 640, 768, 1024, 1280, 1440 y 1920 px.
+- Panel deslizante a 360 px: abre a ancho completo, atrapa el foco, sin desbordamiento.
+
+**Desviaciones**
+
+- **T004 — se añade una dependencia.** El plan afirmaba «cero dependencias nuevas» y no era sostenible: FR-058 exige
+  Inter servida localmente, y no hay forma de producir un `woff2` con el stack. Se instala
+  `@fontsource-variable/inter@5.3.0`, que solo distribuye ficheros de fuente y ningún código. Registrado en plan.md →
+  Complexity Tracking. Se usa el eje de grosor (`wght.css`): un fichero variable en lugar de cuatro estáticos, con siete
+  subconjuntos por `unicode-range` de los que el navegador solo descarga el latino.
+- **T033 — `/login` y `/dashboard` se quedan en inglés**, por indicación expresa, frente al FR-005 original. Corregido
+  el FR-005 en la spec para recoger la excepción.
+- **Añadido no previsto: `PlaceholderPage`.** Andamio para que el enrutado y las guardas puedan verificarse ya
+  manteniendo la aplicación desplegable (Principio X). Cada fase posterior sustituye uno; al cerrar la Fase 5 no debe
+  quedar ninguno.
+- **Añadido no previsto: proxy de API en `preview`** de `vite.config.js`. Solo estaba en `server`, así que el build de
+  producción no podía verificarse contra la API y solo se comprobaba el servidor de desarrollo, que no es lo que se
+  despliega.
+- **Corrección de la paleta.** `--color-border-strong: #CBD5E1` daba 1,48:1 y **fallaba el 3:1 que WCAG 1.4.11 exige al
+  límite de un control**: un campo cuyo borde no se percibe. Ninguno de los grises claros habituales cumple; se sustituye
+  por `--color-border-control: #64748B` (4,76:1). Los cuatro colores de estado reciben una variante `-text` oscurecida,
+  verificada entre 4,79:1 y 6,47:1, porque los puros no llegan como texto.
+- **Corrección de navegación.** El panel quedaba fuera de la barra lateral por su `group: null`, de modo que no había
+  forma de volver a él. `visibleSections` ya no filtra por grupo.
+
+**Correcciones en la documentación**
+
+- `quickstart.md`: la tabla de cuentas tenía las organizaciones invertidas. El sufijo `.a` es **Refuerzo Elite**; Centro
+  Piloto Malabo es el `.b`. Comprobado ejecutando el seeder.
 
 ---
 

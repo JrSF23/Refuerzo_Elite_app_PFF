@@ -283,7 +283,8 @@ perderse.
   API lo rechaza con 403 (verificado en `routes/api.php`).
 - **FR-004**: La navegación DEBE mostrar únicamente las secciones que el rol puede usar. Ocultar no basta: el acceso por
   URL directa a una sección no permitida DEBE redirigir a la ruta de inicio del rol.
-- **FR-005**: Las rutas DEBEN estar en español, en coherencia con la interfaz.
+- **FR-005**: Las rutas DEBEN estar en español, en coherencia con la interfaz, **con dos excepciones indicadas
+  expresamente: `/login` y `/dashboard`**, que se mantienen en inglés.
 - **FR-006**: La sesión DEBE persistir entre recargas del navegador y restaurarse al arrancar.
 - **FR-007**: Toda respuesta 401 DEBE cerrar la sesión local y llevar a `/login`.
 - **FR-008**: El cierre de sesión DEBE invalidar el token en el servidor y limpiar el estado local.
