@@ -13,6 +13,7 @@ import { StudentsPage } from './pages/students/StudentsPage.jsx'
 import { GuardiansPage } from './pages/guardians/GuardiansPage.jsx'
 import { TeachersPage } from './pages/teachers/TeachersPage.jsx'
 import { SubjectsPage } from './pages/subjects/SubjectsPage.jsx'
+import { TutorGroupsPage } from './pages/tutorGroups/TutorGroupsPage.jsx'
 
 /**
  * Secciones que todavía no tienen pantalla propia.
@@ -20,7 +21,7 @@ import { SubjectsPage } from './pages/subjects/SubjectsPage.jsx'
  * Se irán vaciando fase a fase. Al cerrar la fase 5 la lista debe quedar vacía.
  */
 const PENDING_SECTIONS = [
-  'groups', 'enrollments', 'sessions', 'attendance',
+  'classGroups', 'enrollments', 'sessions', 'attendance',
   'payments', 'users', 'organizations',
 ]
 
@@ -31,6 +32,7 @@ const BUILT_SECTIONS = {
   guardians: GuardiansPage,
   teachers: TeachersPage,
   subjects: SubjectsPage,
+  tutorGroups: TutorGroupsPage,
 }
 
 /**
@@ -85,6 +87,13 @@ function AppRoutes() {
           />
         ))}
       </Route>
+
+      {/* NOTA sobre `/grupos`: hasta esta entrega significaba «grupos de
+          asignatura» y ahora significa «aula». No se añade redirección porque no
+          hay adónde redirigir —la ruta sigue existiendo, con otro contenido— y
+          porque la aplicación aún no está en producción, así que nadie tiene esa
+          dirección guardada. Si lo estuviera, el reparto correcto sería dejar
+          `/grupos` a los de asignatura y dar otra ruta a las aulas. */}
 
       {/* El concepto anterior era un sitio público con landing, servicios,
           método y contacto. Ya no existe superficie pública (FR-001), así que

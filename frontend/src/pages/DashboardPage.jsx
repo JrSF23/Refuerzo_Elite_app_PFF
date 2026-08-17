@@ -61,7 +61,7 @@ function AdminDashboard({ data, linkTo }) {
       <section className="stats-grid">
         <StatCard label={t('dashboard.stats.students')} to={linkTo('students')} value={stats.students} />
         <StatCard label={t('dashboard.stats.teachers')} to={linkTo('teachers')} value={stats.teachers} />
-        <StatCard label={t('dashboard.stats.groups')} to={linkTo('groups')} value={stats.groups} />
+        <StatCard label={t('dashboard.stats.groups')} to={linkTo('classGroups')} value={stats.groups} />
         <StatCard label={t('dashboard.stats.attendances')} to={linkTo('attendance')} value={stats.attendances} />
         <StatCard label={t('dashboard.stats.payments')} to={linkTo('payments')} value={stats.payments} />
       </section>
@@ -137,7 +137,7 @@ function TeacherDashboard({ data, linkTo }) {
       ) : null}
 
       <section className="stats-grid">
-        <StatCard label={t('dashboard.stats.myGroups')} to={linkTo('groups')} value={stats.groups} />
+        <StatCard label={t('dashboard.stats.myGroups')} to={linkTo('classGroups')} value={stats.groups} />
         <StatCard label={t('dashboard.stats.myStudents')} to={linkTo('students')} value={stats.students} />
         <StatCard label={t('dashboard.stats.upcomingSessions')} to={linkTo('sessions')} value={stats.upcoming_sessions} />
       </section>
@@ -152,7 +152,7 @@ function TeacherDashboard({ data, linkTo }) {
             trailing: <RecordStatusBadge value={group.status} />,
           }))}
           title={t('dashboard.myGroups')}
-          to={linkTo('groups')}
+          to={linkTo('classGroups')}
         />
 
         <RecentPanel

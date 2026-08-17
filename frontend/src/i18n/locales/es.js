@@ -36,6 +36,7 @@ export const es = {
     search: 'Buscar',
     clear: 'Limpiar',
     select: 'Seleccione',
+    noOptions: 'No hay opciones disponibles',
     actions: 'Acciones',
     viewAll: 'Ver todo',
 
@@ -216,7 +217,35 @@ export const es = {
     },
   },
 
-  groups:        { title: 'Grupos' },
+  tutorGroups: {
+    title: 'Grupos',
+    create: 'Nuevo grupo',
+    edit: 'Editar grupo',
+    emptyTitle: 'Todavía no hay grupos',
+    emptyBody: 'Cree los grupos del curso para poder organizar a los alumnos por aula.',
+    unassigned: 'Sin asignar',
+    shifts: {
+      morning: 'Mañana',
+      afternoon: 'Tarde',
+    },
+    fields: {
+      name: 'Grupo',
+      nameHint: 'Como lo llame el centro: «1º ESO», «4º ESO - A».',
+      shift: 'Turno',
+      academicYear: 'Curso académico',
+      tutor: 'Profesor tutor',
+      tutorHint: 'Puede dejarse sin asignar y designarlo más adelante.',
+      representative: 'Alumno delegado',
+      representativeHint: 'Solo pueden designarse alumnos de este grupo.',
+      representativeOnCreate: 'Disponible al editar, cuando el grupo tenga alumnos',
+      sortOrder: 'Orden',
+      sortOrderHint: 'Fija el orden en que aparecen los grupos. Menor número, más arriba.',
+    },
+  },
+
+  // Grupos DE ASIGNATURA. Renombrada para no dejar dos secciones llamadas
+  // «Grupos»: un alumno pertenece a un grupo tutorial y a varios de asignatura.
+  classGroups:   { title: 'Grupos de asignatura' },
   enrollments:   { title: 'Matrículas' },
   sessions:      { title: 'Sesiones' },
   attendance:    { title: 'Asistencia' },

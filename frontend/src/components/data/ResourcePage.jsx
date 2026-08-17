@@ -190,15 +190,27 @@ function FormField({ field, form }) {
           return <Textarea {...common(props)} rows={field.rows ?? 3} />
         }
 
-        // Relación con otra entidad: el desplegable se alimenta del recurso
-        // que indique el campo, acotado por el servidor a la organización
-        // activa (FR-034).
+        /*
+         * Relación con otra entidad. El desplegable se alimenta del recurso que
+         * indique el campo, acotado por el servidor a la organización activa
+         * (FR-034).
+         *
+         * `params` e `isDisabled` pueden ser funciones del estado del formulario:
+         * es lo que permite que el delegado ofrezca solo alumnos DEL GRUPO que se
+         * está editando, y que quede deshabilitado al crear, cuando el grupo
+         * todavía no tiene alumnos.
+         */
         if (field.type === 'relation') {
+          const resolve = (value) => (typeof value === 'function' ? value(form) : value)
+
           return (
             <RelationSelect
               {...common(props)}
+              disabledHint={field.disabledHint}
               endpoint={field.endpoint}
+              isDisabled={resolve(field.isDisabled) ?? false}
               optionLabel={field.optionLabel}
+              params={resolve(field.params)}
               placeholder={field.placeholder}
             />
           )

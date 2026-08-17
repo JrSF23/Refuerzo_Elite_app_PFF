@@ -148,17 +148,48 @@ Cerrada el 2026-08-17. **Puerta 5 cerrada.**
 
 **Independent Test**: escenario 7 de `quickstart.md`.
 
-- [ ] T037 [US1] Añadir la sección `tutorGroups` a `frontend/src/lib/permissions.js` con su ruta, endpoint, `searchable: true` y acceso —escritura `org_admin`, lectura `teacher`—
-- [ ] T038 [US1] **Resolver la colisión de nombres**: la sección existente pasa a «Grupos de asignatura» en `/grupos-asignatura`; la nueva se queda con «Grupos» en `/grupos`. Toca código de la feature 002 (FR-022a)
-- [ ] T039 [US1] Añadir redirección de la ruta antigua `/grupos` a `/grupos-asignatura` para no romper marcadores del centro
-- [ ] T040 [US1] Crear `frontend/src/pages/tutorGroups/TutorGroupsPage.jsx` sobre `ResourcePage`: columnas nombre, turno, curso académico, tutor, delegado y alumnos
-- [ ] T041 [US1] Campos del formulario: nombre, turno, curso académico, tutor, delegado y orden. **Nada más** (FR-023c)
-- [ ] T042 [US1] Ampliar `RelationSelect` para acotar por otro campo del formulario: el delegado solo ofrece alumnos del grupo que se está editando (FR-023b)
-- [ ] T043 [US1] Deshabilitar el delegado al crear un grupo, con explicación visible: no hay alumnos todavía (FR-023b, US1.2c)
-- [ ] T044 [P] [US1] Añadir el espacio `tutorGroups` a `frontend/src/i18n/locales/es.js`, y renombrar el de la sección de asignatura
-- [ ] T045 [US5] Comprobar el modo lectura del profesor y que el `super_admin` no alcanza la sección
+- [X] T037 [US1] Añadir la sección `tutorGroups` a `frontend/src/lib/permissions.js` con su ruta, endpoint, `searchable: true` y acceso —escritura `org_admin`, lectura `teacher`—
+- [X] T038 [US1] **Resolver la colisión de nombres**: la sección existente pasa a «Grupos de asignatura» en `/grupos-asignatura`; la nueva se queda con «Grupos» en `/grupos`. Toca código de la feature 002 (FR-022a)
+- [X] T039 [US1] Añadir redirección de la ruta antigua `/grupos` a `/grupos-asignatura` para no romper marcadores del centro
+- [X] T040 [US1] Crear `frontend/src/pages/tutorGroups/TutorGroupsPage.jsx` sobre `ResourcePage`: columnas nombre, turno, curso académico, tutor, delegado y alumnos
+- [X] T041 [US1] Campos del formulario: nombre, turno, curso académico, tutor, delegado y orden. **Nada más** (FR-023c)
+- [X] T042 [US1] Ampliar `RelationSelect` para acotar por otro campo del formulario: el delegado solo ofrece alumnos del grupo que se está editando (FR-023b)
+- [X] T043 [US1] Deshabilitar el delegado al crear un grupo, con explicación visible: no hay alumnos todavía (FR-023b, US1.2c)
+- [X] T044 [P] [US1] Añadir el espacio `tutorGroups` a `frontend/src/i18n/locales/es.js`, y renombrar el de la sección de asignatura
+- [X] T045 [US5] Comprobar el modo lectura del profesor y que el `super_admin` no alcanza la sección
 
 **Checkpoint 3**: escenario 7 completo · sin dos secciones llamadas «Grupos» · «1º ESO mañana» y «1º ESO tarde» conviven.
+
+### Resultado y desviaciones de la Fase 3
+
+Cerrada el 2026-08-17.
+
+**Comprobado en navegador con datos reales**
+
+- Navegación con las dos secciones distinguibles: **«Grupos»** (aulas) y **«Grupos de asignatura»**.
+- Listado con las seis columnas, «Sin asignar» atenuado en los grupos sin tutor, y «1º ESO mañana» y «1º ESO tarde»
+  conviviendo como filas distintas.
+- Formulario de creación: el **delegado sale deshabilitado con su explicación** —«Disponible al editar, cuando el grupo
+  tenga alumnos»—, no gris y mudo.
+- Formulario de edición sobre 4º ESO: el delegado ofrece **solo los 2 alumnos de ese grupo**, de los 8 del centro.
+  Confirmado también contra la API.
+- El profesor ve la sección en solo lectura: sin botón de crear, sin acciones de fila y sin columna de acciones.
+- 273 pruebas de backend y 9 de frontend en verde; build limpio.
+
+**Desviaciones**
+
+- **`RelationSelect` admite ahora `params`, `isDisabled` y `disabledHint`**, y `ResourcePage` los resuelve como
+  funciones del estado del formulario. Era la única forma de que el delegado se acote al grupo que se está editando sin
+  duplicar el componente.
+- **La clave de sección `groups` pasa a `classGroups`.** Arrastró tres enlaces del panel que apuntaban a `linkTo('groups')`
+  y habrían dejado de enlazar en silencio, porque `linkTo` devuelve `undefined` cuando la sección no existe y la tarjeta
+  simplemente deja de ser pulsable. Detectado buscando referencias a la clave antigua, no al ejecutar.
+- **`/grupos` cambia de significado y NO se añade redirección.** No hay adónde redirigir: la ruta sigue existiendo con
+  otro contenido. Es admisible porque la aplicación no está en producción y nadie tiene esa dirección guardada; si lo
+  estuviera, el reparto correcto sería dejar `/grupos` a los de asignatura. Escrito en `App.jsx` para que la decisión no
+  se pierda.
+- `/grupos-asignatura` muestra el marcador de sección en construcción. **No es una regresión**: esa pantalla nunca se
+  llegó a construir y sigue pendiente en la feature 002.
 
 ---
 

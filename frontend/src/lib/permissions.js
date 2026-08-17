@@ -68,8 +68,29 @@ export const SECTIONS = {
     access: { [ROLES.ORG_ADMIN]: WRITE },
   },
 
-  groups: {
+  /*
+   * OJO con los dos «grupos». Son entidades distintas y confundirlas es el error
+   * más fácil de cometer aquí:
+   *
+   *   tutorGroups  → el AULA. Un alumno pertenece a UNO. Tiene profesor tutor y
+   *                  alumno delegado. Es la unidad organizativa del centro.
+   *   classGroups  → el grupo DE UNA ASIGNATURA. Un alumno pertenece a VARIOS,
+   *                  cada uno con su profesor. Se llega por matrícula.
+   *
+   * Por eso el rótulo de la segunda pasa a «Grupos de asignatura»: dos secciones
+   * llamadas «Grupos» serían incomprensibles para el personal del centro.
+   */
+  tutorGroups: {
     path: '/grupos',
+    endpoint: 'tutor-groups',
+    searchable: true,
+    group: 'sectionAcademic',
+    // Primera sección con lectura para el profesor y escritura solo para la
+    // administración. Puede tenerla porque no lleva ningún campo monetario.
+    access: { [ROLES.ORG_ADMIN]: WRITE, [ROLES.TEACHER]: READ },
+  },
+  classGroups: {
+    path: '/grupos-asignatura',
     endpoint: 'class-groups',
     searchable: true,
     group: 'sectionAcademic',
