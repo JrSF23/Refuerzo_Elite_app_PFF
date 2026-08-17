@@ -1,0 +1,180 @@
+# Tasks: Grupos tutoriales
+
+**Input**: Design documents from `/specs/003-tutor-groups/`
+
+**Prerequisites**: spec.md, plan.md, data-model.md, contracts/tutor-groups-api.md, quickstart.md
+
+**Tests**: **obligatorios en el backend, y no negociables.** Esta feature manipula datos de organización, así que la
+puerta 5 de la constitución exige prueba automatizada de aislamiento y su incumplimiento bloquea la integración sin
+excepción. En el frontend se prueba la lógica de agrupación con el runner ya introducido en la feature 002.
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: paralelizable — ficheros distintos, sin dependencia pendiente
+- **[US#]**: historia que cierra, según spec.md
+
+## Path Conventions
+
+`backend/` y `frontend/`. Es la primera feature de la serie que toca ambos.
+
+---
+
+## Fase 1: Esquema y modelo
+
+**Objetivo**: la entidad existe, se puede sembrar y la migración es correcta en los dos motores.
+
+**Independent Test**: escenario 1 de `quickstart.md`.
+
+- [ ] T001 Crear la migración `create_tutor_groups_table` en `backend/database/migrations/`: columnas, `organization_id` NOT NULL con índice y FK, y clave única `(organization_id, name, shift, academic_year)` (data-model §1)
+- [ ] T002 En la **misma** migración y **después** de crear la tabla, añadir `students.tutor_group_id` nullable con índice y FK `ON DELETE SET NULL`. El orden importa: la FK no puede apuntar a una tabla que aún no existe (data-model §2)
+- [ ] T003 Declarar las tres FK con `ON DELETE SET NULL` — tutor, delegado y grupo del alumno. Con `CASCADE`, borrar un grupo se llevaría por delante a sus alumnos (FR-010, FR-011, SC-009)
+- [ ] T004 Crear `backend/app/Models/TutorGroup.php` con el trait `BelongsToOrganization`, `SoftDeletes`, `$fillable` **sin** `organization_id`, y las relaciones `tutor`, `representative`, `students` (data-model §6)
+- [ ] T005 Añadir a `backend/app/Models/Student.php` la relación `tutorGroup()` y `tutor_group_id` al `$fillable`
+- [ ] T006 Limpiar en el modelo las referencias al borrar **lógicamente** un profesor o un alumno delegado: `SoftDeletes` no dispara la FK, así que el `SET NULL` no basta (data-model §3)
+- [ ] T007 [P] Crear `backend/database/factories/TutorGroupFactory.php`
+- [ ] T008 Ampliar `DemoSeeder` con los cinco casos límite —con tutor y delegado, sin tutor, sin alumnos, mismo nombre en dos turnos, alumnos sin grupo— **en las dos organizaciones**, con nombres repetidos entre ellas (data-model §8)
+- [ ] T009 Validar la migración contra **MySQL real** en el contenedor, no solo contra SQLite. Es la lección de la feature 001: dos defectos de migración solo aparecieron fuera de SQLite
+- [ ] T010 Confirmar que las 246 pruebas existentes siguen en verde
+
+**Checkpoint 1**: migración en verde en ambos motores · datos sembrados con los casos límite · suite anterior intacta.
+
+---
+
+## Fase 2: API, autorización y aislamiento
+
+**Objetivo**: la superficie de API completa y **la puerta 5 cerrada**.
+
+**Independent Test**: escenarios 2 a 6 de `quickstart.md`. Sin el 2 en verde, la feature está bloqueada.
+
+### 2a. Controlador y reglas
+
+- [ ] T011 Crear `backend/app/Http/Controllers/Api/TutorGroupController.php` sobre `BaseApiController`: `$searchable = ['name']`, `$with = ['tutor','representative']`, `$entityLabel = 'tutor_group'`
+- [ ] T012 Reglas de validación del grupo: nombre, turno, curso académico, orden y estado (contracts §1)
+- [ ] T013 Acotar la unicidad de `name` a la organización activa **en el servidor**, con `shift` y `academic_year`. Si se dejara al índice SQL, el error de clave duplicada revelaría un registro de otro centro (FR-004)
+- [ ] T014 Validar `tutor_teacher_id` con `BelongsToCurrentOrganization`, que consulta por Eloquent para que el global scope aplique
+- [ ] T015 Crear la regla del delegado: debe ser alumno de la organización **y de este grupo**. Dos fallos distintos — el ajeno, indistinguible de «no existe»; el de otro grupo, con mensaje explicativo, porque ahí no hay nada que ocultar (FR-003c, data-model §5)
+- [ ] T016 Rechazar con explicación el delegado al **crear** un grupo, que aún no tiene alumnos (US1.2c)
+- [ ] T017 Crear `backend/app/Policies/TutorGroupPolicy.php`. **No puede extender `OrganizationAdminOnlyPolicy` en vacío** como las demás: el profesor tiene lectura y no escritura (FR-020, contracts §3)
+- [ ] T018 Registrar la policy en `AppServiceProvider`
+- [ ] T019 Añadir las rutas a `backend/routes/api.php` en los dos grupos de middleware —lectura para `org_admin` y `teacher`, escritura solo para `org_admin`— siguiendo el reparto que ya usan `students` y `class-groups`
+- [ ] T020 Añadir `tutor_group_id` a las reglas de `StudentController`, validado con `BelongsToCurrentOrganization` (FR-017)
+- [ ] T021 Ampliar `StudentController::$with` a `['guardian','tutorGroup.tutor']` (FR-016)
+- [ ] T022 Añadir el filtro `tutor_group_id` **solo** en `StudentController`, no genérico en `BaseApiController`: sin un segundo consumidor sería una capa sin justificar (Principio IV, FR-021)
+- [ ] T023 Validar el filtro: un grupo de otra organización NO debe devolver el listado completo por haberse ignorado el parámetro (contracts §2)
+- [ ] T024 [P] Añadir a `backend/lang/es/tenancy.php` los mensajes propios de la feature
+
+### 2b. Pruebas obligatorias
+
+- [ ] T025 `TutorGroupIsolationTest`: listar, ver, editar y borrar grupos de otra organización responde **404**, y el registro ajeno queda intacto (quickstart 2.1–2.4)
+- [ ] T026 `TutorGroupCrossReferenceTest`: las tres vías de fuga por referencia —alumno→grupo, grupo→tutor, grupo→delegado— rechazan lo ajeno de forma indistinguible de «no existe» (quickstart 2.5–2.7)
+- [ ] T027 Prueba del filtro: `tutor_group_id` de otra organización nunca devuelve alumnos ajenos ni el listado completo (quickstart 2.8)
+- [ ] T028 Prueba de unicidad: el mismo nombre se acepta entre centros y entre turnos, y se rechaza dentro del mismo centro, turno y curso (quickstart 2.9, 3.2, 3.3, 3.4)
+- [ ] T029 Prueba de la regla del delegado: alumno de otro grupo del mismo centro rechazado con mensaje explicativo (quickstart 3.5)
+- [ ] T030 `TutorGroupDeletionTest`: borrar un grupo con alumnos no borra ni desactiva alumnos, y el recuento del centro no cambia (quickstart 4.1, 4.2)
+- [ ] T031 Borrar al profesor tutor deja el grupo sin tutor; borrar al alumno delegado lo deja sin delegado. **En borrado lógico y físico** (quickstart 4.3–4.5)
+- [ ] T032 `TutorGroupQueryCountTest`: contar consultas con `DB::listen` al listar alumnos y al listar grupos; ninguna por alumno ni por grupo (quickstart 5.1, 5.2)
+- [ ] T033 Sembrar 100 alumnos y comprobar que el número de consultas **no crece**. Con 8, un N+1 pasa desapercibido (quickstart 5.3, SC-002)
+- [ ] T034 Prueba de permisos: el profesor lee pero no escribe; el `super_admin` recibe 403 (quickstart 6.1–6.3)
+- [ ] T035 **Comprobar que las pruebas prueban algo**: quitar el filtro del global scope y confirmar que T025 falla. Si pasa sin el filtro, no comprueba nada (quickstart 2.10)
+- [ ] T036 Usar `actingWithToken()` en todas las pruebas que cambien de usuario. Con `withToken()` a secas, el guard de Sanctum cachea el usuario y toda la batería puede pasar en falso. Ya ocurrió en la feature 001
+
+**Checkpoint 2**: escenarios 2 a 6 completos · **puerta 5 cerrada** · suite completa en verde.
+
+---
+
+## Fase 3: Pantalla de grupos
+
+**Objetivo**: la administración puede crear y mantener sus grupos.
+
+**Independent Test**: escenario 7 de `quickstart.md`.
+
+- [ ] T037 [US1] Añadir la sección `tutorGroups` a `frontend/src/lib/permissions.js` con su ruta, endpoint, `searchable: true` y acceso —escritura `org_admin`, lectura `teacher`—
+- [ ] T038 [US1] **Resolver la colisión de nombres**: la sección existente pasa a «Grupos de asignatura» en `/grupos-asignatura`; la nueva se queda con «Grupos» en `/grupos`. Toca código de la feature 002 (FR-022a)
+- [ ] T039 [US1] Añadir redirección de la ruta antigua `/grupos` a `/grupos-asignatura` para no romper marcadores del centro
+- [ ] T040 [US1] Crear `frontend/src/pages/tutorGroups/TutorGroupsPage.jsx` sobre `ResourcePage`: columnas nombre, turno, curso académico, tutor, delegado y alumnos
+- [ ] T041 [US1] Campos del formulario: nombre, turno, curso académico, tutor, delegado y orden. **Nada más** (FR-023c)
+- [ ] T042 [US1] Ampliar `RelationSelect` para acotar por otro campo del formulario: el delegado solo ofrece alumnos del grupo que se está editando (FR-023b)
+- [ ] T043 [US1] Deshabilitar el delegado al crear un grupo, con explicación visible: no hay alumnos todavía (FR-023b, US1.2c)
+- [ ] T044 [P] [US1] Añadir el espacio `tutorGroups` a `frontend/src/i18n/locales/es.js`, y renombrar el de la sección de asignatura
+- [ ] T045 [US5] Comprobar el modo lectura del profesor y que el `super_admin` no alcanza la sección
+
+**Checkpoint 3**: escenario 7 completo · sin dos secciones llamadas «Grupos» · «1º ESO mañana» y «1º ESO tarde» conviven.
+
+---
+
+## Fase 4: Listado de alumnos agrupado
+
+**Objetivo**: el objetivo visible de la feature.
+
+**Independent Test**: escenario 8 de `quickstart.md`.
+
+- [ ] T046 [US2] Añadir el campo de grupo tutorial al formulario de alumno, como `RelationSelect` acotado al centro (FR-024)
+- [ ] T047 [US3] Crear `frontend/src/pages/students/groupStudents.js`: función pura que reparte los alumnos en bloques por su grupo, ordena los bloques por `sort_order` y los alumnos por apellidos y nombre (FR-031, FR-036)
+- [ ] T048 [US3] Prueba de `groupStudents`: agrupación, orden no alfabético, grupo sin alumnos ausente, alumnos sin grupo en su bloque propio. Es lógica pura y se prueba sin navegador
+- [ ] T049 [US3] Crear `frontend/src/components/data/GroupedList.jsx`: bloques con cabecera y la tabla existente dentro. **Reutiliza `DataTable`**, no lo duplica
+- [ ] T050 [US3] Cabecera del bloque: nombre y turno a la izquierda; tutor a la derecha; recuento de alumnos. «Sin asignar» cuando falte el tutor (FR-026, FR-027)
+- [ ] T051 [US3] Bloques plegables con estado recordado: con cientos de alumnos, una lista plana es inmanejable (plan.md §Exigencia)
+- [ ] T052 [US3] Bloque propio para los alumnos sin grupo, marcado como pendientes de asignar. **No deben ocultarse** (FR-029)
+- [ ] T053 [US3] Omitir del listado los grupos sin alumnos (FR-028)
+- [ ] T054 [US3] Quitar la columna de grupo de las tablas: ya lo dice la cabecera (FR-030)
+- [ ] T055 [US4] Comprobar que la búsqueda sigue operando sobre todos los alumnos y que los bloques se recomponen (FR-032)
+- [ ] T056 [US4] Comprobar que crear, editar y eliminar siguen funcionando igual (FR-033)
+- [ ] T057 [US3] Advertir de que los bloques corresponden a la página mostrada mientras la paginación sea global (FR-037)
+- [ ] T058 [P] [US3] Añadir al catálogo los textos de la vista agrupada
+
+**Checkpoint 4**: escenario 8 completo · los alumnos sin grupo visibles · buscar, crear, editar y eliminar intactos.
+
+---
+
+## Fase 5: Cierre
+
+**Objetivo**: cerrar los criterios que solo se comprueban sobre el conjunto.
+
+- [ ] T059 Barrido de los diez anchos sobre las dos pantallas nuevas: desbordamiento 0 (SC-006)
+- [ ] T060 Listado agrupado a 360 px: cada bloque en tarjetas, sin desplazamiento horizontal (FR-034)
+- [ ] T061 Barrido de literales fuera de `src/i18n/`: cero resultados
+- [ ] T062 Revisión visual: tipografía, espaciado, colores y botones **sin cambios** respecto a la feature 002 (FR-035)
+- [ ] T063 Revisar la pestaña de red: ninguna petición fuera del contrato
+- [ ] T064 `php artisan test` completo, `npm run build` y `npm test` en verde
+- [ ] T065 Recorrer el quickstart entero con los cuatro roles
+
+**Checkpoint final**: quickstart completo · suites en verde · migración validada en MySQL.
+
+---
+
+## Dependencias
+
+```
+Fase 1 ──> Fase 2 ──> Fase 3 ──> Fase 4 ──> Fase 5
+```
+
+Estrictamente secuencial, y no por comodidad:
+
+- La **Fase 2 exige la 1**: no hay endpoint sin tabla.
+- La **Fase 3 exige la 2**: una pantalla no se puede probar contra un endpoint que no existe.
+- La **Fase 4 exige la 3**: sin grupos creados no hay nada por lo que agrupar.
+
+Dentro de la Fase 2, T011–T024 preceden a T025–T036: primero el comportamiento, después las pruebas que lo fijan. **La
+fase no se cierra hasta que las pruebas estén en verde**, no hasta que el código esté escrito.
+
+## Paralelismo
+
+Poco, y es correcto que así sea: casi todo se encadena. **T007** con T004–T006; **T024**, **T044** y **T058** con las
+tareas de su fase.
+
+## Resumen
+
+| Fase | Tareas | Historias | Nota |
+|---|---|---|---|
+| 1 — Esquema y modelo | T001–T010 (10) | — | Migración validada en dos motores |
+| 2 — API y aislamiento | T011–T036 (26) | US1, US2 | **Cierra la puerta 5. Bloqueante** |
+| 3 — Pantalla de grupos | T037–T045 (9) | US1, US5 | Incluye el renombrado de la sección existente |
+| 4 — Alumnos agrupados | T046–T058 (13) | US2, US3, US4 | El objetivo visible |
+| 5 — Cierre | T059–T065 (7) | todas | |
+| **Total** | **65** | **5** | |
+
+**Doce de las 65 tareas son pruebas de backend.** No es desproporcionado: es la primera feature que toca datos de
+organización, y la constitución declara ese aislamiento no negociable.
+
+**Alcance mínimo demostrable**: fases 1 a 3. Con ellas el centro ya puede crear sus grupos con tutor y delegado, aunque
+el listado de alumnos siga plano.
