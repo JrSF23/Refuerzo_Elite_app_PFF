@@ -25,18 +25,48 @@ excepción. En el frontend se prueba la lógica de agrupación con el runner ya 
 
 **Independent Test**: escenario 1 de `quickstart.md`.
 
-- [ ] T001 Crear la migración `create_tutor_groups_table` en `backend/database/migrations/`: columnas, `organization_id` NOT NULL con índice y FK, y clave única `(organization_id, name, shift, academic_year)` (data-model §1)
-- [ ] T002 En la **misma** migración y **después** de crear la tabla, añadir `students.tutor_group_id` nullable con índice y FK `ON DELETE SET NULL`. El orden importa: la FK no puede apuntar a una tabla que aún no existe (data-model §2)
-- [ ] T003 Declarar las tres FK con `ON DELETE SET NULL` — tutor, delegado y grupo del alumno. Con `CASCADE`, borrar un grupo se llevaría por delante a sus alumnos (FR-010, FR-011, SC-009)
-- [ ] T004 Crear `backend/app/Models/TutorGroup.php` con el trait `BelongsToOrganization`, `SoftDeletes`, `$fillable` **sin** `organization_id`, y las relaciones `tutor`, `representative`, `students` (data-model §6)
-- [ ] T005 Añadir a `backend/app/Models/Student.php` la relación `tutorGroup()` y `tutor_group_id` al `$fillable`
-- [ ] T006 Limpiar en el modelo las referencias al borrar **lógicamente** un profesor o un alumno delegado: `SoftDeletes` no dispara la FK, así que el `SET NULL` no basta (data-model §3)
-- [ ] T007 [P] Crear `backend/database/factories/TutorGroupFactory.php`
-- [ ] T008 Ampliar `DemoSeeder` con los cinco casos límite —con tutor y delegado, sin tutor, sin alumnos, mismo nombre en dos turnos, alumnos sin grupo— **en las dos organizaciones**, con nombres repetidos entre ellas (data-model §8)
-- [ ] T009 Validar la migración contra **MySQL real** en el contenedor, no solo contra SQLite. Es la lección de la feature 001: dos defectos de migración solo aparecieron fuera de SQLite
-- [ ] T010 Confirmar que las 246 pruebas existentes siguen en verde
+- [X] T001 Crear la migración `create_tutor_groups_table` en `backend/database/migrations/`: columnas, `organization_id` NOT NULL con índice y FK, y clave única `(organization_id, name, shift, academic_year)` (data-model §1)
+- [X] T002 En la **misma** migración y **después** de crear la tabla, añadir `students.tutor_group_id` nullable con índice y FK `ON DELETE SET NULL`. El orden importa: la FK no puede apuntar a una tabla que aún no existe (data-model §2)
+- [X] T003 Declarar las tres FK con `ON DELETE SET NULL` — tutor, delegado y grupo del alumno. Con `CASCADE`, borrar un grupo se llevaría por delante a sus alumnos (FR-010, FR-011, SC-009)
+- [X] T004 Crear `backend/app/Models/TutorGroup.php` con el trait `BelongsToOrganization`, `SoftDeletes`, `$fillable` **sin** `organization_id`, y las relaciones `tutor`, `representative`, `students` (data-model §6)
+- [X] T005 Añadir a `backend/app/Models/Student.php` la relación `tutorGroup()` y `tutor_group_id` al `$fillable`
+- [X] T006 Limpiar en el modelo las referencias al borrar **lógicamente** un profesor o un alumno delegado: `SoftDeletes` no dispara la FK, así que el `SET NULL` no basta (data-model §3)
+- [X] T007 [P] Crear `backend/database/factories/TutorGroupFactory.php`
+- [X] T008 Ampliar `DemoSeeder` con los cinco casos límite —con tutor y delegado, sin tutor, sin alumnos, mismo nombre en dos turnos, alumnos sin grupo— **en las dos organizaciones**, con nombres repetidos entre ellas (data-model §8)
+- [X] T009 Validar la migración contra **MySQL real** en el contenedor, no solo contra SQLite. Es la lección de la feature 001: dos defectos de migración solo aparecieron fuera de SQLite
+- [X] T010 Confirmar que las 246 pruebas existentes siguen en verde
 
 **Checkpoint 1**: migración en verde en ambos motores · datos sembrados con los casos límite · suite anterior intacta.
+
+### Resultado y desviaciones de la Fase 1
+
+Cerrada el 2026-08-17.
+
+**Comprobado**
+
+- Migración y siembra en verde contra **MySQL real** en el contenedor y contra **SQLite** (vía la suite).
+- Esquema verificado en MySQL: `organization_id` NOT NULL con índice y FK; clave única
+  `(organization_id, name, shift, academic_year)`; tutor, delegado y `students.tutor_group_id` **nullable**.
+- Los cinco casos límite sembrados: grupo con tutor y delegado; grupo sin tutor; grupo sin alumnos; «1º ESO mañana» y
+  «1º ESO tarde» conviviendo; y 3 alumnos sin grupo. Nombres repetidos entre las dos organizaciones.
+- Los cuatro casos de borrado, ejercitados contra la base real: borrar un grupo con alumnos no cambia el recuento del
+  centro y los deja sin grupo; borrar al profesor tutor deja el grupo sin tutor; borrar al delegado lo deja sin
+  delegado, con el grupo vivo **y con el grupo borrado**.
+- 246 pruebas existentes en verde.
+
+**Defecto encontrado y corregido durante la fase**
+
+`SoftDeletes` no dispara la clave foránea —eso ya estaba previsto en data-model §3—, pero el gancho que lo suplía
+**tampoco alcanzaba**: `TutorGroup::query()` aplica el filtro de borrado lógico, así que no veía los grupos ya borrados.
+Resultado: borrar al delegado de un grupo borrado dejaba el puntero intacto, y restaurar ese grupo lo habría devuelto
+apuntando a un alumno inexistente.
+
+Detectado ejercitando los borrados contra la base de datos, no leyendo el código: con el grupo vivo el gancho funcionaba
+y el defecto no se veía. Corregido con `withTrashed()` en los dos ganchos —el de alumno y el de grupo— y verificado con
+el caso que fallaba.
+
+Es la segunda vez en el proyecto que el borrado lógico esconde un problema que la clave foránea aparentaba cubrir; la
+primera fue en `MigrationBackfillTest` de la feature 001.
 
 ---
 
