@@ -24,14 +24,14 @@ class AuthController extends Controller
             ->first();
 
         if (!$user || !$user->is_active || !Hash::check($credentials['password'], $user->password)) {
-            return response()->json(['message' => 'Identifiants invalides.'], 422);
+            return response()->json(['message' => __('auth.failed')], 422);
         }
 
         // Roles con acceso a la aplicación. `admin` pasó a llamarse `org_admin`
         // en M3; `super_admin` entra para poder gestionar organizaciones.
         if (!$user->hasAnyRole(['super_admin', 'org_admin', 'teacher'])) {
             return response()->json([
-                'message' => 'Este espacio está reservado a la administración y al profesorado.',
+                'message' => __('auth.staff_only'),
             ], 403);
         }
 
@@ -111,6 +111,6 @@ class AuthController extends Controller
 
         $user->currentAccessToken()?->delete();
 
-        return response()->json(['message' => 'Sesión cerrada.']);
+        return response()->json(['message' => __('auth.logged_out')]);
     }
 }
