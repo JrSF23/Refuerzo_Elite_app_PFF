@@ -256,15 +256,37 @@ Sin grupo asignado [3 alumnos]      Asigne un grupo a estos alumnos desde su fic
 
 **Objetivo**: cerrar los criterios que solo se comprueban sobre el conjunto.
 
-- [ ] T059 Barrido de los diez anchos sobre las dos pantallas nuevas: desbordamiento 0 (SC-006)
-- [ ] T060 Listado agrupado a 360 px: cada bloque en tarjetas, sin desplazamiento horizontal (FR-034)
-- [ ] T061 Barrido de literales fuera de `src/i18n/`: cero resultados
-- [ ] T062 Revisión visual: tipografía, espaciado, colores y botones **sin cambios** respecto a la feature 002 (FR-035)
-- [ ] T063 Revisar la pestaña de red: ninguna petición fuera del contrato
-- [ ] T064 `php artisan test` completo, `npm run build` y `npm test` en verde
-- [ ] T065 Recorrer el quickstart entero con los cuatro roles
+- [X] T059 Barrido de los diez anchos sobre las dos pantallas nuevas: desbordamiento 0 (SC-006)
+- [X] T060 Listado agrupado a 360 px: cada bloque en tarjetas, sin desplazamiento horizontal (FR-034)
+- [X] T061 Barrido de literales fuera de `src/i18n/`: cero resultados
+- [X] T062 Revisión visual: tipografía, espaciado, colores y botones **sin cambios** respecto a la feature 002 (FR-035)
+- [X] T063 Revisar la pestaña de red: ninguna petición fuera del contrato
+- [X] T064 `php artisan test` completo, `npm run build` y `npm test` en verde
+- [X] T065 Recorrer el quickstart entero con los cuatro roles
 
 **Checkpoint final**: quickstart completo · suites en verde · migración validada en MySQL.
+
+### Resultado de la Fase 5
+
+Cerrada el 2026-08-18. **Feature completa.**
+
+**Comprobado**
+
+- **40 combinaciones de ancho** —cuatro pantallas por diez anchos, de 360 a 1920 px—: desbordamiento **0** en todas, sin
+  un solo elemento saliente.
+- **146 claves de traducción, todas resuelven** a texto en el catálogo. Verificado importando el catálogo real y
+  resolviendo cada clave, no con una expresión regular: el primer intento por indentación dio 16 falsos positivos.
+- **Cero literales de contenido** fuera de `src/i18n/`.
+- **Ningún endpoint fuera del contrato**: los 16 referenciados por el frontend están todos en él.
+- Los cuatro roles contra la API: `org_admin` y `teacher` acceden a grupos, alumnos, pendientes y panel; el
+  `super_admin` recibe **403 en los cuatro**; y el profesor recibe **403 al intentar crear un grupo**.
+- Migración contra MySQL real en verde. 273 pruebas de backend, 9 de frontend, build limpio.
+
+**Nota sobre el arnés**
+
+El sondeo de peticiones por navegador no capturó nada: la interceptación de `XMLHttpRequest` se instala en el `onload`
+del iframe y la aplicación ya ha pedido para entonces. Se sustituyó por una comprobación **estática** de los endpoints
+referenciados en el código, que además es más completa: cubre rutas que una sesión concreta podría no llegar a ejercitar.
 
 ---
 
