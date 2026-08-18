@@ -8,7 +8,6 @@ import { AppShell } from './components/layout/AppShell.jsx'
 import { SECTIONS } from './lib/permissions.js'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
-import { PlaceholderPage } from './pages/PlaceholderPage.jsx'
 import { StudentsPage } from './pages/students/StudentsPage.jsx'
 import { AllStudentsPage } from './pages/students/AllStudentsPage.jsx'
 import { GroupStudentsPage } from './pages/students/GroupStudentsPage.jsx'
@@ -16,16 +15,22 @@ import { GuardiansPage } from './pages/guardians/GuardiansPage.jsx'
 import { TeachersPage } from './pages/teachers/TeachersPage.jsx'
 import { SubjectsPage } from './pages/subjects/SubjectsPage.jsx'
 import { TutorGroupsPage } from './pages/tutorGroups/TutorGroupsPage.jsx'
+import { ClassGroupsPage } from './pages/classGroups/ClassGroupsPage.jsx'
+import { EnrollmentsPage } from './pages/enrollments/EnrollmentsPage.jsx'
+import { SessionsPage } from './pages/sessions/SessionsPage.jsx'
+import { AttendancePage } from './pages/attendance/AttendancePage.jsx'
+import { PaymentsPage } from './pages/payments/PaymentsPage.jsx'
+import { UsersPage } from './pages/users/UsersPage.jsx'
+import { OrganizationsPage } from './pages/organizations/OrganizationsPage.jsx'
 
 /**
  * Secciones que todavía no tienen pantalla propia.
  *
  * Se irán vaciando fase a fase. Al cerrar la fase 5 la lista debe quedar vacía.
  */
-const PENDING_SECTIONS = [
-  'classGroups', 'enrollments', 'sessions', 'attendance',
-  'payments', 'users', 'organizations',
-]
+/**
+ * Ya no queda ninguna sección sin pantalla. `PlaceholderPage` deja de usarse.
+ */
 
 /** Secciones que ya tienen su pantalla. */
 const BUILT_SECTIONS = {
@@ -35,6 +40,13 @@ const BUILT_SECTIONS = {
   teachers: TeachersPage,
   subjects: SubjectsPage,
   tutorGroups: TutorGroupsPage,
+  classGroups: ClassGroupsPage,
+  enrollments: EnrollmentsPage,
+  sessions: SessionsPage,
+  attendance: AttendancePage,
+  payments: PaymentsPage,
+  users: UsersPage,
+  organizations: OrganizationsPage,
 }
 
 /**
@@ -96,18 +108,6 @@ function AppRoutes() {
           path="alumnos/todos"
         />
 
-        {PENDING_SECTIONS.map((key) => (
-          <Route
-            element={(
-              <RequireSection section={key}>
-                <PlaceholderPage section={key} />
-              </RequireSection>
-            )}
-            key={key}
-            // `path` sin la barra inicial: es una ruta hija de "/".
-            path={SECTIONS[key].path.slice(1)}
-          />
-        ))}
       </Route>
 
       {/* NOTA sobre `/grupos`: hasta esta entrega significaba «grupos de

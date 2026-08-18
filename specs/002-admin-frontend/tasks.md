@@ -255,15 +255,15 @@ Cerrada el 2026-08-17. Verificada contra el stack Docker con datos sembrados.
 
 **Independent Test**: escenario 6.4 de `quickstart.md` — asistencia completa desde 360 px.
 
-- [ ] T054 `components/ui/RelationSelect.jsx`: desplegable alimentado de otro recurso, acotado a la organización activa y con su propio estado de carga (FR-034)
-- [ ] T055 [US5] `pages/groups/`: listado con búsqueda y formulario con asignatura y profesor por `RelationSelect`, capacidad y estado
-- [ ] T056 [US5] Recorte de solo lectura para el profesor en grupos, mostrando solo los que imparte (US5.3)
-- [ ] T057 [US5] `pages/enrollments/`: listado **sin caja de búsqueda** (FR-024), formulario con alumno y grupo, cuota y estado
-- [ ] T058 [US6] `pages/sessions/`: listado **sin búsqueda**, formulario con grupo, título, fecha, horas y aula. Normalizar `H:i` al enviar y `HH:MM:SS` al recibir (contracts §3)
-- [ ] T059 [US6] Acotar el desplegable de grupo en sesiones a los que imparte el profesor (US6.1)
-- [ ] T060 [US6] `pages/attendance/`: listado **sin búsqueda** y registro con los tres estados, distinguidos por color **y** texto (FR-051)
-- [ ] T061 [US6] Optimizar el registro de asistencia para móvil: es la pantalla de uso diario del profesor y la referencia de SC-002
-- [ ] T062 [P] [US5] [US6] Añadir los espacios `groups`, `enrollments`, `sessions` y `attendance` a `i18n/locales/es.js`
+- [X] T054 `components/ui/RelationSelect.jsx`: desplegable alimentado de otro recurso, acotado a la organización activa y con su propio estado de carga (FR-034)
+- [X] T055 [US5] `pages/groups/`: listado con búsqueda y formulario con asignatura y profesor por `RelationSelect`, capacidad y estado
+- [X] T056 [US5] Recorte de solo lectura para el profesor en grupos, mostrando solo los que imparte (US5.3)
+- [X] T057 [US5] `pages/enrollments/`: listado **sin caja de búsqueda** (FR-024), formulario con alumno y grupo, cuota y estado
+- [X] T058 [US6] `pages/sessions/`: listado **sin búsqueda**, formulario con grupo, título, fecha, horas y aula. Normalizar `H:i` al enviar y `HH:MM:SS` al recibir (contracts §3)
+- [X] T059 [US6] Acotar el desplegable de grupo en sesiones a los que imparte el profesor (US6.1)
+- [X] T060 [US6] `pages/attendance/`: listado **sin búsqueda** y registro con los tres estados, distinguidos por color **y** texto (FR-051)
+- [X] T061 [US6] Optimizar el registro de asistencia para móvil: es la pantalla de uso diario del profesor y la referencia de SC-002
+- [X] T062 [P] [US5] [US6] Añadir los espacios `groups`, `enrollments`, `sessions` y `attendance` a `i18n/locales/es.js`
 
 **Checkpoint 4**: registrar asistencia de un grupo completo a 360 px sin desplazamiento horizontal · ninguna de las cuatro secciones muestra caja de búsqueda.
 
@@ -275,19 +275,53 @@ Cerrada el 2026-08-17. Verificada contra el stack Docker con datos sembrados.
 
 **Independent Test**: escenarios 5.4, 5.6, 5.7 y 5.8 de `quickstart.md`.
 
-- [ ] T063 [US7] `pages/payments/`: listado **sin búsqueda**, formulario con alumno, tutor, matrícula, importe, periodo, fecha, forma de pago y estado
-- [ ] T064 [US7] Acotar el desplegable de matrícula a las del alumno seleccionado (US7.1)
-- [ ] T065 [US7] Formatear todos los importes con separador de millar y dos decimales (SC-010)
-- [ ] T066 [US8] `pages/users/`: listado con búsqueda, formulario con rol y contraseña opcional al editar. Los roles ofrecidos dependen de quién crea (contracts §4)
-- [ ] T067 [US8] Vinculación de cuenta de profesor con su ficha mediante `teacher_id` (US8.2)
-- [ ] T068 [US9] `pages/organizations/`: listado con búsqueda, formulario y `users_count`. **No** intentar mostrar ningún otro recuento (US9.3)
-- [ ] T069 [US9] Acciones de suspender y activar, con el estado presentado como eje independiente del borrado lógico (contracts §5)
-- [ ] T070 [US9] Pantalla de cuentas de una organización para la plataforma, usando el filtro `organization_id` de `/users` — el único filtro de la API (contracts §4)
-- [ ] T071 [US9] Mostrar tal cual el mensaje del servidor al intentar eliminar una organización con cuentas activas (US9.2)
-- [ ] T072 [P] [US7] [US8] [US9] Añadir los espacios `payments`, `users` y `organizations` a `i18n/locales/es.js`
-- [ ] T073 Pantalla explicativa para organización suspendida o eliminada, a partir del 403 del servidor, en lugar de un error genérico repetido en cada bloque (Edge cases)
+- [X] T063 [US7] `pages/payments/`: listado **sin búsqueda**, formulario con alumno, tutor, matrícula, importe, periodo, fecha, forma de pago y estado
+- [X] T064 [US7] Acotar el desplegable de matrícula a las del alumno seleccionado (US7.1)
+- [X] T065 [US7] Formatear todos los importes con separador de millar y dos decimales (SC-010)
+- [X] T066 [US8] `pages/users/`: listado con búsqueda, formulario con rol y contraseña opcional al editar. Los roles ofrecidos dependen de quién crea (contracts §4)
+- [X] T067 [US8] Vinculación de cuenta de profesor con su ficha mediante `teacher_id` (US8.2)
+- [X] T068 [US9] `pages/organizations/`: listado con búsqueda, formulario y `users_count`. **No** intentar mostrar ningún otro recuento (US9.3)
+- [X] T069 [US9] Acciones de suspender y activar, con el estado presentado como eje independiente del borrado lógico (contracts §5)
+- [X] T070 [US9] Pantalla de cuentas de una organización para la plataforma, usando el filtro `organization_id` de `/users` — el único filtro de la API (contracts §4)
+- [X] T071 [US9] Mostrar tal cual el mensaje del servidor al intentar eliminar una organización con cuentas activas (US9.2)
+- [X] T072 [P] [US7] [US8] [US9] Añadir los espacios `payments`, `users` y `organizations` a `i18n/locales/es.js`
+- [X] T073 Pantalla explicativa para organización suspendida o eliminada, a partir del 403 del servidor, en lugar de un error genérico repetido en cada bloque (Edge cases)
 
 **Checkpoint 5**: el profesor no ve ningún importe en toda la aplicación · el `super_admin` no alcanza ninguna sección de negocio.
+
+### Resultado de las fases 4 y 5
+
+Cerradas el 2026-08-18, **en la rama `003-tutor-groups`** y no en esta. La razón: la 003 había renombrado la sección
+`groups` a `classGroups` y cambiado su ruta, así que construir esa pantalla aquí con el nombre antiguo garantizaba un
+conflicto de fusión. Como la 003 ya contenía toda la 002, separarlas exigía un rebase con más riesgo que valor.
+
+**Las siete pantallas, verificadas con datos reales**
+
+| Pantalla | `admin.a` | Búsqueda | Nota |
+|---|---|---|---|
+| Grupos de asignatura | 4 filas | Sí | |
+| Matrículas | 11 filas | **No** | El endpoint no la soporta |
+| Sesiones | 10 filas | **No** | El profesor ve **7**: recorte del servidor |
+| Asistencia | 20 de 24 | **No** | El profesor ve 18 |
+| Pagos | 20 de 21 | **No** | El profesor **es redirigido al panel** |
+| Cuentas | 4 filas | Sí | El `super_admin` ve **8**: las de ambos centros |
+| Organizaciones | 2 filas | Sí | Solo `super_admin`; suspender y activar funcionan |
+
+- Desbordamiento **0** a 360, 768 y 1440 px en las seis pantallas de centro.
+- **215 claves de traducción, todas resuelven**; cero literales fuera del catálogo.
+- 273 pruebas de backend y 9 de frontend en verde.
+
+**Decisiones de la fase**
+
+- **Suspender y activar son acciones propias de fila, no un campo del formulario.** El estado de una organización corta
+  el acceso de todo su personal; enterrarlo en un desplegable entre otros seis campos lo convertiría en algo que se
+  cambia sin querer.
+- **El campo de organización solo aparece para la plataforma.** Para el `org_admin` el servidor ignora lo que envíe y
+  usa la suya, así que mostrarlo sugeriría un control que no tiene.
+- **La regla de que la matrícula debe ser del alumno elegido no se replica en el cliente.** La valida el servidor y
+  devuelve el error sobre el campo; duplicar una regla de negocio en la interfaz es garantizar que las dos se
+  desincronicen.
+- **`PlaceholderPage` se elimina.** Era el andamio de la Fase 1 y ya no queda ninguna sección sin pantalla.
 
 ---
 

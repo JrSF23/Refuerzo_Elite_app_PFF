@@ -263,13 +263,117 @@ export const es = {
 
   // Grupos DE ASIGNATURA. Renombrada para no dejar dos secciones llamadas
   // «Grupos»: un alumno pertenece a un grupo tutorial y a varios de asignatura.
-  classGroups:   { title: 'Grupos de asignatura' },
-  enrollments:   { title: 'Matrículas' },
-  sessions:      { title: 'Sesiones' },
-  attendance:    { title: 'Asistencia' },
-  payments:      { title: 'Pagos' },
-  users:         { title: 'Cuentas' },
-  organizations: { title: 'Organizaciones' },
+  classGroups: {
+    title: 'Grupos de asignatura',
+    create: 'Nuevo grupo de asignatura',
+    edit: 'Editar grupo de asignatura',
+    emptyTitle: 'Todavía no hay grupos de asignatura',
+    emptyBody: 'Cada grupo imparte una asignatura. Cree primero las asignaturas y los profesores.',
+    fields: {
+      name: 'Grupo',
+      codeHint: 'Identificador corto y único dentro del centro.',
+      academicYear: 'Curso académico',
+      schedule: 'Horario',
+      capacity: 'Capacidad',
+      startDate: 'Fecha de inicio',
+      endDate: 'Fecha de fin',
+    },
+  },
+  enrollments: {
+    title: 'Matrículas',
+    create: 'Nueva matrícula',
+    edit: 'Editar matrícula',
+    emptyTitle: 'Todavía no hay matrículas',
+    emptyBody: 'La matrícula conecta a un alumno con un grupo de asignatura y fija su cuota.',
+    fields: {
+      enrolledAt: 'Fecha de matrícula',
+      monthlyFee: 'Cuota mensual',
+      monthlyFeeHint: 'Puede diferir de la tarifa de la asignatura.',
+    },
+  },
+
+  sessions: {
+    title: 'Sesiones',
+    create: 'Nueva sesión',
+    edit: 'Editar sesión',
+    emptyTitle: 'Todavía no hay sesiones',
+    emptyBody: 'Cree las sesiones de un grupo para poder registrar su asistencia.',
+    fields: {
+      title: 'Sesión',
+      date: 'Fecha',
+      time: 'Horario',
+      startsAt: 'Hora de inicio',
+      endsAt: 'Hora de fin',
+      room: 'Aula',
+    },
+  },
+
+  attendance: {
+    title: 'Asistencia',
+    create: 'Registrar asistencia',
+    edit: 'Editar asistencia',
+    emptyTitle: 'Todavía no hay asistencia registrada',
+    emptyBody: 'Registre la asistencia de una sesión para llevar su seguimiento.',
+    fields: {
+      comment: 'Comentario',
+    },
+  },
+
+  payments: {
+    title: 'Pagos',
+    create: 'Registrar pago',
+    edit: 'Editar pago',
+    emptyTitle: 'Todavía no hay pagos',
+    emptyBody: 'Registre los cobros del centro para llevar su seguimiento.',
+    fields: {
+      amount: 'Importe',
+      period: 'Periodo',
+      periodHint: 'Por ejemplo: «Octubre 2025» o «1er trimestre».',
+      paidAt: 'Fecha de pago',
+      method: 'Forma de pago',
+      reference: 'Referencia',
+      enrollmentHint: 'Debe ser una matrícula del alumno seleccionado.',
+    },
+  },
+
+  users: {
+    title: 'Cuentas',
+    create: 'Nueva cuenta',
+    edit: 'Editar cuenta',
+    emptyTitle: 'Todavía no hay cuentas',
+    emptyBody: 'Cree las cuentas del personal para que pueda acceder a la aplicación.',
+    fields: {
+      name: 'Nombre',
+      username: 'Usuario',
+      usernameHint: 'Con él o con el correo se accede a la aplicación.',
+      password: 'Contraseña',
+      passwordHint: 'Al editar, déjela vacía para no cambiarla. Mínimo 8 caracteres.',
+      role: 'Rol',
+      organizationHint: 'Un administrador de plataforma no pertenece a ningún centro.',
+      teacherProfile: 'Ficha de profesor',
+      teacherProfileHint: 'Vincula la cuenta con su ficha. Sin ella, el profesor no ve grupos ni sesiones.',
+    },
+  },
+
+  organizations: {
+    title: 'Organizaciones',
+    create: 'Nueva organización',
+    edit: 'Editar organización',
+    emptyTitle: 'Todavía no hay organizaciones',
+    emptyBody: 'Cada organización es un centro educativo con sus propios datos.',
+    suspend: 'Suspender',
+    activate: 'Activar',
+    suspended: 'Organización suspendida. Su personal deja de tener acceso.',
+    activated: 'Organización activada.',
+    fields: {
+      name: 'Centro',
+      slug: 'Identificador',
+      slugHint: 'Se deriva del nombre si se deja vacío.',
+      contactEmail: 'Correo de contacto',
+      contactPhone: 'Teléfono de contacto',
+      users: 'Cuentas',
+    },
+  },
 
   /* ── Estados de dominio ──────────────────────────────────────────────────────
      Las claves son los valores que devuelve la API y no se traducen: son

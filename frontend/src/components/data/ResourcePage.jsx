@@ -46,6 +46,8 @@ export function ResourcePage({
   listParams,
   /** Valores con los que nace un registro creado desde esta pantalla. */
   createDefaults,
+  /** Acciones propias de la entidad, antes de editar y eliminar. */
+  extraRowActions,
 }) {
   const { roleNames } = useSession()
   const toast = useToast()
@@ -134,6 +136,7 @@ export function ResourcePage({
         records={list.records}
         rowActions={canModify ? (record) => (
           <>
+            {extraRowActions?.(record)}
             <Button onClick={() => openEdit(record)} size="sm">
               {t('common.edit')}
             </Button>
