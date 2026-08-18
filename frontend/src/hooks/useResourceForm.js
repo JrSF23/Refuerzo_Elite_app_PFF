@@ -26,7 +26,7 @@ export function useResourceForm({ endpoint, fields, onSaved }) {
     setGeneralError('')
   }, [])
 
-  const startCreate = useCallback(() => {
+  const startCreate = useCallback((initial) => {
     reset()
 
     // Valores por defecto de los campos que los declaran, para que un `status`
@@ -35,7 +35,10 @@ export function useResourceForm({ endpoint, fields, onSaved }) {
     fields.forEach((field) => {
       if (field.defaultValue !== undefined) defaults[field.name] = field.defaultValue
     })
-    setValues(defaults)
+
+    // Lo que aporte la pantalla manda sobre el valor por defecto del campo: al
+    // crear un alumno desde un aula, nace ya en ella.
+    setValues({ ...defaults, ...(initial ?? {}) })
   }, [fields, reset])
 
   const startEdit = useCallback((record) => {

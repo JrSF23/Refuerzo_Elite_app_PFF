@@ -24,7 +24,7 @@ import { api } from '../lib/api.js'
  * identificador de petición vigente cierra el otro flanco: una respuesta que
  * llega tarde tampoco escribe el estado.
  */
-export function useResourceList(endpoint, { perPage = 20 } = {}) {
+export function useResourceList(endpoint, { perPage = 20, params } = {}) {
   const [state, setState] = useState({
     status: 'loading',
     records: [],
@@ -37,6 +37,12 @@ export function useResourceList(endpoint, { perPage = 20 } = {}) {
 
   const requestRef = useRef(0)
   const abortRef = useRef(null)
+
+  // En una ref para que un objeto nuevo en cada render no recree `load` y
+  // dispare una recarga infinita.
+  const paramsRef = useRef(params)
+  const paramsKey = JSON.stringify(params ?? null)
+  paramsRef.current = params
 
   const load = useCallback(async ({ page: nextPage, search: nextSearch }) => {
     const requestId = requestRef.current + 1
@@ -53,7 +59,14 @@ export function useResourceList(endpoint, { perPage = 20 } = {}) {
     try {
       const { data } = await api.get(`/${endpoint}`, {
         // El servidor topa `per_page` en 50; pedir más no da más (FR-023).
-        params: { page: nextPage, per_page: perPage, search: nextSearch || undefined },
+        params: {
+          page: nextPage,
+          per_page: perPage,
+          search: nextSearch || undefined,
+          // Acotación fija de la pantalla —por ejemplo, un grupo concreto—. Va
+          // al servidor: filtrar en cliente obligaría a traerse el centro entero.
+          ...(paramsRef.current ?? {}),
+        },
         signal: controller.signal,
       })
 
@@ -76,7 +89,8 @@ export function useResourceList(endpoint, { perPage = 20 } = {}) {
 
       setState({ status: 'error', records: [], pagination: null, error })
     }
-  }, [endpoint, perPage])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endpoint, perPage, paramsKey])
 
   useEffect(() => {
     load({ page, search })

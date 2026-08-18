@@ -36,9 +36,16 @@ export function ResourcePage({
   emptyTitle,
   emptyBody,
   perPage,
-  /** Convierte la página cargada en bloques. Si no se pasa, listado plano. */
-  buildBlocks,
-  renderBlockHeader,
+  /** Migas propias. Por defecto, solo el título de la sección. */
+  breadcrumbs,
+  /** Título propio. Por defecto, el de la sección. */
+  pageTitle,
+  /** Línea bajo el título: contexto de la pantalla. */
+  subtitle,
+  /** Acotación fija enviada al servidor en cada carga. */
+  listParams,
+  /** Valores con los que nace un registro creado desde esta pantalla. */
+  createDefaults,
 }) {
   const { roleNames } = useSession()
   const toast = useToast()
@@ -46,7 +53,7 @@ export function ResourcePage({
   const definition = SECTIONS[section]
   const canModify = canWrite(section, roleNames)
 
-  const list = useResourceList(definition.endpoint, { perPage })
+  const list = useResourceList(definition.endpoint, { perPage, params: listParams })
 
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState(null)
@@ -65,7 +72,7 @@ export function ResourcePage({
   })
 
   function openCreate() {
-    form.startCreate()
+    form.startCreate(createDefaults)
     setIsFormOpen(true)
   }
 
@@ -91,14 +98,17 @@ export function ResourcePage({
     }
   }
 
-  const title = t(`${section}.title`)
+  const title = pageTitle ?? t(`${section}.title`)
 
   return (
     <>
-      <Breadcrumbs items={[{ label: title }]} />
+      <Breadcrumbs items={breadcrumbs ?? [{ label: title }]} />
 
       <div className="page-head">
-        <h1 className="page-title">{title}</h1>
+        <div>
+          <h1 className="page-title">{title}</h1>
+          {subtitle ? <p className="page-subtitle">{subtitle}</p> : null}
+        </div>
 
         {/* Sin permiso de escritura no hay acción de crear. No es seguridad
             —el servidor autoriza igual—, es no ofrecer lo que va a fallar. */}
@@ -110,7 +120,6 @@ export function ResourcePage({
       </div>
 
       <DataTable
-        blocks={buildBlocks ? buildBlocks(list.records) : null}
         columns={columns}
         emptyAction={canModify ? (
           <Button onClick={openCreate} variant="primary">{t(`${section}.create`)}</Button>
@@ -133,7 +142,6 @@ export function ResourcePage({
             </Button>
           </>
         ) : undefined}
-        renderBlockHeader={renderBlockHeader}
         search={list.search}
         searchable={definition.searchable}
         status={list.status}

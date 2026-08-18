@@ -10,6 +10,8 @@ import { LoginPage } from './pages/LoginPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
 import { PlaceholderPage } from './pages/PlaceholderPage.jsx'
 import { StudentsPage } from './pages/students/StudentsPage.jsx'
+import { AllStudentsPage } from './pages/students/AllStudentsPage.jsx'
+import { GroupStudentsPage } from './pages/students/GroupStudentsPage.jsx'
 import { GuardiansPage } from './pages/guardians/GuardiansPage.jsx'
 import { TeachersPage } from './pages/teachers/TeachersPage.jsx'
 import { SubjectsPage } from './pages/subjects/SubjectsPage.jsx'
@@ -73,6 +75,26 @@ function AppRoutes() {
             path={SECTIONS[key].path.slice(1)}
           />
         ))}
+
+        {/* Subrutas de alumnos: el índice de aulas es `/alumnos`, y de ahí se
+            entra al detalle de una o al listado completo. Van bajo la misma
+            guarda de sección que el índice. */}
+        <Route
+          element={(
+            <RequireSection section="students">
+              <GroupStudentsPage />
+            </RequireSection>
+          )}
+          path="alumnos/grupo/:groupId"
+        />
+        <Route
+          element={(
+            <RequireSection section="students">
+              <AllStudentsPage />
+            </RequireSection>
+          )}
+          path="alumnos/todos"
+        />
 
         {PENDING_SECTIONS.map((key) => (
           <Route

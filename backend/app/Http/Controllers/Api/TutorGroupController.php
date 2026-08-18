@@ -6,6 +6,7 @@ use App\Models\Teacher;
 use App\Models\TutorGroup;
 use App\Rules\BelongsToCurrentOrganization;
 use App\Rules\RepresentativeBelongsToGroup;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 
 class TutorGroupController extends BaseApiController
@@ -21,6 +22,35 @@ class TutorGroupController extends BaseApiController
     protected array $with = ['tutor', 'representative'];
 
     protected string $entityLabel = 'tutor_group';
+
+    /**
+     * Recuento REAL de alumnos por grupo.
+     *
+     * Es lo que permite que el índice de grupos diga la verdad. Sin esto, la
+     * cifra tendría que salir de la página de alumnos cargada, y con 500 alumnos
+     * paginados de 20 en 20 un grupo de 30 aparecería como «2 alumnos».
+     *
+     * `withCount` resuelve con una subconsulta agregada, así que no añade una
+     * consulta por grupo.
+     */
+    protected function query(): Builder
+    {
+        return parent::query()
+            ->withCount('students')
+            /*
+             * Orden académico del centro. `BaseApiController::index` añade
+             * después su `latest()`, que queda como desempate por fecha; el
+             * criterio principal es este porque se declara primero.
+             *
+             * Sin esto los grupos salen por fecha de creación, que no significa
+             * nada para quien busca «1º ESO» en una lista de veinte aulas
+             * (FR-031). El nombre y el turno desempatan para que la lista no
+             * parezca moverse sola cuando dos comparten `sort_order`.
+             */
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->orderBy('shift');
+    }
 
     protected function rules(?int $id = null): array
     {

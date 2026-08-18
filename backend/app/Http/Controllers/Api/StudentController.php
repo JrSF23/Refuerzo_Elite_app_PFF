@@ -60,6 +60,16 @@ class StudentController extends BaseApiController
             return $query;
         }
 
+        /*
+         * `none` acota a los alumnos SIN grupo. Hace falta un valor explícito
+         * porque el ausente ya significa «no filtrar», y sin él no habría forma
+         * de listar ni de contar los pendientes de asignar, que tras la
+         * migración son todos.
+         */
+        if (request('tutor_group_id') === 'none') {
+            return $query->whereNull('tutor_group_id');
+        }
+
         $groupId = request()->integer('tutor_group_id');
 
         $belongsToOrganization = TutorGroup::query()->whereKey($groupId)->exists();

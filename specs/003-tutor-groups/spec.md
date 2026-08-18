@@ -280,11 +280,23 @@ El profesor tutor ve los grupos de los que es responsable.
 - **FR-023c**: El formulario de grupo NO DEBE pedir más datos que estos. El alcance acordado es «un profesor
   responsable, turno, estudiante responsable del grupo, y poco más»: cualquier campo adicional necesita justificarse.
 - **FR-024**: El formulario de alumno DEBE ofrecer el grupo tutorial como desplegable acotado al propio centro.
-- **FR-025**: El listado de alumnos DEBE presentarse en bloques, uno por grupo.
+- **FR-025** *(revisado el 2026-08-18)*: La sección de alumnos DEBE presentarse como **índice de aulas**: una entrada
+  por grupo, y el listado de alumnos al entrar en una.
+
+  **Por qué cambió.** La versión entregada mostraba todos los alumnos en bloques por grupo. Con los 8 alumnos sembrados
+  se veía bien; con los ~500 de un centro real es inservible, y no por longitud sino por algo peor: **la paginación es
+  global**. La página trae 20 alumnos, así que cada bloque era un FRAGMENTO de su grupo y el recuento mentía —«1º ESO,
+  2 alumnos» cuando el grupo tiene 30—. Plegar los bloques no lo arreglaba: seguirían siendo fragmentos con cifras
+  falsas.
+
+  La estructura nueva invierte la jerarquía: primero las aulas con su recuento **real**, y los alumnos paginados dentro
+  de su grupo. El coste de la pantalla principal pasa a depender del número de grupos —decenas— y no del de alumnos.
 - **FR-026**: La cabecera de cada bloque DEBE mostrar el nombre del grupo **con su turno** —«1º ESO — Mañana»— y,
   alineado a la derecha, su profesor tutor.
 - **FR-027**: Un grupo sin tutor DEBE mostrar un texto explícito de **sin asignar**, nunca un hueco vacío.
-- **FR-028**: Un grupo sin alumnos NO DEBE aparecer en el listado de alumnos.
+- **FR-028** *(revisado)*: Un grupo sin alumnos **SÍ** aparece en el índice de aulas, con su recuento a cero. En la
+  estructura anterior se ocultaba porque un bloque vacío en un listado de alumnos era ruido; en un índice de aulas es
+  información útil —dice que ese grupo existe y está pendiente de recibir alumnos—.
 - **FR-029**: Los alumnos sin grupo DEBEN aparecer en un bloque propio, claramente identificado como pendiente de
   asignar. NO DEBEN ocultarse.
 - **FR-030**: La tabla de cada bloque NO DEBE incluir una columna con el grupo.
@@ -301,9 +313,15 @@ El profesor tutor ve los grupos de los que es responsable.
 ### Requisitos de listado y volumen
 
 - **FR-036**: La agrupación DEBE construirse a partir del grupo que trae cada alumno, no infiriéndola de textos.
-- **FR-037**: Mientras el listado se pagine de forma global, la interfaz DEBE advertir de que los bloques corresponden a
-  la página mostrada. La alternativa —cargar todos los alumnos de golpe— NO ES aceptable: contradice FR-015 de la
-  feature 002 y no escala.
+- **FR-037** *(resuelto por el rediseño)*: Ya no hace falta advertencia alguna. Cada pantalla de alumnos está acotada a
+  un grupo **en el servidor**, así que su paginación es la de ese grupo y ninguna cifra es un fragmento. El aviso que
+  contemplaba este requisito se retiró junto con los bloques.
+
+- **FR-038**: El índice DEBE mostrar el recuento **real** de alumnos de cada grupo, obtenido del servidor. NO DEBE
+  deducirse de los alumnos cargados en la página.
+- **FR-039**: DEBE existir un acceso al listado completo de alumnos del centro, sin agrupar, para buscar a alguien de
+  quien no se recuerda el grupo.
+- **FR-040**: Al crear un alumno desde el detalle de un aula, el grupo DEBE venir preseleccionado.
 
 ### Key Entities
 

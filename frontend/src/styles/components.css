@@ -1241,94 +1241,134 @@
   border-top: 1px solid var(--color-border);
 }
 
-/* ═══ Bloques por grupo ════════════════════════════════════════════════════ */
+/* ═══ Índice de aulas ══════════════════════════════════════════════════════
+   La pantalla principal de alumnos. Filas amplias y pulsables, no una tabla:
+   son pocos elementos y cada uno es un destino, no un dato que comparar.
+   ═════════════════════════════════════════════════════════════════════════ */
 
-.blocks {
+.page-intro {
+  margin: calc(var(--space-4) * -1) 0 var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.page-subtitle {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.group-index {
   display: flex;
   flex-direction: column;
 }
 
-.block + .block {
+.group-index > li + li .group-card {
   border-top: 1px solid var(--color-border);
 }
 
-.block__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-surface-sunken);
-}
-
-/* El bloque de pendientes de asignar se distingue: es una tarea, no un curso. */
-.block__header--unassigned {
-  background: var(--color-warning-soft);
-}
-
-/* La cabecera entera es el disparador del plegado: un objetivo grande se acierta
-   sin puntería, que es lo que importa en móvil. */
-.block__toggle {
+.group-card {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-4);
+  padding: var(--space-4);
+  color: inherit;
+  transition: background var(--transition-color);
+}
+
+.group-card:hover {
+  background: var(--color-primary-soft);
+  text-decoration: none;
+}
+
+/* El foco marca la fila entera, no solo el texto: es lo que se está activando. */
+.group-card:focus-visible {
+  outline-offset: -2px;
+}
+
+.group-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
   flex: 1 1 auto;
   min-width: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  text-align: left;
 }
 
-.block__title {
-  font-size: var(--text-base);
+.group-card__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
   overflow-wrap: anywhere;
 }
 
-.block__count {
-  flex: 0 0 auto;
-  padding: 2px var(--space-2);
+/* El turno acompaña al nombre como distintivo: «1º ESO» y «1º ESO» solo se
+   distinguen por él, así que no puede quedar como texto secundario. */
+.group-card__shift {
+  padding: 1px var(--space-2);
   border-radius: var(--radius-full);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
   font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
-.block__tutor {
-  flex: 0 1 auto;
+.group-card__tutor {
+  color: var(--color-text-muted);
   font-size: var(--text-sm);
   overflow-wrap: anywhere;
 }
 
-.block__tutor-label {
-  color: var(--color-text-muted);
+/* La cifra grande y alineada a la derecha: es lo que se compara de un vistazo
+   al recorrer la lista de aulas. */
+.group-card__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: 0 0 auto;
+  line-height: var(--leading-tight);
 }
 
-/* Triángulo de plegado. Rota en lugar de cambiar de glifo: así el movimiento
-   dice hacia dónde va, y `prefers-reduced-motion` lo cancela desde la base. */
-.chevron {
-  display: block;
+.group-card__count {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+}
+
+.group-card__count-label {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+/* Punta que indica que la fila lleva a alguna parte. */
+.group-card__chevron {
   flex: 0 0 auto;
   width: 0;
   height: 0;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 6px solid var(--color-text-muted);
-  transition: transform var(--transition-color);
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 7px solid var(--color-border-control);
 }
 
-.chevron--open {
-  transform: rotate(90deg);
+.group-card:hover .group-card__chevron {
+  border-left-color: var(--color-primary);
 }
 
-.blocks-notice {
-  padding: var(--space-2) var(--space-4);
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
+/* Pendientes de asignar: es una tarea, no un aula, y se distingue. */
+.group-card--unassigned {
+  background: var(--color-warning-soft);
+}
+
+.group-card--unassigned:hover {
+  background: var(--color-warning-soft);
+  box-shadow: inset 3px 0 0 var(--color-warning);
+}
+
+.group-card--unassigned .group-card__count {
+  color: var(--color-warning-text);
 }
 
 /* ═══ Puntos de ruptura ════════════════════════════════════════════════════
