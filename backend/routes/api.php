@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherController;
+use App\Http\Controllers\Api\TutorGroupController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +44,10 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/dashboard', DashboardController::class);
 
             Route::apiResource('students', StudentController::class)->only(['index', 'show']);
+            // El profesor consulta los grupos tutoriales; no los modifica. Es la
+            // primera entidad con lectura sin escritura para él, y puede tenerla
+            // porque no lleva ningún campo monetario.
+            Route::apiResource('tutor-groups', TutorGroupController::class)->only(['index', 'show']);
             Route::apiResource('class-groups', ClassGroupController::class)->only(['index', 'show']);
             Route::apiResource('class-sessions', ClassSessionController::class);
             Route::apiResource('attendances', AttendanceController::class);
@@ -53,6 +58,7 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('teachers', TeacherController::class);
             Route::apiResource('subjects', SubjectController::class);
             Route::apiResource('students', StudentController::class)->except(['index', 'show']);
+            Route::apiResource('tutor-groups', TutorGroupController::class)->except(['index', 'show']);
             Route::apiResource('class-groups', ClassGroupController::class)->except(['index', 'show']);
             Route::apiResource('enrollments', EnrollmentController::class);
             Route::apiResource('payments', PaymentController::class);

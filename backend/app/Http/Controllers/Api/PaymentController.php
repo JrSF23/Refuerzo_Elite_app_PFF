@@ -33,7 +33,7 @@ class PaymentController extends BaseApiController
 
                     $studentId = request()->integer('student_id');
                     if ($studentId && ! Enrollment::where('id', $value)->where('student_id', $studentId)->exists()) {
-                        $fail('La matrícula seleccionada no pertenece a este alumno.');
+                        $fail(__('tenancy.payments.enrollment_mismatch'));
                     }
                 },
             ],

@@ -1,315 +1,190 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { roleLabels } from '../config/modules'
-import { useSession } from '../context/SessionContext'
-import { api } from '../services/api'
+import { EMPTY_VALUE, formatAmount, formatDate, formatTime, t } from '../i18n/index.js'
+import { useSession } from '../context/SessionContext.jsx'
+import { useDashboard } from '../hooks/useDashboard.js'
+import { SECTIONS, canAccess } from '../lib/permissions.js'
+import { StatCard } from '../components/dashboard/StatCard.jsx'
+import { RecentPanel } from '../components/dashboard/RecentPanel.jsx'
+import {
+  AttendanceStatusBadge,
+  PaymentStatusBadge,
+  RecordStatusBadge,
+} from '../components/ui/Badge.jsx'
+import { ErrorState, LoadingState } from '../components/data/states.jsx'
 
-function formatDate(value) {
-  if (!value) return '-'
-  return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(value))
-}
-
-function formatTime(value) {
-  if (!value) return ''
-  return value.slice(0, 5)
-}
-
-const attendanceLabels = { present: 'Presente', absent: 'Ausente', late: 'Con retraso' }
-const attendanceBadge = { present: 'badge-ok', absent: 'badge-danger', late: 'badge-warn' }
-
-// ── Admin dashboard ──────────────────────────────────────────────────────────
-
-const adminStatLabels = {
-  students: 'Alumnos', teachers: 'Profesores', groups: 'Grupos',
-  attendances: 'Asistencia', payments: 'Pagos',
-}
-
-const paymentStatusLabels = { paid: 'Pagado', pending: 'Pendiente', cancelled: 'Anulado' }
-const paymentStatusBadge = { paid: 'badge-ok', pending: 'badge-warn', cancelled: 'badge-danger' }
-
-function AdminDashboard({ data, user, roleNames }) {
-  return (
-    <div>
-      <section className="dashboard-hero">
-        <div className="hero-grid">
-          <div className="hero-stack">
-            <div className="hero-chip">Gestión del centro</div>
-            <h1 className="hero-title">Una administración clara y manejable.</h1>
-            <p className="hero-copy">
-              Visión general del centro: alumnos, grupos, sesiones, asistencia y pagos.
-            </p>
-          </div>
-          <div className="hero-sidecard">
-            <div className="section-label">Perfil conectado</div>
-            <p>{user?.name}</p>
-            <p className="hint">{roleNames.map((r) => roleLabels[r] ?? r).join(', ')}</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="stats-grid">
-        {Object.entries(data.stats).map(([key, value]) => (
-          <article className="stat-card" key={key}>
-            <div className="stat-label">{adminStatLabels[key] ?? key}</div>
-            <div className="stat-value">{value}</div>
-          </article>
-        ))}
-      </section>
-
-      <section className="cards-grid">
-        <article className="module-card">
-          <div className="section-head">
-            <div>
-              <div className="section-label">Alumnos recientes</div>
-              <h2>Últimas altas</h2>
-            </div>
-            <Link className="ghost-btn link-btn" to="/espacio/modulo/students">Ver todo</Link>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>Alumno</th><th>Tutor</th><th>Nivel</th></tr></thead>
-              <tbody>
-                {data.recentStudents.length === 0
-                  ? <tr><td className="empty-state" colSpan={3}>No hay registros recientes.</td></tr>
-                  : data.recentStudents.map((s) => (
-                    <tr key={s.id}>
-                      <td>{s.full_name}</td>
-                      <td>{s.guardian?.full_name || '—'}</td>
-                      <td>{s.school_level || '—'}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        <article className="module-card">
-          <div className="section-head">
-            <div>
-              <div className="section-label">Sesiones recientes</div>
-              <h2>Agenda del centro</h2>
-            </div>
-            <Link className="ghost-btn link-btn" to="/espacio/modulo/classSessions">Ver todo</Link>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>Sesión</th><th>Grupo</th><th>Fecha</th></tr></thead>
-              <tbody>
-                {data.recentSessions.length === 0
-                  ? <tr><td className="empty-state" colSpan={3}>No hay sesiones recientes.</td></tr>
-                  : data.recentSessions.map((s) => (
-                    <tr key={s.id}>
-                      <td>{s.title}</td>
-                      <td>{s.class_group?.name || '—'}</td>
-                      <td>{formatDate(s.session_date)}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        <article className="module-card">
-          <div className="section-head">
-            <div>
-              <div className="section-label">Pagos recientes</div>
-              <h2>Seguimiento económico</h2>
-            </div>
-            <Link className="ghost-btn link-btn" to="/espacio/modulo/payments">Ver todo</Link>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>Alumno</th><th>Periodo</th><th>Estado</th></tr></thead>
-              <tbody>
-                {data.recentPayments.length === 0
-                  ? <tr><td className="empty-state" colSpan={3}>No hay pagos recientes.</td></tr>
-                  : data.recentPayments.map((p) => (
-                    <tr key={p.id}>
-                      <td>{p.student?.full_name || '—'}</td>
-                      <td>{p.period_label}</td>
-                      <td><span className={`badge ${paymentStatusBadge[p.status] ?? ''}`}>{paymentStatusLabels[p.status] ?? p.status}</span></td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-    </div>
-  )
-}
-
-// ── Teacher dashboard ────────────────────────────────────────────────────────
-
-function TeacherDashboard({ data, user, roleNames }) {
-  const teacher = data.teacher
-  const teacherStatLabels = {
-    groups: 'Mis grupos', students: 'Mis alumnos', upcoming_sessions: 'Próximas sesiones',
-  }
-
-  return (
-    <div>
-      <section className="dashboard-hero">
-        <div className="hero-grid">
-          <div className="hero-stack">
-            <div className="hero-chip">Espacio del profesor</div>
-            <h1 className="hero-title">
-              {teacher ? `Bienvenido/a, ${teacher.first_name}.` : `Bienvenido/a, ${user?.name}.`}
-            </h1>
-            <p className="hero-copy">
-              {teacher?.specialty
-                ? `Especialidad: ${teacher.specialty}. Consulte sus grupos, las próximas sesiones y el seguimiento de la asistencia.`
-                : 'Consulte sus grupos, las próximas sesiones y el seguimiento de la asistencia de sus alumnos.'}
-            </p>
-          </div>
-          <div className="hero-sidecard">
-            <div className="section-label">Perfil conectado</div>
-            <p>{user?.name}</p>
-            <p className="hint">{roleNames.map((r) => roleLabels[r] ?? r).join(', ')}</p>
-            {teacher?.specialty && <p className="hint" style={{ marginTop: 4 }}>{teacher.specialty}</p>}
-          </div>
-        </div>
-      </section>
-
-      <section className="stats-grid">
-        {Object.entries(data.stats).map(([key, value]) => (
-          <article className="stat-card" key={key}>
-            <div className="stat-label">{teacherStatLabels[key] ?? key}</div>
-            <div className="stat-value">{value}</div>
-          </article>
-        ))}
-      </section>
-
-      {!teacher && (
-        <div className="notice-banner" style={{ margin: '0 0 24px' }}>
-          Su cuenta de usuario todavía no está asociada a una ficha de profesor.
-          Póngase en contacto con la administración para vincularla.
-        </div>
-      )}
-
-      <section className="cards-grid">
-        {/* Mis grupos */}
-        <article className="module-card">
-          <div className="section-head">
-            <div>
-              <div className="section-label">Mis grupos</div>
-              <h2>Grupos asignados</h2>
-            </div>
-            <Link className="ghost-btn link-btn" to="/espacio/modulo/classGroups">Ver todo</Link>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>Grupo</th><th>Asignatura</th><th>Horario</th><th>Estado</th></tr></thead>
-              <tbody>
-                {data.myGroups.length === 0
-                  ? <tr><td className="empty-state" colSpan={4}>No tiene ningún grupo asignado.</td></tr>
-                  : data.myGroups.map((g) => (
-                    <tr key={g.id}>
-                      <td><strong>{g.name}</strong></td>
-                      <td>{g.subject?.name || '—'}</td>
-                      <td className="hint">{g.schedule || '—'}</td>
-                      <td>
-                        <span className={`badge ${g.status === 'active' ? 'badge-ok' : 'badge-muted'}`}>
-                          {g.status === 'active' ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        {/* Próximas sesiones */}
-        <article className="module-card">
-          <div className="section-head">
-            <div>
-              <div className="section-label">Próximas sesiones</div>
-              <h2>Mi agenda</h2>
-            </div>
-            <Link className="ghost-btn link-btn" to="/espacio/modulo/classSessions">Nueva sesión</Link>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>Sesión</th><th>Grupo</th><th>Fecha</th><th>Hora</th></tr></thead>
-              <tbody>
-                {data.upcomingSessions.length === 0
-                  ? <tr><td className="empty-state" colSpan={4}>No hay próximas sesiones.</td></tr>
-                  : data.upcomingSessions.map((s) => (
-                    <tr key={s.id}>
-                      <td>{s.title}</td>
-                      <td>{s.class_group?.name || '—'}</td>
-                      <td>{formatDate(s.session_date)}</td>
-                      <td className="hint">
-                        {s.starts_at ? `${formatTime(s.starts_at)}${s.ends_at ? ` – ${formatTime(s.ends_at)}` : ''}` : '—'}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        {/* Asistencias recientes */}
-        <article className="module-card">
-          <div className="section-head">
-            <div>
-              <div className="section-label">Asistencia reciente</div>
-              <h2>Seguimiento de los alumnos</h2>
-            </div>
-            <Link className="ghost-btn link-btn" to="/espacio/modulo/attendances">Registrar asistencia</Link>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>Alumno</th><th>Sesión</th><th>Grupo</th><th>Estado</th></tr></thead>
-              <tbody>
-                {data.recentAttendances.length === 0
-                  ? <tr><td className="empty-state" colSpan={4}>No hay asistencia registrada.</td></tr>
-                  : data.recentAttendances.map((a) => (
-                    <tr key={a.id}>
-                      <td>{a.student?.full_name || '—'}</td>
-                      <td className="hint">{a.class_session?.title || '—'}</td>
-                      <td className="hint">{a.class_session?.class_group?.name || '—'}</td>
-                      <td>
-                        <span className={`badge ${attendanceBadge[a.status] ?? ''}`}>
-                          {attendanceLabels[a.status] ?? a.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-    </div>
-  )
-}
-
-// ── Entry point ───────────────────────────────────────────────────────────────
-
+/**
+ * Panel operativo.
+ *
+ * Dos variantes desde el mismo endpoint. La elección la hace el campo `role` de
+ * la respuesta y no los roles del usuario (FR-016): una cuenta puede tener
+ * varios roles, y quien decide qué conjunto de datos ha construido es el
+ * servidor.
+ */
 export function DashboardPage() {
-  const { roleNames, user } = useSession()
-  const [data, setData] = useState(null)
-  const [loadError, setLoadError] = useState('')
+  const { status, data, error, retry } = useDashboard()
+  const { roleNames } = useSession()
 
-  useEffect(() => {
-    api.get('/dashboard')
-      .then(({ data: payload }) => setData(payload))
-      .catch(() => setLoadError('No se ha podido cargar el panel. Vuelva a cargar la página.'))
-  }, [])
+  // Un indicador solo enlaza si el rol puede entrar en la sección; si no, sería
+  // un enlace que acaba en redirección (FR-017).
+  const linkTo = (key) => (canAccess(key, roleNames) ? SECTIONS[key].path : undefined)
 
-  if (loadError) {
-    return <div className="error-banner" style={{ margin: '24px' }}>{loadError}</div>
-  }
+  // Se decide sobre UN solo estado, no encadenando comprobaciones de tres
+  // valores sueltos. La versión anterior preguntaba `if (isLoading)` y luego
+  // `if (error)`, y una combinación que no debía existir —ni cargando, ni
+  // error, ni datos— se colaba hasta `data.role` sobre un `null`. Con este
+  // `switch` no hay hueco por donde pasar: los datos solo se leen en 'ready'.
+  return (
+    <>
+      <h1 className="page-title">{t('dashboard.title')}</h1>
 
-  if (!data) {
-    return <div className="panel-empty">Cargando el panel...</div>
-  }
+      {status === 'loading' ? <LoadingState rows={4} /> : null}
 
-  if (data.role === 'teacher') {
-    return <TeacherDashboard data={data} roleNames={roleNames} user={user} />
-  }
+      {status === 'error' ? (
+        <ErrorState message={error?.message} onRetry={retry} />
+      ) : null}
 
-  return <AdminDashboard data={data} roleNames={roleNames} user={user} />
+      {status === 'ready' ? (
+        data.role === 'teacher'
+          ? <TeacherDashboard data={data} linkTo={linkTo} />
+          : <AdminDashboard data={data} linkTo={linkTo} />
+      ) : null}
+    </>
+  )
+}
+
+/* ── Administración ────────────────────────────────────────────────────────── */
+
+function AdminDashboard({ data, linkTo }) {
+  const { stats, recentStudents, recentSessions, recentPayments } = data
+
+  return (
+    <>
+      <section className="stats-grid">
+        <StatCard label={t('dashboard.stats.students')} to={linkTo('students')} value={stats.students} />
+        <StatCard label={t('dashboard.stats.teachers')} to={linkTo('teachers')} value={stats.teachers} />
+        <StatCard label={t('dashboard.stats.groups')} to={linkTo('classGroups')} value={stats.groups} />
+        <StatCard label={t('dashboard.stats.attendances')} to={linkTo('attendance')} value={stats.attendances} />
+        <StatCard label={t('dashboard.stats.payments')} to={linkTo('payments')} value={stats.payments} />
+      </section>
+
+      <section className="panels-grid">
+        <RecentPanel
+          emptyText={t('dashboard.emptyStudents')}
+          items={recentStudents.map((student) => ({
+            key: student.id,
+            primary: student.full_name,
+            secondary: student.guardian?.full_name ?? t('dashboard.noGuardian'),
+            trailing: <RecordStatusBadge value={student.status} />,
+          }))}
+          title={t('dashboard.recentStudents')}
+          to={linkTo('students')}
+        />
+
+        <RecentPanel
+          emptyText={t('dashboard.emptySessions')}
+          items={recentSessions.map((session) => ({
+            key: session.id,
+            primary: session.title,
+            secondary: [
+              session.class_group?.name,
+              formatDate(session.session_date),
+            ].filter(Boolean).join(' · '),
+          }))}
+          title={t('dashboard.recentSessions')}
+          to={linkTo('sessions')}
+        />
+
+        <RecentPanel
+          emptyText={t('dashboard.emptyPayments')}
+          items={recentPayments.map((payment) => ({
+            key: payment.id,
+            primary: payment.student?.full_name ?? EMPTY_VALUE,
+            secondary: payment.period_label,
+            // El importe es el dato que se busca en un panel de cobros, así que
+            // va junto al estado y no escondido en la línea secundaria. Con
+            // separador de millar y dos decimales, nunca como número desnudo
+            // (SC-010).
+            trailing: (
+              <div className="recent__amount">
+                <span className="tabular">{formatAmount(payment.amount)}</span>
+                <PaymentStatusBadge value={payment.status} />
+              </div>
+            ),
+          }))}
+          title={t('dashboard.recentPayments')}
+          to={linkTo('payments')}
+        />
+      </section>
+    </>
+  )
+}
+
+/* ── Profesor ──────────────────────────────────────────────────────────────── */
+
+function TeacherDashboard({ data, linkTo }) {
+  const { teacher, stats, myGroups, upcomingSessions, recentAttendances } = data
+
+  return (
+    <>
+      {/* Una cuenta de profesor sin ficha vinculada recibe TODO vacío por
+          diseño del servidor. Sin este aviso, la pantalla es indistinguible de
+          un centro sin datos y la persona no sabe que hay algo que arreglar
+          ni a quién dirigirse (US2.3). */}
+      {teacher === null ? (
+        <div className="alert alert--warn" role="status">
+          <strong>{t('dashboard.teacherUnlinkedTitle')}</strong>
+          <p>{t('dashboard.teacherUnlinkedBody')}</p>
+        </div>
+      ) : null}
+
+      <section className="stats-grid">
+        <StatCard label={t('dashboard.stats.myGroups')} to={linkTo('classGroups')} value={stats.groups} />
+        <StatCard label={t('dashboard.stats.myStudents')} to={linkTo('students')} value={stats.students} />
+        <StatCard label={t('dashboard.stats.upcomingSessions')} to={linkTo('sessions')} value={stats.upcoming_sessions} />
+      </section>
+
+      <section className="panels-grid">
+        <RecentPanel
+          emptyText={t('dashboard.emptyGroups')}
+          items={myGroups.map((group) => ({
+            key: group.id,
+            primary: group.name,
+            secondary: [group.subject?.name, group.schedule].filter(Boolean).join(' · '),
+            trailing: <RecordStatusBadge value={group.status} />,
+          }))}
+          title={t('dashboard.myGroups')}
+          to={linkTo('classGroups')}
+        />
+
+        <RecentPanel
+          emptyText={t('dashboard.emptyUpcoming')}
+          items={upcomingSessions.map((session) => ({
+            key: session.id,
+            primary: session.title,
+            secondary: [
+              session.class_group?.name,
+              formatDate(session.session_date),
+              session.starts_at ? formatTime(session.starts_at) : null,
+            ].filter((part) => part && part !== EMPTY_VALUE).join(' · '),
+          }))}
+          title={t('dashboard.upcomingSessions')}
+          to={linkTo('sessions')}
+        />
+
+        <RecentPanel
+          emptyText={t('dashboard.emptyAttendances')}
+          items={recentAttendances.map((attendance) => ({
+            key: attendance.id,
+            primary: attendance.student?.full_name ?? EMPTY_VALUE,
+            secondary: [
+              attendance.class_session?.title,
+              attendance.class_session?.class_group?.name,
+            ].filter(Boolean).join(' · '),
+            trailing: <AttendanceStatusBadge value={attendance.status} />,
+          }))}
+          title={t('dashboard.recentAttendances')}
+          to={linkTo('attendance')}
+        />
+      </section>
+    </>
+  )
 }

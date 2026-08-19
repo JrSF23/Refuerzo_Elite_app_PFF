@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
+use App\Models\TutorGroup;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
@@ -169,22 +170,65 @@ class DemoSeeder extends Seeder
             ]);
         }
 
+        /*
+         * ── Grupos tutoriales ────────────────────────────────────────────────
+         *
+         * Se siembran los CASOS LÍMITE, no solo el feliz, porque son los que la
+         * interfaz tiene que saber presentar:
+         *
+         *   0  con tutor y, más abajo, con delegado    → el caso completo
+         *   1  SIN tutor                               → «sin asignar» (US1.3)
+         *   2  mismo nombre que el 1, otro turno       → conviven (SC-010)
+         *   3  SIN alumnos                             → no debe aparecer (US3.3)
+         *
+         * Además, varios alumnos se quedan sin grupo a propósito: es el estado
+         * real tras la migración y deben verse en su bloque propio (US3.4).
+         *
+         * Los nombres se repiten entre organizaciones para que las pruebas de
+         * aislamiento comprueben algo real.
+         */
+        $tutorGroups = [];
+
+        foreach ([
+            ['4º ESO',       TutorGroup::SHIFT_MORNING,   40, 0],
+            ['1º ESO',       TutorGroup::SHIFT_MORNING,   10, null],
+            ['1º ESO',       TutorGroup::SHIFT_AFTERNOON, 11, 1],
+            ['2º Bachiller', TutorGroup::SHIFT_AFTERNOON, 60, null],
+        ] as $index => [$name, $shift, $order, $teacherIndex]) {
+            $tutorGroups[$index] = TutorGroup::forceCreate([
+                'organization_id' => $orgId,
+                'name' => $name,
+                'shift' => $shift,
+                'academic_year' => '2025-2026',
+                'tutor_teacher_id' => $teacherIndex === null
+                    ? null
+                    : $teachers[$teacherIndex]->getKey(),
+                // Orden académico como DATO: el Principio XII prohíbe escribir
+                // la escala de un país en el código.
+                'sort_order' => $order,
+                'status' => 'active',
+            ]);
+        }
+
         // ── Alumnos ──────────────────────────────────────────────────────────
         $students = [];
 
         foreach ([
-            [0, 'Lucía', 'Fernández Pérez', '2010-03-15', '4º ESO', 'active'],
-            [0, 'Alejandro', 'Fernández Pérez', '2012-07-22', '2º ESO', 'active'],
-            [1, 'Sofía', 'López Jiménez', '2009-11-08', '1º Bachiller', 'active'],
-            [2, 'Diego', 'Sánchez Gómez', '2011-01-30', '6º Primaria', 'active'],
-            [3, 'Isabel', 'Moreno Castro', '2010-09-05', '4º ESO', 'active'],
-            [3, 'Marcos', 'Moreno Castro', '2013-04-18', '4º Primaria', 'active'],
-            [4, 'Carmen', 'Díaz Herrera', '2008-12-10', '2º Bachiller', 'active'],
-            [4, 'Javier', 'Díaz Herrera', '2011-06-25', '1º ESO', 'inactive'],
-        ] as $index => [$guardianIndex, $firstName, $lastName, $birth, $level, $status]) {
+            [0, 'Lucía', 'Fernández Pérez', '2010-03-15', '4º ESO', 'active', 0],
+            [0, 'Alejandro', 'Fernández Pérez', '2012-07-22', '2º ESO', 'active', null],
+            [1, 'Sofía', 'López Jiménez', '2009-11-08', '1º Bachiller', 'active', null],
+            [2, 'Diego', 'Sánchez Gómez', '2011-01-30', '6º Primaria', 'active', null],
+            [3, 'Isabel', 'Moreno Castro', '2010-09-05', '4º ESO', 'active', 0],
+            [3, 'Marcos', 'Moreno Castro', '2013-04-18', '4º Primaria', 'active', 1],
+            [4, 'Carmen', 'Díaz Herrera', '2008-12-10', '2º Bachiller', 'active', 2],
+            [4, 'Javier', 'Díaz Herrera', '2011-06-25', '1º ESO', 'inactive', 1],
+        ] as $index => [$guardianIndex, $firstName, $lastName, $birth, $level, $status, $groupIndex]) {
             $students[$index] = Student::forceCreate([
                 'organization_id' => $orgId,
                 'guardian_id' => $guardians[$guardianIndex]->getKey(),
+                'tutor_group_id' => $groupIndex === null
+                    ? null
+                    : $tutorGroups[$groupIndex]->getKey(),
                 'first_name' => $firstName,
                 'last_name' => $lastName,
                 'date_of_birth' => $birth,
@@ -192,6 +236,12 @@ class DemoSeeder extends Seeder
                 'status' => $status,
             ]);
         }
+
+        // El delegado se designa DESPUÉS de que existan los alumnos: es lo que
+        // hace posible la referencia circular entre grupo y alumno.
+        $tutorGroups[0]->forceFill([
+            'representative_student_id' => $students[0]->getKey(),
+        ])->save();
 
         // ── Inscripciones ────────────────────────────────────────────────────
         $enrollments = [];

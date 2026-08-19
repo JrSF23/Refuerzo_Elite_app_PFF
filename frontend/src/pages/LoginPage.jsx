@@ -1,94 +1,127 @@
-import { useState } from 'react'
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { useSession } from '../context/SessionContext'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
+import { t } from '../i18n/index.js'
+import { useSession } from '../context/SessionContext.jsx'
+import { Button } from '../components/ui/Button.jsx'
+import { Field, Input } from '../components/ui/Field.jsx'
+
+/**
+ * Pantalla de acceso.
+ *
+ * Un solo campo para usuario o correo, porque es lo que acepta la API: el
+ * parámetro se llama `login` y el servidor resuelve contra ambas columnas
+ * (FR-010).
+ *
+ * NO hay recuperación de contraseña ni registro (FR-013). La API no los soporta,
+ * y ofrecer un enlace que no lleva a ninguna parte es peor que no ofrecerlo.
+ */
 export function LoginPage() {
-  const location = useLocation()
+  const { login, isAuthenticated, homePath, expiredNotice, dismissExpiredNotice } = useSession()
   const navigate = useNavigate()
-  const { isAuthenticated, isStaff, login } = useSession()
+  const location = useLocation()
+
   const [form, setForm] = useState({ login: '', password: '' })
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const loginRef = useRef(null)
 
-  if (isAuthenticated && isStaff) {
-    return <Navigate replace to="/espacio" />
-  }
+  // Destino guardado por la guarda de ruta: quien pidió /alumnos sin sesión debe
+  // acabar en /alumnos, no en el panel (FR-002).
+  const redirectTo = location.state?.from ?? homePath
+
+  useEffect(() => {
+    if (isAuthenticated) navigate(redirectTo, { replace: true })
+  }, [isAuthenticated, navigate, redirectTo])
 
   async function handleSubmit(event) {
     event.preventDefault()
-    setLoading(true)
+
+    if (isSubmitting) return
+
     setError('')
+    setFieldErrors({})
+    setIsSubmitting(true)
+    dismissExpiredNotice()
 
     try {
       await login(form)
-      navigate(location.state?.from?.pathname || '/espacio', { replace: true })
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "No se ha podido iniciar sesión.")
+      // El mensaje del servidor manda: está en español, es más concreto y no
+      // revela si falló el usuario o la contraseña (FR-011).
+      setError(requestError.message || t('auth.genericError'))
+      setFieldErrors(requestError.fieldErrors ?? {})
+
+      // El foco vuelve al primer campo para poder reintentar sin tocar el ratón.
+      loginRef.current?.focus()
+      loginRef.current?.select()
     } finally {
-      setLoading(false)
+      setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="page-shell login-shell">
-      <div className="login-card">
-        <section className="login-brand">
-          <div className="eyebrow">Acceso del equipo</div>
-          <img alt="Refuerzo Elite" className="login-logo" src="/brand/logo-refuerzo-elite.png" />
-          <h1>Un acceso reservado a la administración y al profesorado.</h1>
-          <p>
-            El sitio público sigue abierto a visitantes y alumnos. Este espacio seguro sirve para gestionar los grupos,
-            las sesiones, la asistencia y la administración interna del centro.
-          </p>
-
-          <div className="login-points">
-            <div className="login-point">Seguimiento claro de los alumnos, los grupos y la asistencia.</div>
-            <div className="login-point">Interfaz moderna, inspirada en la identidad de siempre del centro.</div>
-            <div className="login-point">API Laravel protegida, con acceso limitado según el rol.</div>
+    <div className="auth-shell">
+      <main className="auth-card">
+        <div className="auth-card__brand">
+          <span aria-hidden="true" className="auth-card__mark">SW</span>
+          <div>
+            <strong>{t('app.name')}</strong>
+            <span className="auth-card__tagline">{t('app.tagline')}</span>
           </div>
-        </section>
+        </div>
 
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className="login-meta">
-            <div className="section-label">Identificación</div>
-            <h2 style={{ margin: '6px 0 0' }}>Iniciar sesión</h2>
-            <p className="hint">Use su nombre de usuario o su correo profesional.</p>
-          </div>
+        <h1 className="auth-card__title">{t('auth.title')}</h1>
+        <p className="auth-card__subtitle">{t('auth.subtitle')}</p>
 
-          {error ? <div className="error-banner">{error}</div> : null}
+        {expiredNotice ? (
+          <p className="alert alert--info" role="status">{t('auth.sessionExpired')}</p>
+        ) : null}
 
-          <div className="field-grid">
-            <div className="field">
-              <label htmlFor="login">Usuario o correo</label>
-              <input
+        {error ? (
+          <p className="alert alert--error" role="alert">{error}</p>
+        ) : null}
+
+        <form className="auth-form" noValidate onSubmit={handleSubmit}>
+          <Field
+            error={fieldErrors.login?.[0]}
+            hint={t('auth.loginHint')}
+            label={t('auth.login')}
+            required
+          >
+            {(props) => (
+              <Input
+                {...props}
                 autoComplete="username"
-                id="login"
+                onChange={(event) => setForm({ ...form, login: event.target.value })}
+                ref={loginRef}
                 value={form.login}
-                onChange={(event) => setForm((current) => ({ ...current, login: event.target.value }))}
               />
-            </div>
+            )}
+          </Field>
 
-            <div className="field">
-              <label htmlFor="password">Contraseña</label>
-              <input
+          <Field
+            error={fieldErrors.password?.[0]}
+            label={t('auth.password')}
+            required
+          >
+            {(props) => (
+              <Input
+                {...props}
                 autoComplete="current-password"
-                id="password"
+                onChange={(event) => setForm({ ...form, password: event.target.value })}
                 type="password"
                 value={form.password}
-                onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
               />
-            </div>
-          </div>
+            )}
+          </Field>
 
-          <button className="primary-btn login-submit" disabled={loading} type="submit">
-            {loading ? 'Acceder en cours...' : "Entrar en el espacio del equipo"}
-          </button>
-
-          <Link className="text-link" to="/">
-            Volver al sitio public
-          </Link>
+          <Button isLoading={isSubmitting} type="submit" variant="primary">
+            {isSubmitting ? t('auth.submitting') : t('auth.submit')}
+          </Button>
         </form>
-      </div>
+      </main>
     </div>
   )
 }
