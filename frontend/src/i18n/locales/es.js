@@ -61,6 +61,7 @@ export const es = {
     errorTitle: 'No se han podido cargar los datos',
     errorBody: 'Ha ocurrido un problema al contactar con el servidor.',
     networkError: 'No hay conexión con el servidor. Compruebe su red e inténtelo de nuevo.',
+    unreachableTitle: 'No se puede contactar con el servidor',
     unexpectedError: 'Ha ocurrido un error inesperado.',
     notFoundTitle: 'Registro no encontrado',
     notFoundBody: 'Puede que se haya eliminado. Vuelva al listado para continuar.',

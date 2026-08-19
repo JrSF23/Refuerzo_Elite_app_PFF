@@ -23,6 +23,9 @@ export function SessionProvider({ children }) {
   const [user, setUser] = useState(null)
   const [expiredNotice, setExpiredNotice] = useState(false)
 
+  // Cuenta de reintentos: cambiarla vuelve a lanzar la restauración.
+  const [retryCount, setRetryCount] = useState(0)
+
   // Evita avisar de sesión caducada durante el arranque: un token viejo que ya
   // no vale produce un 401 esperable, y anunciarlo confundiría a quien
   // simplemente vuelve al día siguiente.
@@ -66,17 +69,32 @@ export function SessionProvider({ children }) {
         setUser(data)
         setStatus('active')
       })
-      .catch(() => {
-        // Un 401 ya lo trató el interceptor. Cualquier otro fallo aquí —red,
-        // servidor caído— deja igualmente sin sesión utilizable.
-        if (!cancelled) reset()
+      .catch((error) => {
+        if (cancelled) return
+
+        /*
+         * Un 401 significa que el token ya no vale: el interceptor lo ha
+         * limpiado y aquí solo queda pasar a invitado.
+         *
+         * Un fallo de RED o del servidor es otra cosa: el token sigue siendo
+         * válido y el usuario no ha hecho nada mal. Destruir su sesión por un
+         * corte momentáneo lo obligaría a volver a escribir sus credenciales,
+         * y en el mercado inicial la conectividad es irregular por defecto
+         * (Principio VI). Se conserva el token y se ofrece reintentar.
+         */
+        if (error.isNetwork || (error.status >= 500)) {
+          setStatus('unreachable')
+          return
+        }
+
+        reset()
       })
       .finally(() => {
         bootstrapping.current = false
       })
 
     return () => { cancelled = true }
-  }, [status, reset])
+  }, [status, reset, retryCount])
 
   const login = useCallback(async (credentials) => {
     const { data } = await api.post('/login', credentials)
@@ -115,6 +133,10 @@ export function SessionProvider({ children }) {
     return {
       status,
       isLoading: status === 'loading',
+      // El servidor no responde, pero el token sigue guardado: no es una sesión
+      // caducada y no debe tratarse como tal.
+      isUnreachable: status === 'unreachable',
+      retryBootstrap: () => { setStatus('loading'); setRetryCount((n) => n + 1) },
       isAuthenticated: status === 'active',
       user,
       roleNames,

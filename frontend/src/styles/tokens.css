@@ -19,6 +19,20 @@
   --color-text-muted:     #64748B;
   --color-text-inverse:   #F8FAFC;
 
+  /*
+   * Texto atenuado SOBRE SUPERFICIE HUNDIDA.
+   *
+   * `--color-text-muted` da 4,76:1 sobre blanco y 4,55:1 sobre el fondo de la
+   * aplicación —ambos cumplen—, pero solo **4,34:1 sobre `--color-surface-sunken`**,
+   * por debajo del 4,5 que exige WCAG AA. Afectaba a las cabeceras de tabla y a
+   * los distintivos neutros.
+   *
+   * No se toca `--color-text-muted`, que es el `text-secondary` de la paleta
+   * acordada: el fondo problemático es `--color-surface-sunken`, que no está en
+   * ella. Se añade este tono, con 6,92:1 sobre esa superficie.
+   */
+  --color-text-muted-strong: #475569;
+
   /* ── Estructura ──────────────────────────────────────────────────────────────
      Dos bordes con propósitos distintos, y no son intercambiables:
 

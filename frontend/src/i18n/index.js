@@ -44,7 +44,13 @@ export function setLocale(locale) {
   }
 
   activeLocale = locale
-  document.documentElement.lang = locale
+
+  // Guardado por si se llama fuera del navegador —una prueba, una herramienta—:
+  // cambiar de idioma no debe depender de que exista un documento.
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = locale
+  }
+
   return true
 }
 

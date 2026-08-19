@@ -4,6 +4,7 @@ import { t } from '../i18n/index.js'
 import { useSession } from '../context/SessionContext.jsx'
 import { canAccess } from '../lib/permissions.js'
 import { Spinner } from './ui/Spinner.jsx'
+import { ErrorState } from './data/states.jsx'
 
 /**
  * Guarda de autenticación.
@@ -13,8 +14,25 @@ import { Spinner } from './ui/Spinner.jsx'
  * en cada recarga de página (FR-006).
  */
 export function RequireAuth({ children }) {
-  const { isLoading, isAuthenticated } = useSession()
+  const { isLoading, isAuthenticated, isUnreachable, retryBootstrap } = useSession()
   const location = useLocation()
+
+  /*
+   * El servidor no responde y el token sigue guardado. NO es una sesión
+   * caducada: mandar a `/login` obligaría a volver a escribir las credenciales
+   * por un corte momentáneo, y además el acceso también fallaría.
+   */
+  if (isUnreachable) {
+    return (
+      <div className="boot">
+        <ErrorState
+          message={t('common.networkError')}
+          onRetry={retryBootstrap}
+          title={t('common.unreachableTitle')}
+        />
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (

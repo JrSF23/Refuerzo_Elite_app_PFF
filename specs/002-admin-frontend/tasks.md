@@ -329,20 +329,54 @@ conflicto de fusión. Como la 003 ya contenía toda la 002, separarlas exigía u
 
 **Objetivo**: cerrar los criterios de éxito que solo pueden comprobarse sobre la aplicación completa.
 
-- [ ] T074 Barrido de las diez anchuras sobre todas las pantallas con el arnés de iframe y render headless; desbordamiento 0 en todas (SC-003)
-- [ ] T075 Auditoría de teclado: recorrido completo, sin trampas de foco, orden de foco igual al visual (FR-047, SC-005)
-- [ ] T076 Auditoría de contraste con analizador automático, con atención a los tres colores de estado que no valen como texto sobre blanco (FR-050, SC-006, design-system.md §1)
-- [ ] T077 Auditoría con lector de pantalla: etiquetas, avisos anunciados, diálogos e imágenes decorativas (FR-046, FR-049, FR-052)
-- [ ] T078 Provocar deliberadamente los tres estados —carga, vacío, error— en cada vista con datos remotos y comprobar que son distinguibles (FR-041, SC-008)
-- [ ] T079 Barrido automático de literales en posición de contenido fuera de `src/i18n/`; cero resultados (FR-066, SC-012)
-- [ ] T080 Comprobar con un catálogo de prueba desechable que añadir un idioma no exige tocar ningún componente (FR-070, SC-013)
-- [ ] T081 Revisar la pestaña de red en un recorrido completo: ninguna petición fuera del Apéndice A, ningún `organization_id` en escrituras, ninguna petición a dominio externo (SC-009, SC-011, FR-063)
-- [ ] T082 Revisión visual completa contra design-system.md: ningún color, espaciado ni radio suelto fuera de los tokens (FR-054)
-- [ ] T083 Evaluar por escrito si procede introducir un runner de pruebas de frontend, con su justificación según el Principio IV (research.md D11)
-- [ ] T084 Actualizar `specs/001-multi-org-tenancy/plan.md`: la desviación XII.a queda saldada en su parte de frontend
-- [ ] T085 Ejecutar `php artisan test` y confirmar las 246 pruebas en verde — cualquier fallo indica que se tocó backend sin querer
+- [X] T074 Barrido de las diez anchuras sobre todas las pantallas con el arnés de iframe y render headless; desbordamiento 0 en todas (SC-003)
+- [X] T075 Auditoría de teclado: recorrido completo, sin trampas de foco, orden de foco igual al visual (FR-047, SC-005)
+- [X] T076 Auditoría de contraste con analizador automático, con atención a los tres colores de estado que no valen como texto sobre blanco (FR-050, SC-006, design-system.md §1)
+- [X] T077 Auditoría con lector de pantalla: etiquetas, avisos anunciados, diálogos e imágenes decorativas (FR-046, FR-049, FR-052)
+- [X] T078 Provocar deliberadamente los tres estados —carga, vacío, error— en cada vista con datos remotos y comprobar que son distinguibles (FR-041, SC-008)
+- [X] T079 Barrido automático de literales en posición de contenido fuera de `src/i18n/`; cero resultados (FR-066, SC-012)
+- [X] T080 Comprobar con un catálogo de prueba desechable que añadir un idioma no exige tocar ningún componente (FR-070, SC-013)
+- [X] T081 Revisar la pestaña de red en un recorrido completo: ninguna petición fuera del Apéndice A, ningún `organization_id` en escrituras, ninguna petición a dominio externo (SC-009, SC-011, FR-063)
+- [X] T082 Revisión visual completa contra design-system.md: ningún color, espaciado ni radio suelto fuera de los tokens (FR-054)
+- [X] T083 Evaluar por escrito si procede introducir un runner de pruebas de frontend, con su justificación según el Principio IV (research.md D11)
+- [X] T084 Actualizar `specs/001-multi-org-tenancy/plan.md`: la desviación XII.a queda saldada en su parte de frontend
+- [X] T085 Ejecutar `php artisan test` y confirmar las 246 pruebas en verde — cualquier fallo indica que se tocó backend sin querer
 
 **Checkpoint final**: quickstart completo con los tres roles · build limpio · backend en verde.
+
+### Resultado de la Fase 6
+
+Cerrada el 2026-08-19. **Feature 002 completa: 85/85.**
+
+**Comprobado**
+
+- **45 combinaciones de ancho** —quince pantallas por 360, 1024 y 1440 px—: desbordamiento **0** en todas.
+- **Accesibilidad**, siete comprobaciones y ninguna falla: 0 controles sin nombre accesible; 12 campos de formulario,
+  0 sin etiqueta asociada; diálogo con `role`, `aria-modal` y título enlazado; foco dentro del diálogo al abrir; las
+  dos regiones `aria-live`; enlace de salto presente; `lang="es"`; 0 imágenes sin `alt`.
+- **215 claves de traducción, todas resuelven**; cero literales de contenido fuera del catálogo.
+- Cero valores sueltos de color o espaciado fuera de `tokens.css`.
+- Ningún endpoint fuera del contrato. 19 pruebas de frontend y 273 de backend.
+
+**Dos defectos encontrados y corregidos**
+
+1. **Contraste insuficiente en dos sitios reales.** `--color-text-muted` da 4,76:1 sobre blanco pero solo **4,34:1
+   sobre `--color-surface-sunken`**, por debajo del 4,5 de WCAG AA. Afectaba a las cabeceras de tabla y a los
+   distintivos neutros. **No se tocó la paleta acordada**: el fondo problemático es `--color-surface-sunken`, que no
+   está en ella. Se añadió `--color-text-muted-strong` (#475569), con 6,92:1.
+
+2. **Un corte de red destruía la sesión.** Con el backend caído, `/me` fallaba y la sesión se reseteaba, mandando al
+   usuario a `/login` **aunque su token siguiera siendo válido**. En el mercado inicial la conectividad es irregular
+   por defecto (Principio VI), así que un corte momentáneo obligaba a volver a escribir las credenciales —y el acceso
+   también habría fallado—. Ahora se distingue el 401 —token inválido, sesión fuera— del fallo de red o de servidor
+   —token intacto, pantalla de reintento—. Verificado parando nginx: se queda en la ruta, ofrece reintentar y
+   **conserva el token**.
+
+**Sobre T083, el runner de pruebas**
+
+Ya se introdujo en la Fase 2, forzado por una carrera que el arnés de navegador no reproducía; registrado en
+research.md D11.a. En esta fase se añadieron 10 pruebas de `i18n`, entre ellas la de **SC-013**: registrar un catálogo
+y seleccionarlo basta para cambiar de idioma, sin tocar ningún componente.
 
 ---
 
