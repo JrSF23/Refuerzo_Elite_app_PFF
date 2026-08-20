@@ -61,6 +61,12 @@ export function ResourcePage({
   const [pendingDelete, setPendingDelete] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // Estabilizados para no recrear el diálogo en cada render. `useFocusTrap` ya
+  // es inmune a ello, pero pasar funciones nuevas a un componente memorizable en
+  // cada pulsación es trabajo desperdiciado.
+  const closeForm = useCallback(() => setIsFormOpen(false), [])
+  const cancelDelete = useCallback(() => setPendingDelete(null), [])
+
   const handleSaved = useCallback((record, { wasEditing }) => {
     setIsFormOpen(false)
     toast.success(t(wasEditing ? 'common.savedChanges' : 'common.created'))
@@ -152,7 +158,7 @@ export function ResourcePage({
 
       <Drawer
         isOpen={isFormOpen}
-        onClose={form.isSaving ? undefined : () => setIsFormOpen(false)}
+        onClose={form.isSaving ? undefined : closeForm}
         title={form.isEditing ? t(`${section}.edit`) : t(`${section}.create`)}
       >
         <form className="resource-form" noValidate onSubmit={form.submit} ref={form.formRef}>
@@ -165,7 +171,7 @@ export function ResourcePage({
           ))}
 
           <div className="resource-form__actions">
-            <Button disabled={form.isSaving} onClick={() => setIsFormOpen(false)} type="button">
+            <Button disabled={form.isSaving} onClick={closeForm} type="button">
               {t('common.cancel')}
             </Button>
 
@@ -180,7 +186,7 @@ export function ResourcePage({
         isBusy={isDeleting}
         isOpen={pendingDelete !== null}
         name={pendingDelete ? getRecordName(pendingDelete) : ''}
-        onCancel={() => setPendingDelete(null)}
+        onCancel={cancelDelete}
         onConfirm={confirmDelete}
       />
     </>

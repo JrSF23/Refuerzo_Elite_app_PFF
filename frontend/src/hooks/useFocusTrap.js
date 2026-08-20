@@ -17,12 +17,32 @@ const FOCUSABLE = [
  * los dos se quede a medias: sin esto, quien navega con teclado puede tabular
  * fuera del diálogo y quedarse operando la página de detrás, que sigue tapada.
  *
+ * ── El efecto depende SOLO de `isOpen` ──────────────────────────────────────
+ *
+ * `onClose` va en una ref a propósito. Cuando estaba en las dependencias, bastaba
+ * con que quien llama pasara una función en línea —`onClose={() => cerrar()}`,
+ * que es lo natural de escribir— para que su identidad cambiara en cada render.
+ * El efecto se limpiaba y se volvía a montar, y su montaje **mueve el foco al
+ * primer elemento enfocable**.
+ *
+ * El resultado era que escribir una letra en un formulario disparaba un render,
+ * y el foco saltaba al botón de cerrar. La segunda letra ya no llegaba al campo:
+ * los formularios eran inservibles con teclado.
+ *
+ * Con la ref, el efecto se monta una vez por apertura y `onClose` puede cambiar
+ * cuantas veces quiera. El gancho queda inmune a callbacks inestables, que es
+ * mejor que confiar en que cada componente recuerde memorizar el suyo.
+ *
  * @param {boolean} isOpen
  * @param {() => void} onClose  Se invoca al pulsar Escape.
  */
 export function useFocusTrap(isOpen, onClose) {
   const containerRef = useRef(null)
   const previousFocusRef = useRef(null)
+
+  // Siempre la última versión, sin formar parte de las dependencias del efecto.
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   useEffect(() => {
     if (!isOpen) return undefined
@@ -33,8 +53,22 @@ export function useFocusTrap(isOpen, onClose) {
     // Se guarda ANTES de mover el foco, para poder devolverlo al cerrar.
     previousFocusRef.current = document.activeElement
 
+    /*
+     * Se descartan solo los elementos ocultos DE FORMA EXPLÍCITA.
+     *
+     * El filtro anterior usaba `offsetParent !== null`, que es la heurística
+     * habitual para «está visible». Tiene dos problemas: devuelve `null` también
+     * para cualquier elemento `position: fixed` —y el diálogo vive dentro de una
+     * capa fija—, y en jsdom devuelve `null` SIEMPRE, porque no hay motor de
+     * maquetación. Con ella, la trampa se quedaba sin elementos que enfocar y
+     * caía al contenedor, cosa que ninguna prueba podía detectar sin un
+     * navegador de verdad.
+     *
+     * Lo que de verdad importa aquí es lo que el autor del diálogo ha ocultado a
+     * propósito, y eso se declara.
+     */
     const focusables = () => Array.from(container.querySelectorAll(FOCUSABLE))
-      .filter((el) => el.offsetParent !== null || el === document.activeElement)
+      .filter((el) => !el.hidden && el.getAttribute('aria-hidden') !== 'true')
 
     // El primer elemento enfocable, o el contenedor si no hay ninguno: un
     // diálogo sin foco dentro deja al lector de pantalla anunciando la página de
@@ -50,7 +84,7 @@ export function useFocusTrap(isOpen, onClose) {
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
         event.stopPropagation()
-        onClose?.()
+        onCloseRef.current?.()
         return
       }
 
@@ -94,7 +128,7 @@ export function useFocusTrap(isOpen, onClose) {
         previous.focus()
       }
     }
-  }, [isOpen, onClose])
+  }, [isOpen])
 
   return containerRef
 }
