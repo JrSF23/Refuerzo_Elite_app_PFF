@@ -160,6 +160,21 @@ export function isMonetarySection(key) {
   return MONETARY_SECTIONS.includes(key)
 }
 
+/**
+ * ¿Sabe el servidor buscar en este recurso?
+ *
+ * Se pregunta por endpoint, no por sección, porque quien lo necesita son los
+ * campos de relación de los formularios: el campo declara `endpoint: 'students'`
+ * y de ahí sale si puede ofrecer un buscador o tiene que conformarse con un
+ * desplegable. La respuesta sale de la MISMA tabla que decide si se pinta la
+ * caja de búsqueda del listado, para que no puedan contradecirse.
+ */
+export function endpointIsSearchable(endpoint) {
+  return Object.values(SECTIONS).some(
+    (section) => section.endpoint === endpoint && section.searchable === true,
+  )
+}
+
 function levelFor(sectionKey, roleNames) {
   const section = SECTIONS[sectionKey]
   if (!section) return null

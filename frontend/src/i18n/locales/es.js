@@ -37,6 +37,20 @@ export const es = {
     clear: 'Limpiar',
     select: 'Seleccione',
     noOptions: 'No hay opciones disponibles',
+
+    // Selector con búsqueda
+    typeToSearch: 'Escriba para buscar…',
+    clearSelection: 'Quitar la selección',
+    unresolvedOption: 'Registro no disponible',
+    // Se avisa del recorte en lugar de callarlo: un listado truncado en silencio
+    // hace concluir que el registro no existe.
+    moreResults: 'Se muestran {shown} de {total}. Afine la búsqueda.',
+    truncatedOptions: 'Se muestran las primeras {shown} de {total} opciones.',
+    optionsAvailable: {
+      one: '{count} opción disponible',
+      many: '{count} opciones disponibles',
+    },
+
     actions: 'Acciones',
     viewAll: 'Ver todo',
 
@@ -231,7 +245,8 @@ export const es = {
     emptyTitle: 'Todavía no hay asignaturas',
     emptyBody: 'Cada grupo se imparte sobre una asignatura, así que son el primer paso.',
     fields: {
-      monthlyFee: 'Tarifa mensual',
+      // Sin «mensual», por el mismo motivo que en matrículas.
+      fee: 'Tarifa',
       codeHint: 'Identificador corto y único dentro del centro.',
     },
   },
@@ -288,8 +303,11 @@ export const es = {
     emptyBody: 'La matrícula conecta a un alumno con un grupo de asignatura y fija su cuota.',
     fields: {
       enrolledAt: 'Fecha de matrícula',
-      monthlyFee: 'Cuota mensual',
-      monthlyFeeHint: 'Puede diferir de la tarifa de la asignatura.',
+      // «Monto», sin periodicidad. La columna de la base de datos se llama
+      // `monthly_fee` y no se toca —es contrato de API—, pero el rótulo no puede
+      // afirmar que el cobro es mensual: no todos los centros facturan así.
+      amount: 'Monto',
+      amountHint: 'Puede diferir de la tarifa de la asignatura.',
     },
   },
 

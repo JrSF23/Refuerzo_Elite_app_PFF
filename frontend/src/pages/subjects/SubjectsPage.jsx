@@ -18,7 +18,7 @@ export function SubjectsPage() {
         { key: 'level', label: t('fields.level') },
         {
           key: 'monthly_fee',
-          label: t('subjects.fields.monthlyFee'),
+          label: t('subjects.fields.fee'),
           // Con separador de millar y dos decimales, nunca como número desnudo
           // (SC-010).
           render: (record) => <span className="tabular">{formatAmount(record.monthly_fee)}</span>,
@@ -37,7 +37,7 @@ export function SubjectsPage() {
         { name: 'level', label: t('fields.level') },
         {
           name: 'monthly_fee',
-          label: t('subjects.fields.monthlyFee'),
+          label: t('subjects.fields.fee'),
           type: 'number',
           required: true,
         },

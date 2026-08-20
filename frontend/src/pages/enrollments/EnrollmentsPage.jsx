@@ -24,7 +24,7 @@ export function EnrollmentsPage() {
         },
         {
           key: 'monthly_fee',
-          label: t('enrollments.fields.monthlyFee'),
+          label: t('enrollments.fields.amount'),
           render: (record) => <span className="tabular">{formatAmount(record.monthly_fee)}</span>,
         },
         {
@@ -60,10 +60,10 @@ export function EnrollmentsPage() {
         },
         {
           name: 'monthly_fee',
-          label: t('enrollments.fields.monthlyFee'),
+          label: t('enrollments.fields.amount'),
           type: 'number',
           required: true,
-          hint: t('enrollments.fields.monthlyFeeHint'),
+          hint: t('enrollments.fields.amountHint'),
         },
         {
           name: 'status',

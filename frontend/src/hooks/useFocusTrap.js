@@ -83,6 +83,21 @@ export function useFocusTrap(isOpen, onClose) {
 
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
+        /*
+         * Un control interno puede reclamar Escape para sí.
+         *
+         * Este oyente va en FASE DE CAPTURA —hace falta para el ciclo de Tab—,
+         * así que ve la tecla antes que ningún componente de dentro y ninguno
+         * puede detenerlo con `stopPropagation`: para cuando su manejador se
+         * ejecuta, el diálogo ya se ha cerrado.
+         *
+         * El caso concreto: el selector con búsqueda abre una lista de
+         * resultados. Escape debe cerrar ESA lista, no el formulario entero con
+         * todo lo escrito dentro. El control lo declara con el atributo, y aquí
+         * se le cede la tecla.
+         */
+        if (event.target?.closest?.('[data-escape-handled="true"]')) return
+
         event.stopPropagation()
         onCloseRef.current?.()
         return

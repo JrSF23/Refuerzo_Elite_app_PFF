@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { t } from '../../i18n/index.js'
 import { api } from '../../lib/api.js'
-import { SECTIONS, canWrite } from '../../lib/permissions.js'
+import { SECTIONS, canWrite, endpointIsSearchable } from '../../lib/permissions.js'
 import { useSession } from '../../context/SessionContext.jsx'
 import { useToast } from '../../context/ToastContext.jsx'
 import { useResourceList } from '../../hooks/useResourceList.js'
@@ -12,6 +12,7 @@ import { Button } from '../ui/Button.jsx'
 import { Drawer } from '../ui/Drawer.jsx'
 import { Field, Input, Select, Textarea } from '../ui/Field.jsx'
 import { RelationSelect } from '../ui/RelationSelect.jsx'
+import { SearchSelect } from '../ui/SearchSelect.jsx'
 import { DataTable } from './DataTable.jsx'
 import { ConfirmDialog } from './ConfirmDialog.jsx'
 
@@ -213,7 +214,7 @@ function FormField({ field, form }) {
         }
 
         /*
-         * Relación con otra entidad. El desplegable se alimenta del recurso que
+         * Relación con otra entidad. El control se alimenta del recurso que
          * indique el campo, acotado por el servidor a la organización activa
          * (FR-034).
          *
@@ -221,12 +222,21 @@ function FormField({ field, form }) {
          * es lo que permite que el delegado ofrezca solo alumnos DEL GRUPO que se
          * está editando, y que quede deshabilitado al crear, cuando el grupo
          * todavía no tiene alumnos.
+         *
+         * QUÉ CONTROL SE USA, y por qué no lo decide cada pantalla: si el
+         * servidor sabe buscar en el recurso, buscador; si no, desplegable. La
+         * API tope `per_page` en 50, así que un desplegable sobre un catálogo
+         * grande no es incómodo, es INCOMPLETO —con 1.000 alumnos, 950 no
+         * aparecían—. Atarlo a `endpointIsSearchable` evita que una pantalla
+         * nueva vuelva a caer en ello por olvido.
          */
         if (field.type === 'relation') {
           const resolve = (value) => (typeof value === 'function' ? value(form) : value)
 
+          const Control = endpointIsSearchable(field.endpoint) ? SearchSelect : RelationSelect
+
           return (
-            <RelationSelect
+            <Control
               {...common(props)}
               disabledHint={field.disabledHint}
               endpoint={field.endpoint}

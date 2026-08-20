@@ -11,10 +11,15 @@ import { api } from '../../lib/api.js'
  * centro. Enviar un identificador ajeno se rechaza con el mismo error que si no
  * existiera, así que la interfaz no puede filtrar información que no tiene.
  *
- * Se pide una página amplia en lugar de paginar: estos catálogos —tutores,
- * asignaturas, profesores— son pequeños en un centro. Si alguno creciera más
- * allá del tope de 50 por página que impone la API, haría falta un buscador
- * dentro del desplegable, y eso es una feature con su propia decisión.
+ * SOLO PARA RECURSOS QUE EL SERVIDOR NO SABE BUSCAR —matrículas y sesiones—.
+ * El resto usa `SearchSelect`; el reparto lo decide `endpointIsSearchable`.
+ *
+ * Se pide una página y se pinta entera, que es lo único que se puede hacer sin
+ * búsqueda. Como la API tope `per_page` en 50, el listado PUEDE QUEDARSE CORTO,
+ * y entonces se dice: callarlo es lo que hacía que el usuario concluyera que el
+ * registro no existe cuando lo que pasaba es que no se había traído. Cuando
+ * estos dos recursos declaren campos buscables, pasan a `SearchSelect` y este
+ * componente desaparece.
  *
  * @param {object}  [params]        Parámetros extra para acotar el listado.
  * @param {boolean} [isDisabled]    Deshabilita el control por una razón de dominio.
@@ -34,6 +39,7 @@ export function RelationSelect({
   ...props
 }) {
   const [options, setOptions] = useState([])
+  const [total, setTotal] = useState(0)
   const [status, setStatus] = useState('loading')
 
   // Los parámetros se serializan para la dependencia del efecto: un objeto nuevo
@@ -55,6 +61,7 @@ export function RelationSelect({
     })
       .then(({ data }) => {
         setOptions(data.data ?? [])
+        setTotal(data.total ?? 0)
         setStatus('ready')
       })
       .catch((error) => {
@@ -75,20 +82,30 @@ export function RelationSelect({
     return placeholder ?? t('common.select')
   }
 
-  return (
-    <select
-      {...props}
-      className="control control--select"
-      disabled={isDisabled || status !== 'ready' || props.disabled}
-      name={name}
-      onChange={onChange}
-      value={value ?? ''}
-    >
-      <option value="">{firstOptionLabel()}</option>
+  const isTruncated = status === 'ready' && total > options.length
 
-      {options.map((option) => (
-        <option key={option.id} value={option.id}>{optionLabel(option)}</option>
-      ))}
-    </select>
+  return (
+    <>
+      <select
+        {...props}
+        className="control control--select"
+        disabled={isDisabled || status !== 'ready' || props.disabled}
+        name={name}
+        onChange={onChange}
+        value={value ?? ''}
+      >
+        <option value="">{firstOptionLabel()}</option>
+
+        {options.map((option) => (
+          <option key={option.id} value={option.id}>{optionLabel(option)}</option>
+        ))}
+      </select>
+
+      {isTruncated ? (
+        <p className="field__hint field__hint--warning">
+          {t('common.truncatedOptions', { shown: options.length, total })}
+        </p>
+      ) : null}
+    </>
   )
 }
