@@ -93,7 +93,7 @@
   flex-direction: column;
   height: 100%;
   background: var(--color-sidebar);
-  color: var(--color-text-inverse);
+  color: var(--color-sidebar-text);
 }
 
 .shell__sidebar .sidebar {
@@ -109,9 +109,12 @@
   gap: var(--space-3);
   min-height: var(--header-height);
   padding: var(--space-4);
-  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  /* El único separador de la barra. Un token de borde claro sobre navy no vale:
+     los `--color-border*` están medidos contra fondo claro. */
+  border-bottom: 1px solid rgb(226 232 240 / 0.1);
 }
 
+/* El cuadrado azul de la marca. El dibujo lo pone `Logo` y hereda este `color`. */
 .sidebar__mark {
   display: grid;
   place-items: center;
@@ -119,9 +122,7 @@
   height: 32px;
   border-radius: var(--radius-md);
   background: var(--color-primary);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.02em;
+  color: var(--color-text-inverse);
 }
 
 .sidebar__brand-text {
@@ -131,7 +132,7 @@
 }
 
 .sidebar__tagline {
-  color: rgb(255 255 255 / 0.55);
+  color: var(--color-sidebar-muted);
   font-size: var(--text-xs);
 }
 
@@ -145,11 +146,14 @@
   margin-top: var(--space-5);
 }
 
+/* GESTIÓN, ACTIVIDAD ACADÉMICA, COBROS, ADMINISTRACIÓN. En negrita: a --text-xs
+   y en versalitas, el semibold apenas se distinguía del peso de los enlaces que
+   encabeza, y los grupos no se leían como separaciones. */
 .sidebar__group-label {
   padding: 0 var(--space-3) var(--space-2);
-  color: rgb(255 255 255 / 0.45);
+  color: var(--color-sidebar-muted);
   font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -161,7 +165,7 @@
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  color: rgb(255 255 255 / 0.75);
+  color: var(--color-sidebar-muted);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   transition: background var(--transition-color), color var(--transition-color);
@@ -169,13 +173,19 @@
 
 .nav-link:hover {
   background: var(--color-sidebar-hover);
-  color: var(--color-text-inverse);
+  color: var(--color-sidebar-text);
   text-decoration: none;
 }
 
+/*
+ * El elemento activo NO se convierte en un bloque azul: conserva el fondo del
+ * hover y se distingue por tres señales acumuladas —fondo, peso del texto y la
+ * barra de la izquierda—. Un relleno azul saturado en la navegación compite con
+ * los botones de acción, que son lo único que debería atraer el azul.
+ */
 .nav-link--active {
   background: var(--color-sidebar-hover);
-  color: var(--color-text-inverse);
+  color: var(--color-sidebar-text);
   font-weight: var(--weight-semibold);
 }
 
@@ -190,8 +200,11 @@
   background: transparent;
 }
 
+/* El azul CLARO, no el de marca. Es un indicador de estado, así que WCAG 1.4.11
+   le exige 3:1 contra el fondo del elemento activo: `--color-primary` se queda
+   en 2,83:1 y este llega a 3,98:1. Ver tokens.css. */
 .nav-link--active .nav-link__marker {
-  background: var(--color-primary);
+  background: var(--color-primary-on-dark);
 }
 
 /* ═══ Cabecera ═════════════════════════════════════════════════════════════ */
@@ -209,12 +222,14 @@
   background: var(--color-surface);
 }
 
+/* A la altura completa de control, no a 36 px sueltos: por debajo de 1024 px es
+   el único mando visible de la navegación y se pulsa con el pulgar. */
 .header__nav-toggle {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--color-border);
+  width: var(--control-height);
+  height: var(--control-height);
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
   background: var(--color-surface);
 }
@@ -332,7 +347,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  min-height: 40px;
+  min-height: var(--control-height);
   padding: 0 var(--space-4);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
@@ -343,7 +358,7 @@
 }
 
 .btn--sm {
-  min-height: 32px;
+  min-height: var(--control-height-sm);
   padding: 0 var(--space-3);
   font-size: var(--text-sm);
 }
@@ -361,14 +376,20 @@
   background: var(--color-primary-hover);
 }
 
+/*
+ * El botón secundario lleva rótulo, así que lo que lo identifica es el texto y
+ * no el contorno: puede usar el borde suave. Un campo vacío no tiene esa suerte
+ * y necesita `--color-border-control`, más marcado. Ver tokens.css.
+ */
 .btn--secondary {
-  border-color: var(--color-border-control);
+  border-color: var(--color-border-strong);
   background: var(--color-surface);
   color: var(--color-text);
 }
 
 .btn--secondary:not(:disabled):hover {
-  background: var(--color-surface-sunken);
+  border-color: var(--color-border-control);
+  background: var(--color-bg);
 }
 
 .btn--ghost {
@@ -380,6 +401,10 @@
   background: var(--color-surface-sunken);
 }
 
+/*
+ * Rojo lleno: SOLO para el botón que consuma el borrado —el de confirmar—. Es el
+ * último punto en el que se puede parar, y ahí el peso visual está justificado.
+ */
 .btn--danger {
   background: var(--color-error);
   color: var(--color-text-inverse);
@@ -387,6 +412,30 @@
 
 .btn--danger:not(:disabled):hover {
   background: var(--color-error-text);
+}
+
+/*
+ * Rojo discreto: para la acción destructiva que solo ABRE la confirmación, que
+ * es la que se repite en cada fila de una tabla. Mismo cuerpo que el botón
+ * secundario, y el rojo solo en el texto.
+ *
+ * El motivo es de jerarquía, no de estética: con el relleno, un listado de
+ * veinte registros mostraba veinte bloques rojos y el elemento más llamativo de
+ * la pantalla pasaba a ser «Eliminar», por delante de la acción principal. Un
+ * color de alarma que aparece veinte veces deja de leerse como alarma.
+ *
+ * Contraste: #B91C1C da 6,47:1 sobre blanco y 5,91:1 sobre el rojo suave del
+ * hover, así que el texto cumple en los dos estados.
+ */
+.btn--danger-quiet {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-error-text);
+}
+
+.btn--danger-quiet:not(:disabled):hover {
+  border-color: var(--color-error);
+  background: var(--color-error-soft);
 }
 
 /* El texto se queda en el flujo y solo se atenúa: así el botón conserva su ancho
@@ -405,8 +454,8 @@
 .icon-btn {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
   border: 0;
   border-radius: var(--radius-md);
   background: transparent;
@@ -420,13 +469,14 @@
   color: var(--color-text);
 }
 
+/* La variante que vive sobre la barra lateral. */
 .icon-btn--inverse {
-  color: rgb(255 255 255 / 0.7);
+  color: var(--color-sidebar-muted);
 }
 
 .icon-btn--inverse:hover {
-  background: rgb(255 255 255 / 0.12);
-  color: var(--color-text-inverse);
+  background: var(--color-sidebar-hover);
+  color: var(--color-sidebar-text);
 }
 
 /* ═══ Campos ═══════════════════════════════════════════════════════════════ */
@@ -459,7 +509,9 @@
 
 .control {
   width: 100%;
-  min-height: 40px;
+  /* Misma altura que `.btn`, y por eso sale del mismo token: un campo y el botón
+     que lo acompaña en la misma línea no pueden medir distinto. */
+  min-height: var(--control-height);
   padding: var(--space-2) var(--space-3);
   /* El borde de un control necesita 3:1 (WCAG 1.4.11): si no se percibe, no se
      sabe dónde escribir. Los grises claros no llegan; ver tokens.css. */
@@ -469,6 +521,15 @@
   /* 16 px como mínimo: por debajo, Safari en iOS hace zoom al enfocar y rompe la
      maquetación en el dispositivo principal del profesor. */
   font-size: var(--text-base);
+}
+
+/*
+ * Al enfocar, el borde se vuelve azul ADEMÁS del anillo que pone `base.css`. El
+ * anillo lo dibuja el navegador por fuera del control y el borde por dentro: con
+ * los dos, el campo activo se localiza de un vistazo y no solo al tabular.
+ */
+.control:focus-visible {
+  border-color: var(--color-primary);
 }
 
 .control:disabled {
@@ -522,7 +583,7 @@
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--color-text-muted-strong);
+  color: var(--color-text-secondary);
   font-size: var(--text-lg);
   line-height: 1;
 }
@@ -578,10 +639,90 @@
   font-weight: var(--weight-medium);
 }
 
-.combo__note {
-  padding: var(--space-2) var(--space-3);
-  color: var(--color-text-muted-strong);
+.combo__option {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+/* El dato secundario, atenuado: acompaña al nombre, no forma parte de él. */
+.combo__meta {
+  color: var(--color-text-secondary);
   font-size: var(--text-xs);
+}
+
+.combo__note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+}
+
+.combo__reset {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  text-decoration: underline;
+}
+
+/* ═══ Campo de fecha ═══════════════════════════════════════════════════════ */
+
+.datefield {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Hueco para el botón del calendario, que va superpuesto. */
+.datefield__input {
+  padding-right: var(--space-8);
+}
+
+.datefield__picker {
+  position: absolute;
+  top: 20px;
+  right: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: var(--text-sm);
+  line-height: 1;
+}
+
+.datefield__picker:hover {
+  background: var(--color-surface-sunken);
+}
+
+/*
+ * El control nativo queda solo como calendario.
+ *
+ * No se usa `display: none` ni `visibility: hidden`: con cualquiera de los dos,
+ * `showPicker()` lanza en Chrome porque el elemento no está renderizado. Tiene
+ * que ocupar sitio real, así que se coloca bajo el botón y se hace invisible.
+ */
+.datefield__native {
+  position: absolute;
+  top: 8px;
+  right: var(--space-2);
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .combo__note--error {
@@ -619,8 +760,11 @@
   transform: translateY(-50%);
 }
 
+/* El color se oscurece junto con el fondo: `--color-text-muted` sobre superficie
+   hundida se queda en 4,34:1. Mismo criterio que `.icon-btn` y `.combo__clear`. */
 .search__clear:hover {
   background: var(--color-surface-sunken);
+  color: var(--color-text);
 }
 
 /* ═══ Tarjetas ═════════════════════════════════════════════════════════════ */
@@ -677,7 +821,7 @@
 
 /* Texto en la variante oscurecida sobre el fondo suave. El color puro no alcanza
    4,5:1 sobre blanco en éxito, aviso ni información. */
-.badge--neutral { background: var(--color-surface-sunken); color: var(--color-text-muted-strong); }
+.badge--neutral { background: var(--color-surface-sunken); color: var(--color-text-secondary); }
 .badge--success { background: var(--color-success-soft); color: var(--color-success-text); }
 .badge--warning { background: var(--color-warning-soft); color: var(--color-warning-text); }
 .badge--error   { background: var(--color-error-soft);   color: var(--color-error-text); }
@@ -1032,47 +1176,71 @@
 
 /* ═══ Pantalla de acceso ═══════════════════════════════════════════════════ */
 
+/*
+ * El acceso usa EL MISMO fondo que el resto de la aplicación. Antes era azul a
+ * sangre y se ha retirado a propósito: con el acento ocupando toda la pantalla,
+ * el botón «Entrar» —que es del mismo azul— dejaba de destacar sobre nada, y la
+ * primera pantalla del producto no se parecía a ninguna de las siguientes.
+ *
+ * El azul queda donde sirve: en el botón y en la marca. Aquí lo que tiene que
+ * llamar la atención es la tarjeta, y lo consigue por contraste de superficie
+ * —blanco sobre gris— más borde y sombra. Sin degradados ni adornos: esto es una
+ * pantalla de trabajo, no una portada.
+ */
 .auth-shell {
   display: grid;
   place-items: center;
   min-height: 100vh;
-  padding: var(--space-4);
+  padding: var(--space-6) var(--space-4);
   background: var(--color-bg);
 }
 
 .auth-card {
   width: 100%;
-  max-width: 400px;
-  padding: var(--space-6);
+  max-width: 420px;
+  /* Fluido en vez de un punto de ruptura: a 360 px un relleno de 32 px se come
+     un quinto del ancho útil y los campos se estrechan. Cede hasta 20 y vuelve a
+     32 en cuanto hay sitio, sin escalón. */
+  padding: clamp(var(--space-5), 5vw, var(--space-8));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+  /* El blanco sobre el gris de fondo se despega por poco (1,05:1). El borde y la
+     sombra son lo que de verdad recorta la tarjeta; ninguno es decorativo. */
   box-shadow: var(--shadow-md);
 }
 
+/* La marca va centrada y separada del formulario por un filete: presenta el
+   producto y luego se aparta, en vez de competir con los campos. */
 .auth-card__brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-3);
+  padding-bottom: var(--space-6);
   margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .auth-card__mark {
   display: grid;
   place-items: center;
-  flex: 0 0 36px;
-  height: 36px;
+  flex: 0 0 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   background: var(--color-primary);
   color: var(--color-text-inverse);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
 }
 
 .auth-card__brand div {
   display: flex;
   flex-direction: column;
   line-height: var(--leading-tight);
+}
+
+.auth-card__brand strong {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
 }
 
 .auth-card__tagline {
@@ -1086,7 +1254,7 @@
 
 .auth-card__subtitle {
   margin-top: var(--space-1);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-6);
   color: var(--color-text-muted);
   font-size: var(--text-sm);
 }
@@ -1098,7 +1266,13 @@
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
+}
+
+/* El botón ocupa el ancho: es la única acción de la pantalla y no tiene con
+   quién compartir la línea. */
+.auth-form .btn {
+  width: 100%;
 }
 
 /* ═══ Panel ════════════════════════════════════════════════════════════════ */
@@ -1269,7 +1443,7 @@
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface-sunken);
   /* Sobre superficie hundida, `--color-text-muted` se queda en 4,34:1. */
-  color: var(--color-text-muted-strong);
+  color: var(--color-text-secondary);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.04em;
@@ -1299,9 +1473,18 @@
   white-space: nowrap;
 }
 
+/*
+ * En LÍNEA, no apiladas. `.cell-actions` mide `width: 1%` para llevarse solo lo
+ * imprescindible, y con `flex-wrap: wrap` esa columna estrecha hacía que los dos
+ * botones se pusieran uno encima de otro AUNQUE sobrara ancho: a 1440 px las
+ * filas medían casi cien píxeles de alto por dos botones que caben de sobra.
+ *
+ * `nowrap` es seguro porque la tabla no llega a estrecharse: cuando el
+ * contenedor no da, se sustituye entera por tarjetas de registro (FR-028).
+ */
 .row-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: var(--space-2);
 }
 

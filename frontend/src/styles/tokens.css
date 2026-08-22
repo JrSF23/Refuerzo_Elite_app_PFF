@@ -4,70 +4,117 @@
    Fuente ÚNICA de color, tipografía, espaciado, radio, sombra y layout. Ningún
    componente debe escribir un valor suelto (FR-054): si algo no está aquí, se
    añade aquí. Ver specs/002-admin-frontend/design-system.md.
+
+   ── El reparto del color ────────────────────────────────────────────────────
+
+   El azul NO es el color de la aplicación: es el color de la ACCIÓN. La jerarquía
+   es deliberada y conviene respetarla al añadir pantallas nuevas:
+
+     navy  (#0F172A)  navegación —la barra lateral y el texto principal—
+     slate (#475569…) estructura y todo lo secundario
+     white (#FFFFFF)  el contenido, que es lo que se viene a mirar
+     blue  (#2563EB)  lo que se puede pulsar, y solo eso
+     verde / ámbar / rojo   estado, nunca decoración
+
+   Una pantalla en la que el azul ocupe superficie grande está usando el acento
+   como fondo, y eso deja sin contraste a lo que de verdad hay que pulsar.
+
+   ── Los contrastes están medidos, no estimados ──────────────────────────────
+
+   Cada ratio anotado abajo sale de calcular la luminancia relativa de la pareja
+   concreta. Los mínimos son los de WCAG 2.2: 4,5:1 para texto y 3:1 para lo no
+   textual que transmite información (1.4.11).
    ───────────────────────────────────────────────────────────────────────────── */
 
 :root {
   /* ── Superficies ─────────────────────────────────────────────────────────── */
-  --color-bg:             #F8FAFC;
-  --color-surface:        #FFFFFF;
-  --color-surface-sunken: #F1F5F9;  /* cabecera de tabla, filas alternas */
-  --color-sidebar:        #111827;
-  --color-sidebar-hover:  #1F2937;
+  --color-bg:             #F8FAFC;  /* fondo de la aplicación */
+  --color-surface:        #FFFFFF;  /* tarjetas, tablas, formularios */
+  --color-surface-sunken: #F1F5F9;  /* cabecera de tabla, hover de fila */
 
-  /* ── Texto ───────────────────────────────────────────────────────────────── */
-  --color-text:           #111827;
+  /* ── Navegación ──────────────────────────────────────────────────────────────
+     La barra lateral es la única superficie oscura. Sus tokens son propios y no
+     alfas de blanco: `rgb(255 255 255 / 0.45)` no se puede medir de un vistazo ni
+     reutilizar, y era imposible saber si cumplía sin componerlo contra el fondo.
+
+       texto     sobre la barra  14,48:1   ·  sobre el elemento activo  11,87:1
+       atenuado  sobre la barra   6,96:1   ·  sobre el elemento activo   5,71:1
+     ───────────────────────────────────────────────────────────────────────── */
+  --color-sidebar:        #0F172A;
+  --color-sidebar-hover:  #1E293B;  /* hover Y fondo del elemento activo */
+  --color-sidebar-text:   #E2E8F0;
+  --color-sidebar-muted:  #94A3B8;  /* rótulos de grupo, descripción */
+
+  /* ── Texto — tres niveles, ni uno más ────────────────────────────────────────
+     Más niveles no aportan jerarquía, solo incoherencia entre pantallas.
+
+       --color-text            17,85:1 sobre blanco · 17,06:1 sobre el fondo
+       --color-text-secondary   7,58:1 sobre blanco ·  6,92:1 sobre hundido
+       --color-text-muted       4,76:1 sobre blanco ·  4,55:1 sobre el fondo
+
+     `--color-text-muted` cumple sobre blanco y sobre el fondo, pero se queda en
+     **4,34:1 sobre `--color-surface-sunken`**, por debajo del 4,5 exigido. Sobre
+     superficie hundida —cabecera de tabla, distintivo neutro, fila con el ratón
+     encima— hay que usar `--color-text-secondary`. Es el motivo de que existan
+     dos tonos atenuados y no uno.
+     ───────────────────────────────────────────────────────────────────────── */
+  --color-text:           #0F172A;
+  --color-text-secondary: #475569;
   --color-text-muted:     #64748B;
   --color-text-inverse:   #F8FAFC;
 
-  /*
-   * Texto atenuado SOBRE SUPERFICIE HUNDIDA.
-   *
-   * `--color-text-muted` da 4,76:1 sobre blanco y 4,55:1 sobre el fondo de la
-   * aplicación —ambos cumplen—, pero solo **4,34:1 sobre `--color-surface-sunken`**,
-   * por debajo del 4,5 que exige WCAG AA. Afectaba a las cabeceras de tabla y a
-   * los distintivos neutros.
-   *
-   * No se toca `--color-text-muted`, que es el `text-secondary` de la paleta
-   * acordada: el fondo problemático es `--color-surface-sunken`, que no está en
-   * ella. Se añade este tono, con 6,92:1 sobre esa superficie.
-   */
-  --color-text-muted-strong: #475569;
+  /* ── Estructura — tres bordes con propósitos distintos ───────────────────────
+     No son intercambiables, y la diferencia no es estética sino de accesibilidad.
 
-  /* ── Estructura ──────────────────────────────────────────────────────────────
-     Dos bordes con propósitos distintos, y no son intercambiables:
+     `--color-border` (1,23:1) separa cosas que ya se distinguen solas: filas de
+     una tabla, límite de una tarjeta. WCAG no le impone mínimo porque no
+     transmite información —la estructura se entiende sin él—.
 
-     `--color-border` (1,24:1 sobre blanco) es un separador DECORATIVO —divisiones
-     de tabla, límites de tarjeta—. WCAG no le impone mínimo porque no transmite
-     información: la estructura se entiende sin él.
+     `--color-border-strong` (1,48:1) es el borde de un control QUE LLEVA TEXTO
+     dentro: el botón secundario. Tampoco tiene mínimo, porque lo que identifica
+     al botón es su rótulo, no su contorno.
 
-     `--color-border-control` es el límite de un CONTROL —campo, desplegable,
-     casilla—. WCAG 1.4.11 le exige 3:1, porque si no se percibe, no se sabe
-     dónde hay que escribir. Se midieron los candidatos habituales y ninguno de
-     los grises claros llega: #CBD5E1 da 1,48:1 y #94A3B8 da 2,56:1. El primero
-     de la escala que cumple es #64748B, con 4,76:1. Es un borde más marcado de
-     lo que se estila, y es lo que hace falta.
+     `--color-border-control` (4,76:1) es el borde de un campo VACÍO —caja de
+     texto, desplegable, casilla—. Aquí WCAG 1.4.11 sí exige 3:1: si el borde no
+     se percibe, no hay nada que indique dónde se escribe. Se midieron los grises
+     claros habituales y ninguno llega: #CBD5E1 da 1,48:1 y #94A3B8 da 2,56:1. El
+     primero de la escala que cumple es #64748B. Es un borde más marcado de lo
+     que se estila, y es lo que hace falta.
      ───────────────────────────────────────────────────────────────────────── */
-  --color-border:         #E5E7EB;
-  --color-border-control:  #64748B;
+  --color-border:         #E2E8F0;
+  --color-border-strong:  #CBD5E1;
+  --color-border-control: #64748B;
 
-  /* ── Acento ──────────────────────────────────────────────────────────────── */
-  --color-primary:        #2563EB;
-  --color-primary-hover:  #1D4ED8;
-  --color-primary-soft:   #EFF6FF;
+  /* ── Acento ──────────────────────────────────────────────────────────────────
+     `--color-primary-on-dark` NO es un azul de marca distinto: es el mismo azul
+     un grado más claro, para cuando el fondo es la barra lateral. El azul de
+     marca sobre `--color-sidebar-hover` da **2,83:1** y no llega al 3:1 que
+     WCAG 1.4.11 exige a un indicador de estado —la barra del elemento activo—.
+     Este da 3,98:1 sobre ese mismo fondo y 4,85:1 sobre la barra.
+
+     Sobre fondo claro se usa `--color-primary` y nunca este: 5,17:1 contra
+     3,04:1.
+     ───────────────────────────────────────────────────────────────────────── */
+  --color-primary:         #2563EB;
+  --color-primary-hover:   #1D4ED8;
+  --color-primary-soft:    #EFF6FF;
+  --color-primary-on-dark: #3B82F6;
 
   /* ── Estados ─────────────────────────────────────────────────────────────────
      Los cuatro colores puros NO alcanzan 4,5:1 sobre blanco salvo el de error.
-     Medidos: info 4,10:1 · éxito 3,30:1 · aviso 3,19:1 · error 4,83:1.
-     Por eso cada uno lleva una variante `-text`, oscurecida hasta cumplir el
-     contraste de texto, y una `-soft` para el fondo del distintivo. El color
-     puro queda para bordes, iconos y rellenos, nunca para texto sobre blanco.
+     Por eso cada uno lleva una variante `-text`, oscurecida hasta cumplir, y una
+     `-soft` para el fondo del distintivo. El color puro queda para bordes,
+     iconos y rellenos, nunca para texto sobre blanco.
 
-     Contraste verificado de las variantes `-text`, sobre blanco y sobre su
-     propio fondo suave:
-       éxito #15803D → 5,02:1 y 4,79:1
-       aviso #B45309 → 5,02:1 y 4,84:1
-       error #B91C1C → 6,47:1 y 5,91:1
-       info  #036AA1 → 5,87:1 y 5,50:1
+     Contraste de las variantes `-text`, sobre blanco y sobre su fondo suave:
+       éxito       #15803D → 5,02:1 y 4,79:1
+       aviso       #B45309 → 5,02:1 y 4,84:1
+       error       #B91C1C → 6,47:1 y 5,91:1
+       información #1D4ED8 → 6,70:1 y 6,16:1
+
+     La información es AZUL y ya no cian: comparte color con el acento porque un
+     aviso informativo y una acción son la misma familia de significado, y un
+     quinto tono suelto solo añadía ruido a la paleta.
      ───────────────────────────────────────────────────────────────────────── */
   --color-success:        #16A34A;
   --color-success-text:   #15803D;
@@ -81,11 +128,22 @@
   --color-error-text:     #B91C1C;
   --color-error-soft:     #FEF2F2;
 
-  --color-info:           #0284C7;
-  --color-info-text:      #036AA1;
-  --color-info-soft:      #F0F9FF;
+  --color-info:           #2563EB;
+  --color-info-text:      #1D4ED8;
+  --color-info-soft:      #EFF6FF;
 
-  /* ── Tipografía ──────────────────────────────────────────────────────────── */
+  /* ── Tipografía ──────────────────────────────────────────────────────────────
+     Cuatro pesos y seis tamaños. La jerarquía se construye combinándolos, no
+     añadiendo valores nuevos:
+
+       título de página    --text-2xl  + semibold
+       título de sección   --text-xl   + semibold
+       título de tarjeta   --text-base + semibold
+       cuerpo              --text-base + normal
+       texto de trabajo    --text-sm   + normal      (tablas y apoyo)
+       etiqueta de campo   --text-sm   + medium
+       rótulo y distintivo --text-xs   + semibold
+     ───────────────────────────────────────────────────────────────────────── */
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
 
@@ -115,11 +173,25 @@
   --space-10: 2.5rem;
   --space-12: 3rem;
 
-  /* ── Radio ───────────────────────────────────────────────────────────────── */
+  /* ── Radio ───────────────────────────────────────────────────────────────────
+     Tres valores y una regla: `sm` para lo que va dentro de otra cosa
+     —distintivos—, `md` para controles —botones, campos, elementos de menú— y
+     `lg` para superficies —tarjetas, diálogos, paneles—. Un control y la tarjeta
+     que lo contiene no deben compartir radio: es lo que hace que un formulario
+     parezca una lista de cajas sueltas.
+     ───────────────────────────────────────────────────────────────────────── */
   --radius-sm:   4px;
   --radius-md:   6px;
   --radius-lg:   8px;
   --radius-full: 9999px;
+
+  /* ── Altura de los controles ─────────────────────────────────────────────────
+     Un campo y el botón que va a su lado DEBEN medir lo mismo, o la línea del
+     formulario queda escalonada. Estaban repetidos como `40px` y `32px` sueltos
+     en ocho reglas; centralizados aquí, cambiarlos es una edición y no ocho.
+     ───────────────────────────────────────────────────────────────────────── */
+  --control-height:    40px;
+  --control-height-sm: 32px;
 
   /* ── Elevación ───────────────────────────────────────────────────────────────
      Deliberadamente sobria: en software administrativo la jerarquía se lee
