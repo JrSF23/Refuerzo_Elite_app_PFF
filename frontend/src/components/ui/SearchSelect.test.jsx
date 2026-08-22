@@ -181,6 +181,117 @@ describe('SearchSelect', () => {
 })
 
 /**
+ * REGRESIÓN — «los searchselect para los grupos no corren bien, aun habiendo
+ * grupos registrados».
+ *
+ * Los grupos tutoriales se rotulaban componiendo el nombre con el turno,
+ * «1º ESO — Mañana», pero `TutorGroupController` solo declara `name` buscable.
+ * Teclear exactamente lo que se veía en pantalla devolvía «Sin resultados»
+ * habiendo cuatro grupos, y «Mañana» —presente en casi todas las opciones— no
+ * encontraba ninguna.
+ */
+describe('SearchSelect con dato secundario', () => {
+  const GRUPOS = [
+    { id: 1, name: '1º ESO', shift: 'morning' },
+    { id: 2, name: '1º ESO', shift: 'afternoon' },
+    { id: 3, name: '4º ESO', shift: 'morning' },
+    { id: 4, name: '2º Bachiller', shift: 'afternoon' },
+  ]
+
+  const TURNOS = { morning: 'Mañana', afternoon: 'Tarde' }
+
+  /** El servidor busca SOLO por `name`, como el real. */
+  function fakeGrupos() {
+    api.get.mockImplementation((url, config = {}) => {
+      const byId = url.match(/^\/tutor-groups\/(\d+)$/)
+      if (byId) return Promise.resolve({ data: GRUPOS.find((g) => g.id === Number(byId[1])) })
+
+      const { search } = config.params ?? {}
+      const matched = search
+        ? GRUPOS.filter((g) => g.name.toLowerCase().includes(String(search).toLowerCase()))
+        : GRUPOS
+
+      return Promise.resolve({ data: { data: matched, total: matched.length } })
+    })
+  }
+
+  function FormularioGrupo() {
+    const [value, setValue] = useState('')
+
+    return (
+      <>
+        <SearchSelect
+          endpoint="tutor-groups"
+          name="tutor_group_id"
+          onChange={(event) => setValue(event.target.value)}
+          optionLabel={(group) => group.name}
+          optionMeta={(group) => TURNOS[group.shift]}
+          value={value}
+        />
+        <output>valor:{value}</output>
+      </>
+    )
+  }
+
+  beforeEach(fakeGrupos)
+
+  it('encuentra el grupo al teclear el rótulo completo que se ve en pantalla', async () => {
+    render(<FormularioGrupo />)
+
+    const campo = screen.getByRole('combobox')
+    fireEvent.mouseDown(campo)
+    await screen.findByRole('option', { name: /1º ESO.*Mañana/ })
+
+    // Exactamente lo que el usuario lee y vuelve a teclear.
+    fireEvent.change(campo, { target: { value: '1º ESO — Mañana' } })
+
+    // Se espera a que aterrice la consulta con retardo: sin esto la lista aún
+    // contiene los cuatro grupos de la apertura y la prueba pasaría sin haber
+    // buscado nada.
+    await waitFor(() => {
+      expect(api.get).toHaveBeenLastCalledWith(
+        '/tutor-groups',
+        expect.objectContaining({ params: expect.objectContaining({ search: '1º ESO' }) }),
+      )
+    })
+
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(2))
+  })
+
+  it('el turno se muestra pero no se envía como término de búsqueda', async () => {
+    render(<FormularioGrupo />)
+
+    const campo = screen.getByRole('combobox')
+    fireEvent.mouseDown(campo)
+    await screen.findAllByRole('option')
+
+    // El turno se ve en cada opción…
+    expect(screen.getAllByText('Mañana').length).toBeGreaterThan(0)
+
+    // …y elegir conserva el turno en el texto visible, para saber cuál es.
+    fireEvent.click(screen.getAllByRole('option')[0])
+    expect(campo.value).toBe('1º ESO — Mañana')
+    expect(screen.getByText('valor:1')).toBeTruthy()
+  })
+
+  /** Buscar por algo que el servidor no indexa no puede dejar sin salida. */
+  it('ofrece volver al catálogo completo cuando no hay resultados', async () => {
+    render(<FormularioGrupo />)
+
+    const campo = screen.getByRole('combobox')
+    fireEvent.mouseDown(campo)
+    await screen.findAllByRole('option')
+
+    fireEvent.change(campo, { target: { value: 'Mañana' } })
+    expect(await screen.findByText(/Sin resultados para «Mañana»/)).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ver todas las opciones' }))
+
+    expect(await screen.findAllByRole('option')).toHaveLength(4)
+  })
+})
+
+/**
  * REGRESIÓN — Escape dentro de un cajón.
  *
  * `useFocusTrap` escucha Escape en `document` para cerrar el cajón. Sin detener
