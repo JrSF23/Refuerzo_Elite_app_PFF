@@ -40,12 +40,31 @@ class MigrationBackfillTest extends TestCase
         'users',
     ];
 
-    /** Número de migraciones de tenancy (M1–M5). */
-    private const TENANCY_MIGRATIONS = 5;
+    /** La primera migración de tenancy: la que añade la columna a las tablas. */
+    private const FIRST_TENANCY_MIGRATION = '2026_08_14_000002_add_organization_id_to_tables';
 
+    /**
+     * Deshace las migraciones de tenancy para poder sembrar el esquema anterior.
+     *
+     * Los pasos se CUENTAN, no se fijan. `migrate:rollback --step` deshace las N
+     * últimas migraciones aplicadas, así que un número escrito a mano no depende
+     * de cuántas migraciones de tenancy hay —que son fijas— sino de cuántas se
+     * han añadido DESPUÉS, que crecen con el proyecto. Con el `5` original, la
+     * primera migración nueva que llegó dejó el retroceso a medias: se quedaba
+     * sin deshacer la que añade `organization_id`, y los siete tests de este
+     * fichero fallaban con un mensaje que no señalaba a la causa.
+     *
+     * Los nombres llevan la fecha delante y se aplican en ese orden, así que
+     * contar las que van de la primera de tenancy en adelante da el número exacto
+     * y sigue dándolo cuando se añadan más.
+     */
     private function rollbackTenancy(): void
     {
-        $this->artisan('migrate:rollback', ['--step' => self::TENANCY_MIGRATIONS, '--force' => true])
+        $steps = DB::table('migrations')
+            ->where('migration', '>=', self::FIRST_TENANCY_MIGRATION)
+            ->count();
+
+        $this->artisan('migrate:rollback', ['--step' => $steps, '--force' => true])
             ->assertSuccessful();
 
         $this->assertFalse(
