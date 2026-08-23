@@ -1188,6 +1188,7 @@
  * pantalla de trabajo, no una portada.
  */
 .auth-shell {
+  position: relative;
   display: grid;
   place-items: center;
   min-height: 100vh;
@@ -1195,7 +1196,71 @@
   background: var(--color-bg);
 }
 
+/*
+ * La marca, en grande y detrás de la tarjeta.
+ *
+ * Es el mismo componente `Logo` y no una imagen aparte: así el color sigue
+ * saliendo de un token —`currentColor` lo hereda de aquí— y no hay un segundo
+ * dibujo que actualizar cuando la marca cambie.
+ *
+ * `--color-border-strong` da 1,48:1 sobre el fondo. Es a propósito: tiene que
+ * insinuarse, no leerse. Por encima de eso compite con los campos, y esta sigue
+ * siendo una pantalla de trabajo.
+ *
+ * El ancho es `min()` y no un valor fijo con `overflow: hidden` en el contenedor:
+ * recortar aquí sería peligroso, porque la tarjeta va centrada con `place-items`
+ * y en una ventana más baja que ella el recorte se comería la parte de arriba
+ * dejándola inalcanzable. Encogiendo la marca no hay nada que recortar.
+ */
+.auth-shell__watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 0;
+  /*
+   * Bastante MÁS ancha que la tarjeta (420 px), y no por gusto: a 560 px la
+   * tarjeta tapaba el centro del dibujo y solo asomaban los dos nodos de abajo
+   * por los lados, que se leían como dos manchas grises y no como la marca. La
+   * figura tiene que rodear la tarjeta para que el ojo la reconstruya.
+   */
+  width: min(820px, 90vw);
+  color: var(--color-border-strong);
+  transform: translate(-50%, -50%);
+  /* Decorativa: no debe robar la pulsación a nada que quede debajo. */
+  pointer-events: none;
+}
+
+/* El SVG nace a 18 px por los atributos del componente; aquí manda el CSS. */
+.auth-shell__watermark svg {
+  width: 100%;
+  height: auto;
+}
+
+/*
+ * A tamaño de marca de agua la marca va en TRAZO, no rellena.
+ *
+ * El dibujo está pensado para 32 px, donde los nodos macizos son lo que le da
+ * silueta. Ampliado a 820 los mismos círculos pasan a ser tres masas de doscientos
+ * píxeles: se leían como nubes, y las líneas —1,5 unidades, unos 68 px a esta
+ * escala— como barras. Vaciando los nodos y afinando el trazo, la figura se
+ * convierte en un dibujo de líneas que sí se reconoce con la tarjeta encima.
+ *
+ * El grosor va en unidades del viewBox, que mide 18: 0,12 son unos 5 px a 820 de
+ * ancho, y escala solo si el ancho cambia.
+ */
+.auth-shell__watermark svg g {
+  stroke: currentColor;
+  stroke-width: 0.12;
+}
+
+.auth-shell__watermark svg circle {
+  fill: none;
+}
+
 .auth-card {
+  /* Por delante de la marca de agua, que va en el z-index 0 del mismo padre. */
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 420px;
   /* Fluido en vez de un punto de ruptura: a 360 px un relleno de 32 px se come
