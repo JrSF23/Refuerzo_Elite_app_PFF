@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { api } from '../lib/api.js'
+import { toIsoDate } from '../lib/dates.js'
 
 /**
  * Formulario de alta y edición.
@@ -49,9 +50,25 @@ export function useResourceForm({ endpoint, fields, onSaved }) {
 
       // La API devuelve las horas como HH:MM:SS y el control `time` solo acepta
       // HH:MM. Se normaliza aquí para no repetirlo en cada pantalla.
-      next[field.name] = field.type === 'time' && typeof raw === 'string'
-        ? raw.slice(0, 5)
-        : raw ?? ''
+      if (field.type === 'time' && typeof raw === 'string') {
+        next[field.name] = raw.slice(0, 5)
+        return
+      }
+
+      /*
+       * Y las fechas como `2026-01-13T00:00:00.000000Z`, que NINGÚN control de
+       * fecha acepta: ni el nativo ni el nuestro. El efecto era que al editar
+       * cualquier registro la fecha aparecía EN BLANCO —las cinco pantallas con
+       * fecha—, aunque el valor siguiera ahí y se guardara intacto. Un campo
+       * obligatorio vacío que en realidad tiene valor es de los defectos que más
+       * desconciertan, porque no hay error que leer.
+       */
+      if (field.type === 'date') {
+        next[field.name] = toIsoDate(typeof raw === 'string' ? raw : '')
+        return
+      }
+
+      next[field.name] = raw ?? ''
     })
 
     setValues(next)

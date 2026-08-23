@@ -16,7 +16,13 @@ export function studentFields() {
       label: t('students.fields.tutorGroup'),
       type: 'relation',
       endpoint: 'tutor-groups',
-      optionLabel: (group) => `${group.name} — ${t(`tutorGroups.shifts.${group.shift}`)}`,
+      /*
+       * El rótulo es SOLO `name`, que es lo único que `TutorGroupController`
+       * declara buscable. El turno va aparte: componer «1º ESO — Mañana» aquí
+       * hacía que teclear lo que se veía en pantalla no encontrara nada.
+       */
+      optionLabel: (group) => group.name,
+      optionMeta: (group) => t(`tutorGroups.shifts.${group.shift}`),
       hint: t('students.fields.tutorGroupHint'),
     },
     { name: 'email', label: t('fields.email'), type: 'email' },

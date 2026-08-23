@@ -1,0 +1,32 @@
+<!doctype html><meta charset="utf-8">
+<!--
+  Banco de pruebas de anchos. NO forma parte de la aplicación: vive en `dev/`,
+  que Vite sirve en desarrollo pero no copia al build.
+
+  Uso:  http://localhost:5173/dev/__responsive.html?ruta=/acceso&w=360
+
+  Por qué un iframe y no redimensionar la ventana: al capturar en headless, el
+  `--window-size` de Chrome no siempre llega a ser el ancho del viewport, y la
+  captura sale recortada de una página maquetada a otro ancho —parece un fallo de
+  responsive y no lo es—. Dentro de un iframe el ancho es exacto por definición.
+-->
+<body style="margin:0;background:#334155;font:12px system-ui">
+<script>
+  const p = new URLSearchParams(location.search);
+  const w = parseInt(p.get('w') || '360', 10);
+  const h = parseInt(p.get('h') || '800', 10);
+  const ruta = p.get('ruta') || '/acceso';
+
+  // Sesión para poder mirar las pantallas de dentro. Mismo origen que la
+  // aplicación, así que el iframe hereda este `localStorage`. El token NO se
+  // pinta en ningún sitio: estas páginas acaban en capturas.
+  const tok = p.get('token');
+  if (tok) localStorage.setItem('smartwork.token', tok);
+
+  document.write(
+    '<div style="padding:8px;color:#E2E8F0">' + w + ' x ' + h + ' — ' + ruta + '</div>' +
+    '<iframe src="' + ruta + '" style="width:' + w + 'px;height:' + h +
+    'px;border:0;display:block;background:#fff"></iframe>'
+  );
+</script>
+</body>

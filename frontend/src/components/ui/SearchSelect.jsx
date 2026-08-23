@@ -10,6 +10,15 @@ const PAGE_SIZE = 20
 const DEBOUNCE_MS = 250
 
 /**
+ * Separa el rótulo de su dato secundario: «1º ESO — Mañana».
+ *
+ * Lo fija el componente, no cada pantalla, porque se usa para DOS cosas que
+ * tienen que coincidir: pintar y recortar la consulta. Si cada campo eligiera el
+ * suyo, volvería el desajuste que esto viene a corregir.
+ */
+const META_SEPARATOR = ' — '
+
+/**
  * Selector de relación CON BÚSQUEDA EN SERVIDOR.
  *
  * Sustituye a `RelationSelect` en los recursos que el servidor sabe buscar. El
@@ -28,8 +37,21 @@ const DEBOUNCE_MS = 250
  * del defecto anterior: truncar en silencio es lo que hacía que el usuario
  * concluyera que el alumno no existe.
  *
+ * ── El rótulo y lo que se busca tienen que ser lo mismo ─────────────────────
+ *
+ * `optionLabel` debe devolver SOLO lo que el servidor sabe buscar. Todo lo que
+ * se añada por cuenta del cliente va en `optionMeta`, que se pinta atenuado y se
+ * recorta de la consulta.
+ *
+ * No es una preferencia estética. Los grupos tutoriales se rotulaban «1º ESO —
+ * Mañana» componiendo el nombre con el turno, pero `TutorGroupController` solo
+ * declara `name` como buscable. Teclear exactamente lo que se veía en pantalla
+ * devolvía «Sin resultados», y «Mañana» —que aparece en casi todas las
+ * opciones— no encontraba ninguna. El campo parecía averiado habiendo grupos.
+ *
  * @param {string}   endpoint      Recurso de la API. Debe declarar `$searchable`.
- * @param {Function} optionLabel   Cómo se rotula cada registro.
+ * @param {Function} optionLabel   Rótulo. SOLO campos que el servidor busque.
+ * @param {Function} [optionMeta]  Dato secundario, decorativo y no buscable.
  * @param {object}   [params]      Acotación extra enviada en cada consulta.
  * @param {boolean}  [isDisabled]  Deshabilitado por una razón de dominio.
  * @param {string}   [disabledHint] Por qué. Un control gris y mudo no explica nada.
@@ -37,6 +59,7 @@ const DEBOUNCE_MS = 250
 export function SearchSelect({
   endpoint,
   optionLabel,
+  optionMeta,
   placeholder,
   value,
   onChange,
@@ -68,6 +91,12 @@ export function SearchSelect({
 
   const paramsKey = JSON.stringify(params ?? null)
 
+  /** Lo que se muestra: rótulo y, si lo hay, su dato secundario. */
+  function fullLabel(option) {
+    const meta = optionMeta?.(option)
+    return meta ? `${optionLabel(option)}${META_SEPARATOR}${meta}` : optionLabel(option)
+  }
+
   /*
    * Rótulo del valor ya seleccionado.
    *
@@ -86,7 +115,7 @@ export function SearchSelect({
     const known = options.find((option) => String(option.id) === String(value))
 
     if (known) {
-      setSelectedLabel(optionLabel(known))
+      setSelectedLabel(fullLabel(known))
       return undefined
     }
 
@@ -95,7 +124,7 @@ export function SearchSelect({
     const controller = new AbortController()
 
     api.get(`/${endpoint}/${value}`, { signal: controller.signal })
-      .then(({ data }) => setSelectedLabel(optionLabel(data)))
+      .then(({ data }) => setSelectedLabel(fullLabel(data)))
       .catch((error) => {
         if (error.isCanceled) return
         // El registro ya no existe o no es de este centro. Se muestra el aviso
@@ -108,7 +137,18 @@ export function SearchSelect({
   }, [value, endpoint, options])
 
   /** Consulta al servidor. Se llama ya con el retardo aplicado. */
-  const search = useCallback((term) => {
+  const search = useCallback((raw) => {
+    /*
+     * Se recorta por el separador antes de consultar.
+     *
+     * Lo natural al reabrir el campo es teclear lo que se está viendo, y lo que
+     * se ve incluye el dato secundario. Sin recortar, «1º ESO — Mañana» se
+     * enviaba entero y el servidor —que solo busca `name`— no encontraba nada:
+     * el usuario tecleaba el nombre exacto de un grupo existente y leía «Sin
+     * resultados».
+     */
+    const term = raw.split(META_SEPARATOR)[0].trim()
+
     const requestId = requestIdRef.current + 1
     requestIdRef.current = requestId
 
@@ -170,7 +210,7 @@ export function SearchSelect({
   }
 
   function select(option) {
-    setSelectedLabel(optionLabel(option))
+    setSelectedLabel(fullLabel(option))
     // Se emite con la forma de un evento de control para que el formulario lo
     // trate como a cualquier otro campo y no necesite un caso especial.
     onChange({ target: { name, value: String(option.id) } })
@@ -298,8 +338,25 @@ export function SearchSelect({
             <p className="combo__note combo__note--error">{t('common.errorTitle')}</p>
           ) : null}
 
+          {/*
+            Sin resultados no puede ser un callejón sin salida. El usuario puede
+            haber buscado por algo que el servidor no indexa —el turno de un
+            grupo, por ejemplo—, y quedarse con una lista vacía sin manera de
+            volver. El botón devuelve el catálogo completo de un clic.
+          */}
           {status === 'ready' && options.length === 0 ? (
-            <p className="combo__note">{t('common.noResultsTitle')}</p>
+            <div className="combo__note">
+              <p>{t('common.noResultsFor', { term: query.trim() })}</p>
+
+              <button
+                className="combo__reset"
+                onClick={() => setQuery('')}
+                onMouseDown={(event) => event.preventDefault()}
+                type="button"
+              >
+                {t('common.showAll')}
+              </button>
+            </div>
           ) : null}
 
           {options.length > 0 ? (
@@ -311,6 +368,10 @@ export function SearchSelect({
             >
               {options.map((option, index) => (
                 <li
+                  // El nombre accesible se declara entero. Sin él, el lector de
+                  // pantalla recorre los dos nodos sin separación y anuncia
+                  // «1º ESOMañana»: el separador es visual, no textual.
+                  aria-label={fullLabel(option)}
                   aria-selected={String(option.id) === String(value)}
                   className={index === activeIndex ? 'combo__option combo__option--active' : 'combo__option'}
                   data-index={index}
@@ -323,6 +384,12 @@ export function SearchSelect({
                   role="option"
                 >
                   {optionLabel(option)}
+
+                  {/* Atenuado y aparte, para que se lea como lo que es: un
+                      dato que acompaña, no parte del nombre que se teclea. */}
+                  {optionMeta?.(option) ? (
+                    <span className="combo__meta">{optionMeta(option)}</span>
+                  ) : null}
                 </li>
               ))}
             </ul>

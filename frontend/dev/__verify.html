@@ -1,0 +1,86 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:#fff">
+<!--
+  Arnés de verificación manual. NO forma parte de la aplicación.
+
+  Vive en `dev/` y no en `public/` a propósito: Vite sirve la raíz del proyecto en
+  desarrollo, así que desde aquí sigue funcionando igual, pero al build solo se
+  copia `public/`. Estando allí, este fichero —y el token que llevaba escrito
+  dentro— acababa publicado en `dist/`.
+
+  Uso:  http://localhost:5173/dev/__verify.html
+  Si ya hay sesión abierta en el navegador, reutiliza su token. Si no, pásalo por
+  la barra de direcciones:  ...__verify.html?token=13|XXXX
+-->
+<div id="wrap"></div><pre id="out" style="font:12px monospace;white-space:pre-wrap"></pre>
+<script>
+/*
+ * El token NO se escribe aquí. Se toma del de la sesión ya abierta —mismo origen
+ * que la aplicación, así que el `localStorage` es el mismo— y, si no hay,
+ * del parámetro de la URL. Un fichero con una credencial dentro acaba copiado,
+ * compartido o publicado; este se puede enseñar a cualquiera.
+ */
+const CLAVE='smartwork.token';
+const desdeUrl=new URLSearchParams(location.search).get('token');
+if(desdeUrl) localStorage.setItem(CLAVE,desdeUrl);
+if(!localStorage.getItem(CLAVE)){
+  document.getElementById('out').textContent=
+    'Sin sesión. Entra en la aplicación en esta misma pestaña, o añade ?token=... a la URL.';
+  throw new Error('sin token');
+}
+
+const NL=String.fromCharCode(10);
+const log=[];const say=m=>{log.push(m);document.getElementById('out').textContent=log.join(NL);};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function type(el,v){const s=Object.getOwnPropertyDescriptor(el.constructor.prototype,'value').set;s.call(el,v);el.dispatchEvent(new Event('input',{bubbles:true}));}
+
+async function abrir(ruta){
+  const f=document.createElement('iframe');
+  f.style.cssText='width:1280px;height:820px;border:0'; f.src=ruta;
+  document.getElementById('wrap').appendChild(f);
+  await new Promise(r=>{f.onload=r}); await sleep(2800);
+  return f;
+}
+
+// ── 1. GRUPOS: teclear lo que se ve ──────────────────────────────────────────
+(async()=>{
+  let f=await abrir('/alumnos/todos'); let d=f.contentDocument;
+  [...d.querySelectorAll('button')].find(b=>/Nuevo alumno/i.test(b.textContent)).click();
+  await sleep(1500);
+  const c=[...d.querySelectorAll('[role=combobox]')]
+     .find(x=>/^Grupo/.test(x.closest('.field').querySelector('.field__label').textContent));
+  c.dispatchEvent(new MouseEvent('mousedown',{bubbles:true})); await sleep(1200);
+  say('GRUPOS — opciones al abrir: '+JSON.stringify([...d.querySelectorAll('[role=option]')].map(o=>o.textContent.trim())));
+  for(const q of ['1º ESO — Mañana','1º ESO','Mañana']){
+    type(c,q); await sleep(1500);
+    const ops=[...d.querySelectorAll('[role=option]')].map(o=>o.textContent.trim());
+    const salida=d.querySelector('.combo__reset');
+    say('  teclea '+JSON.stringify(q).padEnd(20)+' -> '+ops.length+' '+JSON.stringify(ops.slice(0,3))+(salida?'  [boton "'+salida.textContent.trim()+'"]':''));
+  }
+  // El botón de salida devuelve el catálogo
+  const btn=d.querySelector('.combo__reset');
+  if(btn){ btn.click(); await sleep(1200);
+    say('  tras "Ver todas": '+d.querySelectorAll('[role=option]').length+' opciones'); }
+  // Elegir conserva el turno visible
+  d.querySelectorAll('[role=option]')[0].click(); await sleep(500);
+  say('  elegido -> texto="'+c.value+'" id='+c.closest('.combo').querySelector('input[type=hidden]').value);
+  f.remove();
+
+  // ── 2. FECHAS al editar ───────────────────────────────────────────────────
+  say('');
+  for(const ruta of ['/matriculas','/sesiones','/pagos','/alumnos/todos','/grupos-asignatura']){
+    f=await abrir(ruta); d=f.contentDocument;
+    const ed=[...d.querySelectorAll('button')].find(b=>/^Editar$/i.test(b.textContent.trim()));
+    if(!ed){say(ruta+': sin editar');f.remove();continue;}
+    ed.click(); await sleep(1800);
+    const campos=[...d.querySelectorAll('.datefield')].map(w=>{
+      const et=w.closest('.field')?.querySelector('.field__label')?.textContent.trim().replace(' *','').replace(' (obligatorio)','')||'?';
+      const vis=w.querySelector('.datefield__input').value;
+      const iso=w.querySelector('input[type=hidden]').value;
+      return et+': ve="'+vis+'" envia="'+iso+'"';
+    });
+    say('FECHAS '+ruta.padEnd(20)+' '+(campos.join('  |  ')||'SIN CAMPOS DE FECHA'));
+    f.remove();
+  }
+  say('FIN');
+})();
+</script></body>

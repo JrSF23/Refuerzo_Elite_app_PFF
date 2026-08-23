@@ -10,6 +10,7 @@ import { useResourceForm } from '../../hooks/useResourceForm.js'
 import { Breadcrumbs } from '../layout/Breadcrumbs.jsx'
 import { Button } from '../ui/Button.jsx'
 import { Drawer } from '../ui/Drawer.jsx'
+import { DateField } from '../ui/DateField.jsx'
 import { Field, Input, Select, Textarea } from '../ui/Field.jsx'
 import { RelationSelect } from '../ui/RelationSelect.jsx'
 import { SearchSelect } from '../ui/SearchSelect.jsx'
@@ -147,7 +148,13 @@ export function ResourcePage({
             <Button onClick={() => openEdit(record)} size="sm">
               {t('common.edit')}
             </Button>
-            <Button onClick={() => setPendingDelete(record)} size="sm" variant="danger">
+            {/*
+              * `danger-quiet` y no `danger`: esto se repite en CADA fila, y
+              * veinte botones rojos macizos por pantalla tapan a la acción
+              * principal. El rojo lleno se reserva al botón que consuma el
+              * borrado, en `ConfirmDialog`, que es donde el dato se pierde.
+              */}
+            <Button onClick={() => setPendingDelete(record)} size="sm" variant="danger-quiet">
               {t('common.delete')}
             </Button>
           </>
@@ -242,10 +249,20 @@ function FormField({ field, form }) {
               endpoint={field.endpoint}
               isDisabled={resolve(field.isDisabled) ?? false}
               optionLabel={field.optionLabel}
+              optionMeta={field.optionMeta}
               params={resolve(field.params)}
               placeholder={field.placeholder}
             />
           )
+        }
+
+        /*
+         * Fecha. Siempre dd/mm/aaaa, sin depender del idioma del navegador, que
+         * es lo que decide el formato del control nativo y variaba de puesto a
+         * puesto dentro del mismo centro.
+         */
+        if (field.type === 'date') {
+          return <DateField {...common(props)} />
         }
 
         if (field.type === 'select') {

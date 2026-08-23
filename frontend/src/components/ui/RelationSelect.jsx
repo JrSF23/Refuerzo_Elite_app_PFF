@@ -36,6 +36,19 @@ export function RelationSelect({
   params,
   isDisabled = false,
   disabledHint,
+  /*
+   * Se recoge para DESCARTARLO. `ResourcePage` no sabe qué control va a tocar
+   * —lo decide `endpointIsSearchable` en el momento— así que pasa `optionMeta`
+   * siempre; solo `SearchSelect` lo usa. Sin esta línea cae en `...props` y se
+   * vuelca sobre el `<select>` de abajo: React avisa por consola de un atributo
+   * que no reconoce, en todo campo de relación de un recurso no buscable
+   * —matrículas, sesiones, asistencias y pagos—.
+   *
+   * Un desplegable NO lo pinta porque no tiene dónde: sus opciones son texto
+   * plano, sin sitio para un dato secundario atenuado.
+   */
+  // eslint-disable-next-line no-unused-vars
+  optionMeta,
   ...props
 }) {
   const [options, setOptions] = useState([])

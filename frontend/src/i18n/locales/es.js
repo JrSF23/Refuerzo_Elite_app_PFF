@@ -41,6 +41,10 @@ export const es = {
     // Selector con búsqueda
     typeToSearch: 'Escriba para buscar…',
     clearSelection: 'Quitar la selección',
+    noResultsFor: 'Sin resultados para «{term}».',
+    // Salida de un listado vacío: la búsqueda puede haber sido por algo que el
+    // servidor no indexa, y sin esto no habría manera de volver al catálogo.
+    showAll: 'Ver todas las opciones',
     unresolvedOption: 'Registro no disponible',
     // Se avisa del recorte en lugar de callarlo: un listado truncado en silencio
     // hace concluir que el registro no existe.
@@ -53,6 +57,11 @@ export const es = {
 
     actions: 'Acciones',
     viewAll: 'Ver todo',
+
+    // Fechas. dd/mm/aaaa en todas partes, sin depender del idioma del navegador.
+    datePlaceholder: 'dd/mm/aaaa',
+    openCalendar: 'Abrir el calendario',
+    invalidDate: 'La fecha no es válida. Use el formato dd/mm/aaaa.',
 
     // Estados
     loading: 'Cargando…',

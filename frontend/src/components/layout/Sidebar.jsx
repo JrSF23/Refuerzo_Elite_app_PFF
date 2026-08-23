@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 
 import { t } from '../../i18n/index.js'
 import { visibleSections } from '../../lib/permissions.js'
+import { Logo } from '../ui/Logo.jsx'
 
 /**
  * Navegación principal.
@@ -30,7 +31,7 @@ export function Sidebar({ roleNames, onNavigate }) {
   return (
     <nav aria-label={t('nav.label')} className="sidebar">
       <div className="sidebar__brand">
-        <span className="sidebar__mark" aria-hidden="true">SW</span>
+        <span className="sidebar__mark" aria-hidden="true"><Logo /></span>
         <span className="sidebar__brand-text">
           <strong>{t('app.name')}</strong>
           <span className="sidebar__tagline">{t('app.tagline')}</span>

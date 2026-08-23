@@ -5,6 +5,7 @@ import { t } from '../i18n/index.js'
 import { useSession } from '../context/SessionContext.jsx'
 import { Button } from '../components/ui/Button.jsx'
 import { Field, Input } from '../components/ui/Field.jsx'
+import { Logo } from '../components/ui/Logo.jsx'
 
 /**
  * Pantalla de acceso.
@@ -65,7 +66,7 @@ export function LoginPage() {
     <div className="auth-shell">
       <main className="auth-card">
         <div className="auth-card__brand">
-          <span aria-hidden="true" className="auth-card__mark">SW</span>
+          <span aria-hidden="true" className="auth-card__mark"><Logo /></span>
           <div>
             <strong>{t('app.name')}</strong>
             <span className="auth-card__tagline">{t('app.tagline')}</span>
