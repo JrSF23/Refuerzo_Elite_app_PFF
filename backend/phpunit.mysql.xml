@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Ejecuta la suite contra MySQL de verdad, no contra SQLite.
+
+    ── Por qué hace falta ──────────────────────────────────────────────────
+
+    `MigrationBackfillTest` retrocede las migraciones de tenancy, siembra el
+    esquema anterior y las vuelve a aplicar. En SQLite eso no prueba gran cosa:
+    no hay ALTER TABLE real, cada cambio reconstruye la tabla, así que un
+    `dropColumn` sobre una columna con índices o una clave foránea encima pasa
+    en verde ahí y puede fallar en producción, que es MySQL 8.
+
+    ── Cómo se usa ─────────────────────────────────────────────────────────
+
+    Con `make test-mysql`. La imagen se construye sin dependencias de
+    desarrollo, así que en el contenedor que sirve la aplicación no hay
+    phpunit; ese objetivo levanta uno efímero, con su propio vendor, para no
+    tocar el que está en servicio.
+
+    ── La base está fijada aquí dentro, a propósito ────────────────────────
+
+    `DB_DATABASE` va con force y vale `refuerzo_elite_v2_test`; no se toma del
+    entorno. Los tests hacen `migrate:fresh`, que BORRA TODAS LAS TABLAS: si el
+    valor pudiera venir de fuera, un despiste bastaría para apuntarlo a la base
+    que sirve la aplicación. Crearla una sola vez con `make setup-db-test`.
+
+    Host, usuario y contraseña sí salen del entorno: son los del contenedor y
+    no deciden qué se borra.
+
+    La caché y la sesión van en memoria, igual que en `phpunit.xml`: con la
+    caché en la base de datos cada lectura cuenta como consulta y los tests que
+    las cuentan para detectar un N+1 dan falsos positivos.
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file" force="true"/>
+        <env name="BCRYPT_ROUNDS" value="4" force="true"/>
+        <env name="BROADCAST_CONNECTION" value="null" force="true"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+        <env name="DB_CONNECTION" value="mysql" force="true"/>
+        <env name="DB_DATABASE" value="refuerzo_elite_v2_test" force="true"/>
+        <env name="DB_URL" value="" force="true"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
+        <env name="PULSE_ENABLED" value="false" force="true"/>
+        <env name="TELESCOPE_ENABLED" value="false" force="true"/>
+        <env name="NIGHTWATCH_ENABLED" value="false" force="true"/>
+    </php>
+</phpunit>
