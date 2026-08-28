@@ -125,7 +125,7 @@ class MigrationBackfillTest extends TestCase
         ]);
         $teacherId = DB::table('teachers')->where('email', 'mgarcia@legacy.test')->value('id');
 
-        DB::table('subjects')->insert(['name' => 'Matemáticas', 'code' => 'MAT', 'monthly_fee' => 80, 'created_at' => $now, 'updated_at' => $now]);
+        DB::table('subjects')->insert(['name' => 'Matemáticas', 'code' => 'MAT', 'created_at' => $now, 'updated_at' => $now]);
         $subjectId = DB::table('subjects')->value('id');
 
         DB::table('students')->insert([

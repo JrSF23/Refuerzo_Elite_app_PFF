@@ -142,13 +142,11 @@ export const moduleDefinitions = {
       { key: 'name', label: 'Asignatura' },
       { key: 'code', label: 'Código' },
       { key: 'level', label: 'Nivel' },
-      { key: 'monthly_fee', label: 'Tarifa mensual' },
     ],
     fields: [
       { name: 'name', label: 'Asignatura', type: 'text', required: true },
       { name: 'code', label: 'Código', type: 'text', required: true },
       { name: 'level', label: 'Nivel', type: 'text' },
-      { name: 'monthly_fee', label: 'Tarifa mensual', type: 'number', required: true },
       { name: 'description', label: 'Descripción', type: 'textarea' },
     ],
   },

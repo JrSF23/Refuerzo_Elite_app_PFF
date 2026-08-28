@@ -113,16 +113,17 @@ class DemoSeeder extends Seeder
         $subjects = [];
 
         foreach ([
-            ['Matemáticas', 'MAT', 'ESO / Bachillerato', 80.00],
-            ['Lengua Castellana', 'LEN', 'Primaria / ESO', 70.00],
-            ['Inglés', 'ING', 'Todos los niveles', 75.00],
-        ] as $index => [$name, $code, $level, $fee]) {
+            ['Matemáticas', 'MAT', 'ESO / Bachillerato'],
+            ['Lengua Castellana', 'LEN', 'Primaria / ESO'],
+            ['Inglés', 'ING', 'Todos los niveles'],
+        ] as $index => [$name, $code, $level]) {
+            // Sin importe: la asignatura dejó de ser unidad de cobro. La cuota
+            // se pacta en la matrícula, más abajo.
             $subjects[$index] = Subject::forceCreate([
                 'organization_id' => $orgId,
                 'name' => $name,
                 'code' => $code,
                 'level' => $level,
-                'monthly_fee' => $fee,
             ]);
         }
 

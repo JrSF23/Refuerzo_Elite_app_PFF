@@ -18,7 +18,6 @@ class SubjectController extends BaseApiController
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', Rule::unique('subjects', 'code')->ignore($id)->where('organization_id', $this->currentOrganizationId())],
             'level' => ['nullable', 'string', 'max:100'],
-            'monthly_fee' => ['required', 'numeric', 'min:0'],
             'description' => ['nullable', 'string'],
         ];
     }

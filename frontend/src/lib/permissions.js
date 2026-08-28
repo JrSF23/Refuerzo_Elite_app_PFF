@@ -64,7 +64,12 @@ export const SECTIONS = {
     endpoint: 'subjects',
     searchable: true,
     group: 'sectionManagement',
-    // Cerrada al profesor: lleva `monthly_fee` (FR-037).
+    /*
+     * Cerrada al profesor. El motivo original —llevaba `monthly_fee`— YA NO
+     * EXISTE: esa columna se eliminó al separar el cobro de la asignatura. La
+     * restricción se mantiene porque el servidor la impone igual, no porque
+     * quede dinero aquí. Es la candidata natural a abrirse al profesor.
+     */
     access: { [ROLES.ORG_ADMIN]: WRITE },
   },
 
@@ -145,14 +150,18 @@ export const SECTIONS = {
 }
 
 /**
- * INVARIANTE — las tres secciones cerradas al profesor son EXACTAMENTE las tres
- * que contienen campos monetarios: asignaturas (`monthly_fee`), matrículas
- * (`monthly_fee`) y pagos (`amount`).
+ * INVARIANTE — ninguna sección que vea el profesor contiene campos monetarios.
  *
- * No es casualidad: es el invariante FR-016 de la feature de tenancy, que el
- * servidor ya impone. Antes de abrir cualquiera de las tres al profesor, o de
- * añadir un campo monetario a una sección que sí ve, hay que cambiar primero lo
- * que autoriza el servidor.
+ * Las que sí los tienen son matrículas (`monthly_fee`) y pagos (`amount`), y
+ * ambas le están cerradas. Es el invariante FR-016 de la feature de tenancy, que
+ * el servidor ya impone: antes de añadir un campo monetario a una sección que el
+ * profesor sí ve, hay que cambiar primero lo que autoriza el servidor.
+ *
+ * Asignaturas también está cerrada, pero HOY YA NO POR ESTE MOTIVO: llevaba
+ * `monthly_fee` y esa columna se eliminó al separar el cobro de la asignatura.
+ * El enunciado dejó de ser «las cerradas son exactamente las que llevan dinero»
+ * y pasó a ser «las que llevan dinero están todas cerradas», que es la dirección
+ * que de verdad importa.
  */
 const MONETARY_SECTIONS = ['subjects', 'enrollments', 'payments']
 

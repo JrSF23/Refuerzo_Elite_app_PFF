@@ -117,7 +117,6 @@ trait CreatesOrganizations
             'organization_id' => $organization->getKey(),
             'name' => 'Matemáticas',
             'code' => 'MAT-'.Str::upper(Str::random(6)),
-            'monthly_fee' => 80,
         ], $overrides));
     }
 

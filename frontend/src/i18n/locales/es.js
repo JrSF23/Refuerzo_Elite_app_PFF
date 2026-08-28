@@ -254,8 +254,6 @@ export const es = {
     emptyTitle: 'Todavía no hay asignaturas',
     emptyBody: 'Cada grupo se imparte sobre una asignatura, así que son el primer paso.',
     fields: {
-      // Sin «mensual», por el mismo motivo que en matrículas.
-      fee: 'Tarifa',
       codeHint: 'Identificador corto y único dentro del centro.',
     },
   },
@@ -316,7 +314,10 @@ export const es = {
       // `monthly_fee` y no se toca —es contrato de API—, pero el rótulo no puede
       // afirmar que el cobro es mensual: no todos los centros facturan así.
       amount: 'Monto',
-      amountHint: 'Puede diferir de la tarifa de la asignatura.',
+      // Ya no se compara con «la tarifa de la asignatura»: esa columna se
+      // eliminó porque el cobro va por curso, no por materia. Aquí es donde se
+      // fija el importe, así que la pista tiene que decir eso.
+      amountHint: 'Importe acordado para este alumno en este grupo.',
     },
   },
 
