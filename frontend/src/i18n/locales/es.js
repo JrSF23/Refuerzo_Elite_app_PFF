@@ -35,6 +35,7 @@ export const es = {
     back: 'Volver',
     search: 'Buscar',
     clear: 'Limpiar',
+    view: 'Ver',
     select: 'Seleccione',
     noOptions: 'No hay opciones disponibles',
 
@@ -157,16 +158,58 @@ export const es = {
 
   dashboard: {
     title: 'Panel',
+
+    // El saludo cambia con la hora. Un «Buenos días» fijo a las nueve de la
+    // noche delata que nadie mira la pantalla, y es lo primero que se lee.
+    greetingMorning: '¡Buenos días, {name}!',
+    greetingAfternoon: '¡Buenas tardes, {name}!',
+    greetingEvening: '¡Buenas noches, {name}!',
+
     stats: {
       students: 'Alumnos',
       teachers: 'Profesores',
       groups: 'Grupos',
       attendances: 'Registros de asistencia',
+      attendanceRate: 'Asistencia',
       payments: 'Pagos',
+      pendingPayments: 'Pagos pendientes',
+      needsAttention: 'Requieren atención',
       myGroups: 'Mis grupos',
       myStudents: 'Mis alumnos',
       upcomingSessions: 'Próximas sesiones',
     },
+
+    attendance: {
+      title: 'Asistencia',
+      noTrend: 'Todavía no hay asistencia registrada esta semana.',
+      // Iniciales del día en castellano: el miércoles es X para no chocar con
+      // el martes.
+      days: {
+        mon: 'L',
+        tue: 'M',
+        wed: 'X',
+        thu: 'J',
+        fri: 'V',
+      },
+      // La dirección se dice con palabras y no solo con la flecha: un lector de
+      // pantalla que anuncia «flecha arriba 3,2» no comunica nada.
+      delta: {
+        up: '{value} puntos más que la semana anterior',
+        down: '{value} puntos menos que la semana anterior',
+        flat: 'Igual que la semana anterior',
+      },
+    },
+
+    attention: {
+      title: 'Requiere atención',
+      pendingPayments: '{count} pagos pendientes de cobro',
+      lowAttendance: '{count} alumnos con asistencia inferior al 75%',
+      groupsWithoutTeacher: '{count} grupos sin profesor asignado',
+      // El caso invisible: la ficha del grupo se ve rellena, pero su profesor
+      // imparte otra materia —o ninguna— y por tanto no alcanza el grupo.
+      groupsSubjectMismatch: '{count} grupos cuyo profesor no imparte esa materia',
+    },
+
     recentStudents: 'Últimas altas',
     recentSessions: 'Últimas sesiones',
     recentPayments: 'Últimos pagos',
@@ -425,6 +468,7 @@ export const es = {
     present: 'Presente',
     absent: 'Ausente',
     late: 'Con retraso',
+    excused: 'Justificado',
   },
 
   sessionStatus: {

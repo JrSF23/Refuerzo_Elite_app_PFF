@@ -7,6 +7,7 @@ const attendanceOptions = [
   { value: 'present', label: 'Presente' },
   { value: 'absent', label: 'Ausente' },
   { value: 'late', label: 'Con retraso' },
+  { value: 'excused', label: 'Justificado' },
 ]
 
 const paymentStatusOptions = [

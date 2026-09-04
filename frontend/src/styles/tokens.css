@@ -133,9 +133,10 @@
   --color-info-soft:      #EFF6FF;
 
   /* ── Tipografía ──────────────────────────────────────────────────────────────
-     Cuatro pesos y seis tamaños. La jerarquía se construye combinándolos, no
+     Cuatro pesos y SIETE tamaños. La jerarquía se construye combinándolos, no
      añadiendo valores nuevos:
 
+       cifra destacada     --text-3xl  + semibold   (solo el panel)
        título de página    --text-2xl  + semibold
        título de sección   --text-xl   + semibold
        título de tarjeta   --text-base + semibold
@@ -143,6 +144,13 @@
        texto de trabajo    --text-sm   + normal      (tablas y apoyo)
        etiqueta de campo   --text-sm   + medium
        rótulo y distintivo --text-xs   + semibold
+
+     El escalón `3xl` se añadió para la asistencia del panel. Ahí hace falta un
+     número que se lea antes que el título de su propia tarjeta —es LO que se
+     viene a mirar—, y con `2xl` competía de tú a tú con los indicadores de
+     arriba en vez de destacar sobre ellos. Fuera del panel no debería aparecer:
+     si hace falta en otra pantalla, probablemente el problema sea la jerarquía
+     de esa pantalla y no el tamaño.
      ───────────────────────────────────────────────────────────────────────── */
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
@@ -153,6 +161,7 @@
   --text-lg:   1.125rem;
   --text-xl:   1.25rem;
   --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;   /* cifra destacada del panel */
 
   --weight-normal:   400;
   --weight-medium:   500;

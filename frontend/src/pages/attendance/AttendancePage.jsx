@@ -59,6 +59,7 @@ export function AttendancePage() {
             { value: 'present', label: t('attendanceStatus.present') },
             { value: 'absent', label: t('attendanceStatus.absent') },
             { value: 'late', label: t('attendanceStatus.late') },
+            { value: 'excused', label: t('attendanceStatus.excused') },
           ],
         },
         { name: 'comment', label: t('attendance.fields.comment'), type: 'textarea' },

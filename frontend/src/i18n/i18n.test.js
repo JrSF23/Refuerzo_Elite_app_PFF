@@ -65,9 +65,11 @@ describe('formato de datos', () => {
   })
 
   it('formatea importes con dos decimales y separador de millar', () => {
+    // Termina en la moneda, no en los decimales: `formatAmount` añade el sufijo
+    // FCFA por decisión de producto (ver el comentario en `formatAmount`).
     const formatted = formatAmount(1234.5)
     expect(formatted).toContain('1')
-    expect(formatted).toMatch(/[.,]50$/)
+    expect(formatted).toMatch(/[.,]50 FCFA$/)
   })
 
   it('descarta una fecha inválida en lugar de mostrar «Invalid Date»', () => {

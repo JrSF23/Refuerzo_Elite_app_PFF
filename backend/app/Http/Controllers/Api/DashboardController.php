@@ -6,9 +6,8 @@ use App\Models\Attendance;
 use App\Models\ClassGroup;
 use App\Models\ClassSession;
 use App\Models\Enrollment;
-use App\Models\Payment;
-use App\Models\Student;
 use App\Models\Teacher;
+use App\Support\AdminDashboard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,28 +24,21 @@ class DashboardController
         return $this->adminDashboard();
     }
 
+    /**
+     * El panel de administración es un centro de control, no un escaparate de
+     * tablas: cada dato está para responder a «cómo va el centro» y «qué tengo
+     * que atender hoy».
+     *
+     * Los números se agregan en `App\Support\AdminDashboard`, contra la base y
+     * no sobre lo que quepa en una página. Aquí solo se decide QUIÉN pregunta.
+     *
+     * Ya no se devuelve `recentSessions`: las próximas sesiones son trabajo del
+     * módulo de Sesiones, y en el panel del administrador ocupaban el sitio de lo
+     * que sí necesita mirar.
+     */
     private function adminDashboard(): JsonResponse
     {
-        return response()->json([
-            // Discriminador de vista, no el nombre del rol: el frontend solo
-            // comprueba `=== 'teacher'` y todo lo demás cae en la vista de
-            // administración. Se conserva el valor para no cambiar la forma de la
-            // respuesta sin necesidad (FR-026).
-            'role'           => 'admin',
-            'stats'          => [
-                'students'   => Student::count(),
-                'teachers'   => Teacher::count(),
-                'groups'     => ClassGroup::count(),
-                'attendances'=> Attendance::count(),
-                'payments'   => Payment::count(),
-            ],
-            'recentStudents' => Student::with('guardian')->latest()->take(5)->get(),
-            'recentSessions' => ClassSession::with(['classGroup.subject', 'classGroup.teacher'])
-                ->orderByDesc('session_date')
-                ->take(5)
-                ->get(),
-            'recentPayments' => Payment::with(['student', 'guardian'])->latest()->take(5)->get(),
-        ]);
+        return response()->json(app(AdminDashboard::class)->payload());
     }
 
     private function teacherDashboard($user): JsonResponse

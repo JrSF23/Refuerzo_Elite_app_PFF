@@ -37,7 +37,11 @@ class AttendanceController extends BaseApiController
                 new BelongsToCurrentOrganization(Student::class),
                 Rule::unique('attendances')->ignore($id)->where(fn ($query) => $query->where('class_session_id', request('class_session_id'))),
             ],
-            'status' => ['required', Rule::in(['present', 'absent', 'late'])],
+            // `excused` es la falta JUSTIFICADA, y es un estado por derecho propio: no
+            // es una ausencia sin más —el centro sabe por qué— ni cuenta como haber
+            // asistido. La columna es un `string` sin restricción en base, así que
+            // admitirlo no necesitó migración; la lista de aquí es la única puerta.
+            'status' => ['required', Rule::in(['present', 'absent', 'late', 'excused'])],
             'comment' => ['nullable', 'string'],
         ];
     }

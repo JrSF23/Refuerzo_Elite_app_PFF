@@ -22,7 +22,12 @@ export function Badge({ tone = 'neutral', children }) {
 
 const RECORD_TONES = { active: 'success', inactive: 'neutral' }
 
-const ATTENDANCE_TONES = { present: 'success', late: 'warning', absent: 'error' }
+/**
+ * La falta JUSTIFICADA va en neutro, no en rojo: el centro sabe por qué faltó y
+ * no hay nada que atender. Gastar el rojo en ella lo volvería invisible en la
+ * ausencia que sí lo necesita.
+ */
+const ATTENDANCE_TONES = { present: 'success', late: 'warning', absent: 'error', excused: 'neutral' }
 
 /**
  * Un pago anulado va en tono NEUTRO, no de error: es un estado administrativo
