@@ -934,8 +934,14 @@
   padding: var(--space-3) var(--space-4);
 }
 
+/* El texto de la cabecera se toma del juego de la BARRA, no de `text-inverse`.
+   Son cosas distintas y la diferencia solo se nota en oscuro: `text-inverse`
+   significa «lo contrario del tema», así que con el tema oscuro pasa a ser casi
+   negro. Y el fondo de aquí es `--color-sidebar`, que NO cambia con el tema. El
+   resultado era 1,10:1 —el título del menú, invisible— mientras en claro se veía
+   perfecto. Con el token de la barra da 14,48:1 en los dos temas. */
 .drawer--left .drawer__header {
-  color: var(--color-text-inverse);
+  color: var(--color-sidebar-text);
 }
 
 .drawer__title {
