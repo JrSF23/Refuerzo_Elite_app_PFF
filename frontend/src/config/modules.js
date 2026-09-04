@@ -68,7 +68,7 @@ export const staffRoles = ['super_admin', 'org_admin', 'teacher']
 // sus propias páginas.
 export const platformModules = [
   { key: 'organizations', label: 'Organizaciones', path: '/espacio/organizaciones', roles: ['super_admin'] },
-  { key: 'users', label: 'Cuentas', path: '/espacio/cuentas', roles: ['org_admin'] },
+  { key: 'users', label: 'Usuarios', path: '/espacio/cuentas', roles: ['org_admin'] },
 ]
 
 export const moduleDefinitions = {

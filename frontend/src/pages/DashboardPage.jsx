@@ -41,7 +41,9 @@ export function DashboardPage() {
           primero que anuncia un lector de pantalla— en decir dónde estás, que ya
           sabías. Corto a propósito: nadie lee «aquí tienes el resumen de tu
           centro» dos veces. */}
-      <h1 className="page-title">{t(greetingKey(), { name: user?.name ?? '' })}</h1>
+      <h1 className="page-title page-title--greeting">
+        {t(greetingKey(), { name: user?.name ?? '' })}
+      </h1>
 
       {status === 'loading' ? <LoadingState rows={4} /> : null}
 

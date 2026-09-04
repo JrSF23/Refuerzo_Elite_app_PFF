@@ -44,6 +44,15 @@
   margin-bottom: var(--space-5);
 }
 
+/* El saludo del panel respira más que un título de sección corriente.
+   No es capricho de aire: en el resto de pantallas al título le sigue una barra
+   de herramientas o una tabla, y son parte de lo mismo. Aquí le siguen los
+   indicadores, que son otro bloque —el saludo te sitúa, los números informan— y
+   con la separación de siempre se leían como una sola masa. */
+.page-title--greeting {
+  margin-bottom: var(--space-8);
+}
+
 /* ═══ Límite de error ══════════════════════════════════════════════════════ */
 
 .crash {
@@ -142,19 +151,34 @@
   padding: var(--space-4) var(--space-3);
 }
 
+/* Filete y aire entre grupos. La separación la hacía solo el margen, y con la
+   barra llena —dieciséis entradas para la administración— el ojo perdía dónde
+   acababa un bloque y empezaba el siguiente al recorrerla deprisa.
+
+   El filete se dibuja con una alfa de blanco y no con un token de borde: los
+   `--color-border*` están medidos contra fondo claro, igual que ya ocurría con
+   el separador de la marca. */
 .sidebar__group + .sidebar__group {
-  margin-top: var(--space-5);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid rgb(226 232 240 / 0.08);
 }
 
-/* GESTIÓN, ACTIVIDAD ACADÉMICA, COBROS, ADMINISTRACIÓN. En negrita: a --text-xs
-   y en versalitas, el semibold apenas se distinguía del peso de los enlaces que
-   encabeza, y los grupos no se leían como separaciones. */
+/* GESTIÓN, ACTIVIDAD ACADÉMICA, COBROS, ADMINISTRACIÓN.
+   En negrita: a --text-xs y en versalitas, el semibold apenas se distinguía del
+   peso de los enlaces que encabeza, y los grupos no se leían como separaciones.
+
+   El rótulo sube de `--color-sidebar-muted` a `--color-sidebar-label`: 12,02:1 sobre la
+   barra, frente a los 6,96:1 de antes. Sigue POR DEBAJO del blanco de los
+   enlaces (14,48:1), y esa distancia es deliberada: el encabezado tiene que
+   organizar la lista, no competir con lo que se pulsa. Si igualara a los enlaces,
+   la barra pasaría a leerse como una lista plana de dieciséis elementos. */
 .sidebar__group-label {
   padding: 0 var(--space-3) var(--space-2);
-  color: var(--color-sidebar-muted);
+  color: var(--color-sidebar-label);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 

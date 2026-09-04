@@ -423,7 +423,11 @@ export const es = {
   },
 
   users: {
-    title: 'Cuentas',
+    // «Usuarios» rotula la sección; dentro se sigue hablando de CUENTA, que es
+    // el objeto que se crea. No son sinónimos aquí: una persona puede tener
+    // ficha de profesor sin tener cuenta de acceso, y esa distinción sostiene
+    // todo el vínculo `teachers.user_id`.
+    title: 'Usuarios',
     create: 'Nueva cuenta',
     edit: 'Editar cuenta',
     emptyTitle: 'Todavía no hay cuentas',
@@ -457,7 +461,7 @@ export const es = {
       slugHint: 'Se deriva del nombre si se deja vacío.',
       contactEmail: 'Correo de contacto',
       contactPhone: 'Teléfono de contacto',
-      users: 'Cuentas',
+      users: 'Usuarios',
     },
   },
 
