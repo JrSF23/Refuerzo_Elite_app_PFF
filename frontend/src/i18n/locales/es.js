@@ -298,6 +298,24 @@ export const es = {
     },
   },
 
+  stages: {
+    title: 'Etapas',
+    create: 'Nueva etapa',
+    edit: 'Editar etapa',
+    emptyTitle: 'Todavía no hay etapas',
+    emptyBody: 'La etapa fija lo que paga un alumno. Créelas antes de asignar aulas: Pre-escolar, Primaria, ESBA y Bachillerato son las del sistema educativo de Guinea Ecuatorial.',
+    fields: {
+      name: 'Etapa',
+      fee: 'Cuota del curso',
+      // Lo que evita la pregunta que llega siempre: si es al año o al mes, y si
+      // el importe lo pone el sistema o el centro.
+      feeHint: 'Importe del curso académico completo. Lo fija su centro; se puede cobrar a plazos.',
+      groups: 'Aulas',
+      order: 'Orden',
+      orderHint: 'Orden en que aparecen. Menor primero, para listarlas por nivel y no por alfabeto.',
+    },
+  },
+
   subjects: {
     title: 'Asignaturas',
     create: 'Nueva asignatura',
@@ -321,6 +339,8 @@ export const es = {
       afternoon: 'Tarde',
     },
     fields: {
+      stage: 'Etapa',
+      stageHint: 'Determina la cuota que pagan sus alumnos. Sin etapa, el aula funciona pero sus alumnos no tienen cuota asignada.',
       name: 'Grupo',
       nameHint: 'Como lo llame el centro: «1º ESO», «4º ESO - A».',
       shift: 'Turno',

@@ -18,6 +18,15 @@ export function TutorGroupsPage() {
       columns={[
         { key: 'name', label: t('tutorGroups.fields.name') },
         {
+          key: 'stage',
+          label: t('tutorGroups.fields.stage'),
+          // «Sin asignar» y no un hueco: un aula sin etapa es información —sus
+          // alumnos no tienen cuota— y no un dato que falte por error (FR-027).
+          render: (record) => record.stage?.name ?? (
+            <span className="text-muted">{t('tutorGroups.unassigned')}</span>
+          ),
+        },
+        {
           key: 'shift',
           label: t('tutorGroups.fields.shift'),
           render: (record) => t(`tutorGroups.shifts.${record.shift}`),
@@ -53,6 +62,17 @@ export function TutorGroupsPage() {
           label: t('tutorGroups.fields.name'),
           required: true,
           hint: t('tutorGroups.fields.nameHint'),
+        },
+        {
+          // De la etapa sale lo que paga el alumno. Va justo detrás del nombre
+          // porque es lo que define el aula —«1º PEP» es Primaria— y no un
+          // detalle administrativo del final del formulario.
+          name: 'stage_id',
+          label: t('tutorGroups.fields.stage'),
+          type: 'relation',
+          endpoint: 'stages',
+          optionLabel: (stage) => stage.name,
+          hint: t('tutorGroups.fields.stageHint'),
         },
         {
           name: 'shift',

@@ -121,6 +121,31 @@ class DemoGuineaSeeder extends Seeder
      *
      * @var list<array{0:string,1:string,2:string,3:int}>
      */
+    /**
+     * Las cuatro etapas de cobro del sistema educativo de Guinea Ecuatorial.
+     *
+     * La cuota es del CURSO ACADÉMICO y va por etapa, no por asignatura ni por
+     * curso: del 1º al 6º de PEP se paga lo mismo, y 1º Bach CC vale igual que
+     * 2º Bach Hum.
+     *
+     * Los importes son los de UN centro concreto y sirven para que la demo
+     * enseñe cifras verosímiles. No son una constante del país: cada centro fija
+     * las suyas, y por eso la etapa es una fila editable y no un valor del
+     * código.
+     *
+     * La clave de la izquierda es la que ya usaban `AULAS` y `ASIGNATURAS` para
+     * decidir qué se cursa dónde. `primaria` y `primaria2` son la MISMA etapa de
+     * cobro —se separan solo para que la lectura inicial no llegue a 6º— y aquí
+     * vuelven a juntarse: quien paga no distingue entre ellas.
+     */
+    private const ETAPAS = [
+        'infantil'  => ['Pre-escolar',     99000,  0],
+        'primaria'  => ['Primaria (PEP)', 105000,  1],
+        'primaria2' => ['Primaria (PEP)', 105000,  1],
+        'esba'      => ['ESBA',           110000,  2],
+        'bach'      => ['Bachillerato',   120000,  3],
+    ];
+
     private const AULAS = [
         ['Pre-escolar 1', 'morning',   'infantil',  3],
         ['Pre-escolar 2', 'morning',   'infantil',  4],
@@ -270,6 +295,9 @@ class DemoGuineaSeeder extends Seeder
         DB::table('guardians')->where('organization_id', self::ORG)->delete();
         DB::table('subjects')->where('organization_id', self::ORG)->delete();
         DB::table('teachers')->where('organization_id', self::ORG)->delete();
+
+        // Después de las aulas, que apuntan a ellas.
+        DB::table('stages')->where('organization_id', self::ORG)->delete();
     }
 
     /**
@@ -338,13 +366,55 @@ class DemoGuineaSeeder extends Seeder
      *
      * @return list<array{id:int,etapa:string,edad:int,nombre:string}>
      */
+    /**
+     * Siembra las etapas de cobro y devuelve el id de cada clave.
+     *
+     * `primaria` y `primaria2` apuntan a la MISMA fila: son la misma etapa a
+     * efectos de cobro, y crear dos «Primaria (PEP)» con el mismo precio sería
+     * pedirle al centro que mantenga dos veces el mismo importe.
+     *
+     * @return array<string, int>
+     */
+    private function crearEtapas(\DateTimeInterface $ahora): array
+    {
+        $porNombre = [];
+
+        foreach (self::ETAPAS as [$nombre, $cuota, $orden]) {
+            if (isset($porNombre[$nombre])) {
+                continue;
+            }
+
+            $porNombre[$nombre] = DB::table('stages')->insertGetId([
+                'organization_id' => self::ORG,
+                'name' => $nombre,
+                'fee' => $cuota,
+                'sort_order' => $orden,
+                'created_at' => $ahora,
+                'updated_at' => $ahora,
+            ]);
+        }
+
+        $porClave = [];
+        foreach (self::ETAPAS as $clave => [$nombre, , ]) {
+            $porClave[$clave] = $porNombre[$nombre];
+        }
+
+        return $porClave;
+    }
+
     private function crearAulas(\DateTimeInterface $ahora): array
     {
         $filas = [];
 
-        foreach (self::AULAS as $orden => [$nombre, $turno, , ]) {
+        $etapas = $this->crearEtapas($ahora);
+
+        foreach (self::AULAS as $orden => [$nombre, $turno, $etapa, ]) {
             $filas[] = [
                 'organization_id' => self::ORG,
+                // De aquí sale la cuota del alumno: el aula declara su etapa y
+                // el alumno la hereda, así no puede haber un alumno de
+                // Bachillerato en un aula de Primaria.
+                'stage_id' => $etapas[$etapa],
                 'name' => $nombre,
                 'shift' => $turno,
                 'academic_year' => self::curso(),

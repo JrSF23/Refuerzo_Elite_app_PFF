@@ -132,6 +132,20 @@ export const SECTIONS = {
     access: { [ROLES.ORG_ADMIN]: WRITE, [ROLES.TEACHER]: WRITE },
   },
 
+  /*
+   * La etapa educativa —Pre-escolar, Primaria, ESBA, Bachillerato— es la unidad
+   * de cobro del centro: la cuota va por nivel y no por asignatura. Vive en
+   * COBROS y no en actividad académica porque lo que se administra aquí es el
+   * precio, y por eso está cerrada al profesor como el resto de lo monetario.
+   */
+  stages: {
+    path: '/etapas',
+    endpoint: 'stages',
+    searchable: true,
+    group: 'sectionFinance',
+    access: { [ROLES.ORG_ADMIN]: WRITE },
+  },
+
   payments: {
     path: '/pagos',
     endpoint: 'payments',
@@ -171,7 +185,7 @@ export const SECTIONS = {
  * y pasó a ser «las que llevan dinero están todas cerradas», que es la dirección
  * que de verdad importa.
  */
-const MONETARY_SECTIONS = ['subjects', 'enrollments', 'payments']
+const MONETARY_SECTIONS = ['stages', 'subjects', 'enrollments', 'payments']
 
 export function isMonetarySection(key) {
   return MONETARY_SECTIONS.includes(key)

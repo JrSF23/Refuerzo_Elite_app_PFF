@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\GuardianController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherController;
@@ -58,6 +59,9 @@ Route::prefix('v1')->group(function (): void {
         });
 
         Route::middleware(['tenant', 'role.any:org_admin'])->group(function (): void {
+            // La etapa lleva la cuota del curso, así que es sección de
+            // administración: el profesor no ve ningún campo monetario (FR-016).
+            Route::apiResource('stages', StageController::class);
             Route::apiResource('guardians', GuardianController::class);
             Route::apiResource('teachers', TeacherController::class);
             Route::apiResource('subjects', SubjectController::class);
