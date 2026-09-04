@@ -1012,6 +1012,100 @@
   color: var(--color-error-text);
 }
 
+/* ── Identidad dentro del menú ────────────────────────────────────────────────
+   En la cabecera el nombre se oculta por debajo de 640 px, así que en móvil este
+   es el único sitio donde comprobar con qué cuenta se trabaja. No es pulsable:
+   es un rótulo, y darle aspecto de opción invitaría a pulsarlo. */
+.dropdown__identity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-1);
+}
+
+.dropdown__identity-name {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.dropdown__identity-role {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+/* ── Interruptor de apariencia ───────────────────────────────────────────── */
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  text-align: left;
+}
+
+.theme-toggle:hover {
+  background: var(--color-surface-sunken);
+}
+
+.theme-toggle__icon {
+  width: 1rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.theme-toggle__label {
+  flex: 1;
+}
+
+/* El carril y el pomo. El estado se lee por POSICIÓN además de por color, de
+   modo que el interruptor sigue siendo legible en escala de grises o con
+   daltonismo: el pomo a la izquierda es apagado, a la derecha encendido. */
+.theme-toggle__switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 1.125rem;
+  border-radius: var(--radius-full);
+  background: var(--color-border-strong);
+  transition: background var(--transition-color);
+}
+
+.theme-toggle[aria-checked='true'] .theme-toggle__switch {
+  background: var(--color-primary);
+}
+
+.theme-toggle__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  transition: transform var(--transition-move);
+}
+
+.theme-toggle[aria-checked='true'] .theme-toggle__knob {
+  transform: translateX(0.875rem);
+}
+
+/* Quien pide menos movimiento no necesita ver deslizarse el pomo para entender
+   que cambió de lado. */
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle__knob {
+    transition: none;
+  }
+}
+
 /* ═══ Avisos ═══════════════════════════════════════════════════════════════ */
 
 .toast-region {

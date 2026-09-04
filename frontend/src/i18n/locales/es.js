@@ -156,6 +156,13 @@ export const es = {
     missingBody: 'Su cuenta no está asignada a ningún centro. Contacte con la administración.',
   },
 
+  theme: {
+    // «Modo oscuro» y no «Apariencia»: el control es una casilla, y
+    // `aria-checked` tiene que responder a una pregunta de sí o no. «Apariencia:
+    // activada» no significa nada.
+    darkMode: 'Modo oscuro',
+  },
+
   dashboard: {
     title: 'Panel',
 

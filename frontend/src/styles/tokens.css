@@ -232,6 +232,123 @@
   --focus-offset: 2px;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   MODO OSCURO
+
+   Solo se redefine COLOR. Tipografía, espaciado, radios y layout son los mismos:
+   un tema no debe mover nada de sitio, o deja de ser el mismo producto con otra
+   luz y pasa a ser otra pantalla.
+
+   ── Por qué un atributo y no `prefers-color-scheme` ─────────────────────────
+
+   La paleta vive en un único bloque, `[data-theme="dark"]`, y quien decide si se
+   aplica es el guion de `index.html`: lee la preferencia guardada y, si no hay
+   ninguna, la del sistema. Con una media query haría falta duplicar la paleta
+   —una vez para el atributo y otra para la preferencia del sistema— y dos copias
+   de treinta colores acaban divergiendo en cuanto alguien ajusta una sola.
+
+   ── La separación la hacen los BORDES, no el relleno ────────────────────────
+
+   Entre tonos casi negros la fórmula de contraste de WCAG se comprime: la
+   tarjeta sobre el fondo da 1,16:1 y la barra sobre el fondo 1,10:1, por mucho
+   que se separen los valores. En claro el relleno basta para distinguir
+   superficies; aquí no, y por eso los bordes suben de peso en vez de bajar. Es
+   la diferencia real entre los dos temas, no un ajuste de gusto.
+
+   ── Contrastes medidos, igual que en el tema claro ──────────────────────────
+
+   Calculados sobre la luminancia relativa de cada pareja concreta, no
+   estimados. Mínimos de WCAG 2.2: 4,5:1 para texto, 3:1 para lo no textual que
+   transmite información.
+
+     texto        sobre fondo 16,64:1 · tarjeta 14,31:1 · hundido 12,61:1
+     secundario   sobre fondo  9,96:1 · tarjeta  8,56:1 · hundido  7,54:1
+     atenuado     sobre fondo  6,84:1 · tarjeta  5,88:1 · hundido  5,18:1
+     acento       sobre tarjeta 6,62:1
+     éxito        sobre tarjeta 9,66:1
+     aviso        sobre tarjeta 10,08:1
+     error        sobre tarjeta 6,08:1
+     borde campo  sobre tarjeta 4,93:1   (exige 3:1)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* ── Superficies ─────────────────────────────────────────────────────────── */
+  --color-bg:             #070C16;
+  --color-surface:        #151E32;
+  --color-surface-sunken: #1E2842;
+
+  /* ── Navegación — SIN CAMBIOS ────────────────────────────────────────────────
+     La barra lateral ya era la superficie oscura del tema claro, con sus
+     contrastes medidos y cumpliendo. Repintarla en oscuro sería trabajo para
+     empeorarla: lo único que cambia es que ahora el contenido también es oscuro,
+     así que el fondo de la aplicación baja POR DEBAJO de ella para que la barra
+     siga leyéndose como una región aparte y no como más de lo mismo.
+     ───────────────────────────────────────────────────────────────────────── */
+
+  /* ── Texto ───────────────────────────────────────────────────────────────────
+     Ni blanco puro ni gris apagado. El blanco puro sobre casi negro produce
+     halo —el texto vibra en pantallas brillantes y cansa en sesiones largas, que
+     es justo el caso de uso que motiva el modo oscuro—, así que el nivel
+     principal se queda un punto por debajo.
+     ───────────────────────────────────────────────────────────────────────── */
+  --color-text:           #E8EDF5;
+  --color-text-secondary: #AEBACB;
+  --color-text-muted:     #8B9AAF;
+  --color-text-inverse:   #070C16;
+
+  /* ── Bordes — el trabajo pesado del tema ─────────────────────────────────── */
+  --color-border:         #2C3A57;
+  --color-border-strong:  #3D4E70;
+  --color-border-control: #7C8CA6;
+
+  /* ── Acento ──────────────────────────────────────────────────────────────────
+     El azul de marca #2563EB da 2,54:1 sobre la tarjeta oscura: ilegible. Sube
+     dos escalones. El de hover ACLARA en vez de oscurecer, porque sobre fondo
+     oscuro «más intenso» es más claro, no más negro.
+     ───────────────────────────────────────────────────────────────────────── */
+  --color-primary:         #60A5FA;
+  --color-primary-hover:   #93C5FD;
+  --color-primary-soft:    #111F38;
+
+  /* ── Estados ─────────────────────────────────────────────────────────────────
+     Se invierte el papel de las variantes: en claro, `-text` era el color
+     OSCURECIDO hasta cumplir sobre blanco; aquí es el ACLARADO hasta cumplir
+     sobre la tarjeta. Los fondos `-soft` dejan de ser pasteles y pasan a ser
+     tintes profundos del mismo tono, porque un pastel sobre fondo oscuro es una
+     mancha luminosa que reclama más atención que el propio contenido.
+     ───────────────────────────────────────────────────────────────────────── */
+  --color-success:        #22C55E;
+  --color-success-text:   #4ADE80;
+  --color-success-soft:   #0C2318;
+
+  --color-warning:        #F59E0B;
+  --color-warning-text:   #FBBF24;
+  --color-warning-soft:   #2A2008;
+
+  --color-error:          #EF4444;
+  --color-error-text:     #F87171;
+  --color-error-soft:     #2C1414;
+
+  --color-info:           #3B82F6;
+  --color-info-text:      #60A5FA;
+  --color-info-soft:      #111F38;
+
+  /* ── Elevación ───────────────────────────────────────────────────────────────
+     Una sombra navy translúcida sobre casi negro no se ve. Pasan a negro puro y
+     más opacas: sin esto, lo que flota —diálogos, menús, el panel deslizante—
+     dejaría de distinguirse de lo que hay detrás justo cuando más importa.
+     ───────────────────────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.40);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.50);
+  --shadow-lg: 0 10px 20px -5px rgb(0 0 0 / 0.60);
+
+  /* Más opaco que en claro: sobre fondo oscuro, un velo al 45 % apenas separa el
+     diálogo de la pantalla que hay debajo. */
+  --overlay: rgb(0 0 0 / 0.65);
+}
+
 /* Puntos de ruptura, documentados aquí para que exista un único sitio donde
    consultarlos. CSS no permite usar variables en `@media`, así que los valores
    se repiten en las media queries; estas declaraciones son la referencia.
