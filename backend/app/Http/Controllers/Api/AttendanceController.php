@@ -14,6 +14,18 @@ class AttendanceController extends BaseApiController
 {
     protected string $modelClass = Attendance::class;
     protected array $with = ['classSession.classGroup', 'student'];
+    /**
+     * Se busca por el alumno y por la sesión, que es como se pregunta: «la falta
+     * de Ana» o «la asistencia del repaso del martes». `comment` es la única
+     * columna propia con texto y no se incluye: nadie recuerda una asistencia por
+     * lo que se anotó en ella.
+     */
+    protected array $searchable = [
+        'student.first_name',
+        'student.last_name',
+        'classSession.title',
+        'classSession.classGroup.name',
+    ];
     protected string $entityLabel = 'attendance';
 
     protected function rules(?int $id = null): array

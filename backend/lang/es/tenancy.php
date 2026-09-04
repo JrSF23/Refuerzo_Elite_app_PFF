@@ -32,6 +32,11 @@ return [
         'representative_other_group' => 'El alumno seleccionado pertenece a otro grupo. El delegado debe ser alumno de este grupo.',
     ],
 
+    // ── Sesiones de clase ────────────────────────────────────────────────────
+    'class_sessions' => [
+        'already_taught' => 'Esta sesión ya está marcada como impartida. El marcado no se deshace: si es un error, la administración debe eliminar la sesión.',
+    ],
+
     // ── Pagos ────────────────────────────────────────────────────────────────
     'payments' => [
         'enrollment_mismatch' => 'La matrícula seleccionada no pertenece a este alumno.',

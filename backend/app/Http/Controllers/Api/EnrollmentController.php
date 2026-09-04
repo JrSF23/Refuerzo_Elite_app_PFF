@@ -12,6 +12,17 @@ class EnrollmentController extends BaseApiController
 {
     protected string $modelClass = Enrollment::class;
     protected array $with = ['student', 'classGroup.subject', 'classGroup.teacher'];
+    /**
+     * Alumno y grupo: las dos puntas de una matrícula, y las dos por las que se
+     * pregunta. El código del grupo entra porque en secretaría se maneja tanto el
+     * nombre como el código.
+     */
+    protected array $searchable = [
+        'student.first_name',
+        'student.last_name',
+        'classGroup.name',
+        'classGroup.code',
+    ];
     protected string $entityLabel = 'enrollment';
 
     protected function rules(?int $id = null): array

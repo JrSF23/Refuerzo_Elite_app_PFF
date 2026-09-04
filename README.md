@@ -22,7 +22,11 @@ Une organisation peut être **suspendue** ou **supprimée** (suppression logique
 
 Un compte appartient à **une seule** organisation. Une personne travaillant dans deux centres a besoin de deux comptes avec des emails distincts : l'email d'un compte est unique sur toute la plateforme, tandis que les emails d'élèves, professeurs et tuteurs, ainsi que les codes de matière et de groupe, sont uniques **par organisation** — deux centres peuvent donc utiliser « MAT-1 » simultanément.
 
-Les groupes qu'un enseignant « enseigne » sont ceux de la fiche professeur liée à son compte (`teachers.user_id`). Un compte enseignant **sans fiche liée ne voit aucun groupe ni aucun élève** : en cas de doute, l'accès se ferme, il ne s'ouvre pas.
+Les groupes qu'un enseignant « enseigne » sont ceux qui remplissent **les deux** conditions : ils sont assignés à la fiche professeur liée à son compte (`teachers.user_id`) **et** leur matière est celle de cette fiche (`teachers.subject_id`). La matière habilite, le groupe délimite — deux professeurs de mathématiques ne se rejoignent donc jamais : ils partagent la matière et échouent sur le groupe.
+
+Chacun crée ainsi ses propres séances depuis son propre compte, et uniquement dans ses groupes. Le contrôle porte sur le `class_group_id` **de la requête**, à la création comme à la modification : sans cela, un PUT permettrait de déplacer une séance vers le groupe d'un collègue.
+
+Un compte enseignant **sans fiche liée, sans matière ou sans groupe ne voit aucun groupe ni aucun élève** : en cas de doute, l'accès se ferme, il ne s'ouvre pas. La règle est définie à un seul endroit, `App\Support\TeacherScope`, dont dépendent aussi bien les policies que le filtrage des listes.
 
 ## Stack
 

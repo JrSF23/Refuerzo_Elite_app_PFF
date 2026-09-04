@@ -39,9 +39,25 @@ class AttendancePolicy
         return $this->canManage($user, request()->integer('class_session_id'));
     }
 
+    /**
+     * Origen y destino, por el mismo motivo que en ClassSessionPolicy: mirar solo
+     * la sesión que el registro tiene AHORA dejaba moverlo con un PUT a una sesión
+     * de otro profesor, y la petición se aceptaba porque en ese momento el
+     * registro todavía era suyo.
+     */
     public function update(User $user, Attendance $attendance): bool
     {
-        return $this->canManage($user, (int) $attendance->class_session_id);
+        if (! $this->canManage($user, (int) $attendance->class_session_id)) {
+            return false;
+        }
+
+        if ($this->isOrganizationAdmin($user)) {
+            return true;
+        }
+
+        $target = request()->integer('class_session_id');
+
+        return $target === 0 || $this->canManage($user, $target);
     }
 
     public function delete(User $user, Attendance $attendance): bool
@@ -68,6 +84,6 @@ class AttendancePolicy
         $classGroupId = ClassSession::query()->whereKey($classSessionId)->value('class_group_id');
 
         return $classGroupId !== null
-            && in_array((int) $classGroupId, $this->taughtClassGroupIds($user), true);
+            && $this->reachesClassGroup($user, (int) $classGroupId);
     }
 }

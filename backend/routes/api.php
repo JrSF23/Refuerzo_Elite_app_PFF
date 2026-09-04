@@ -49,6 +49,10 @@ Route::prefix('v1')->group(function (): void {
             // porque no lleva ningún campo monetario.
             Route::apiResource('tutor-groups', TutorGroupController::class)->only(['index', 'show']);
             Route::apiResource('class-groups', ClassGroupController::class)->only(['index', 'show']);
+            // Acto propio y deliberado, no un campo del formulario: marcar una
+            // sesión como impartida es DEFINITIVO. Va antes del apiResource por
+            // legibilidad; no colisiona con ninguna de sus rutas.
+            Route::post('/class-sessions/{id}/taught', [ClassSessionController::class, 'markTaught']);
             Route::apiResource('class-sessions', ClassSessionController::class);
             Route::apiResource('attendances', AttendanceController::class);
         });

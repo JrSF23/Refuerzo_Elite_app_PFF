@@ -8,8 +8,10 @@ import { ResourcePage } from '../../components/data/ResourcePage.jsx'
  * CERRADA AL PROFESOR: lleva `monthly_fee`, y es una de las tres entidades con
  * campos monetarios que el servidor le veda.
  *
- * Sin caja de búsqueda: el endpoint no declara campos buscables, así que el
- * parámetro se ignoraría. Ofrecerla sería mentir sobre lo que hace.
+ * Con caja de búsqueda: el servidor busca por alumno y por grupo, que son las dos
+ * puntas de una matrícula y las dos por las que se pregunta. Ninguno de esos
+ * textos está en la fila —viven en `students` y `class_groups`—, y por eso la
+ * caja no existía hasta que `$searchable` supo atravesar relaciones.
  */
 export function EnrollmentsPage() {
   return (

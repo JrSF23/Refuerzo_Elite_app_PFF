@@ -513,6 +513,8 @@ class DemoGuineaSeeder extends Seeder
 
         DB::table('class_groups')->insert($filas);
 
+        $this->asignarMateriaALasFichas($filas);
+
         $ids = DB::table('class_groups')->where('organization_id', self::ORG)
             ->orderBy('id')->pluck('id')->all();
 
@@ -522,6 +524,39 @@ class DemoGuineaSeeder extends Seeder
         }
 
         return $salida;
+    }
+
+    /**
+     * Escribe en cada ficha de profesor la materia que de verdad imparte.
+     *
+     * Hasta ahora la ficha solo llevaba `specialty`, texto libre repartido en
+     * rueda sobre la lista de asignaturas, que NO coincidía con la materia del
+     * grupo que le tocaba: eran dos ruedas de longitudes distintas. Daba igual
+     * mientras fuese decorativo, pero la materia decide ahora a qué grupos llega
+     * el profesor, así que las dos salen del grupo y no pueden contradecirse.
+     *
+     * Los profesores que se quedan sin grupo —hay más fichas que grupos— quedan
+     * sin materia, que es el estado correcto: no imparten nada todavía.
+     *
+     * @param list<array<string, mixed>> $filas
+     */
+    private function asignarMateriaALasFichas(array $filas): void
+    {
+        $materiaPorProfesor = [];
+
+        foreach ($filas as $fila) {
+            $materiaPorProfesor[$fila['teacher_id']] ??= $fila['subject_id'];
+        }
+
+        $nombres = DB::table('subjects')->where('organization_id', self::ORG)
+            ->pluck('name', 'id')->all();
+
+        foreach ($materiaPorProfesor as $profesorId => $materiaId) {
+            DB::table('teachers')->where('id', $profesorId)->update([
+                'subject_id' => $materiaId,
+                'specialty' => $nombres[$materiaId] ?? null,
+            ]);
+        }
     }
 
     /**

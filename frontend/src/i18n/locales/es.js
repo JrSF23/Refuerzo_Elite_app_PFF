@@ -243,6 +243,7 @@ export const es = {
     fields: {
       fullName: 'Profesor',
       specialty: 'Especialidad',
+      subjectHint: 'Decide a qué grupos y sesiones llega su cuenta. Sin materia, el profesor entra pero no ve ningún grupo.',
       bio: 'Presentación',
     },
   },
@@ -334,7 +335,13 @@ export const es = {
       startsAt: 'Hora de inicio',
       endsAt: 'Hora de fin',
       room: 'Aula',
+      taught: 'Impartida',
     },
+    markTaught: 'Marcar impartida',
+    markTitle: 'Marcar «{name}» como impartida',
+    marked: 'Sesión marcada como impartida.',
+    markConfirm: 'Marcar «{name}» como impartida? Esta marca no se puede deshacer.',
+    taughtBy: 'Marcada por {name}',
   },
 
   attendance: {
@@ -418,6 +425,11 @@ export const es = {
     present: 'Presente',
     absent: 'Ausente',
     late: 'Con retraso',
+  },
+
+  sessionStatus: {
+    taught: 'Impartida',
+    pending: 'Pendiente',
   },
 
   paymentStatus: {

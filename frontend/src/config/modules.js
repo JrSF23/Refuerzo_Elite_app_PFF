@@ -121,6 +121,7 @@ export const moduleDefinitions = {
     permissions: orgAdminOnlyPermissions,
     columns: [
       { key: 'full_name', label: 'Profesor' },
+      { key: 'subject.name', label: 'Materia' },
       { key: 'specialty', label: 'Especialidad' },
       { key: 'phone', label: 'Teléfono' },
       { key: 'email', label: 'Correo' },
@@ -130,6 +131,9 @@ export const moduleDefinitions = {
       { name: 'last_name', label: 'Apellidos', type: 'text', required: true },
       { name: 'email', label: 'Correo', type: 'email' },
       { name: 'phone', label: 'Teléfono', type: 'text' },
+      // La materia NO es descriptiva: con los grupos asignados decide a qué
+      // sesiones llega el profesor. `specialty` sí lo es, y se queda.
+      { name: 'subject_id', label: 'Materia', type: 'select', source: 'subjects', optionLabel: 'name', optionValue: 'id' },
       { name: 'specialty', label: 'Especialidad', type: 'text' },
       { name: 'bio', label: 'Presentación', type: 'textarea' },
     ],
@@ -201,6 +205,10 @@ export const moduleDefinitions = {
       { key: 'class_group.name', label: 'Grupo' },
       { key: 'session_date', label: 'Fecha' },
       { key: 'room', label: 'Aula' },
+      // Derivada de `taught_at`: nulo es pendiente. No es un campo del
+      // formulario — se marca con POST /class-sessions/{id}/taught, y no se
+      // deshace.
+      { key: 'taught_at', label: 'Impartida' },
     ],
     fields: [
       { name: 'class_group_id', label: 'Grupo', type: 'select', source: 'class-groups', optionLabel: 'name', optionValue: 'id', required: true },

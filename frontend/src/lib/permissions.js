@@ -24,10 +24,18 @@ const WRITE = 'write'
  * Secciones de la aplicación.
  *
  * `path` es la ruta; `endpoint`, el recurso de la API; `searchable` indica si el
- * endpoint admite búsqueda, y de ahí depende que se muestre la caja (FR-024):
- * en matrículas, sesiones, asistencia y pagos la API ignora el parámetro porque
- * esos controladores no declaran campos buscables, así que ofrecerla sería
- * mentir al usuario.
+ * endpoint admite búsqueda, y de ahí depende que se muestre la caja (FR-024).
+ *
+ * Ya no hay ninguna sección sin búsqueda. Matrículas, sesiones, asistencia y
+ * pagos la tenían a `false` porque sus controladores no declaraban campos
+ * buscables, y ofrecer una caja que el servidor ignora es mentirle al usuario.
+ * El motivo de fondo era que en esas cuatro lo que se teclea —el nombre del
+ * alumno, el del grupo— no está en su fila sino en la tabla vecina; ahora
+ * `$searchable` admite relaciones y las cuatro declaran las suyas.
+ *
+ * Esta bandera SIGUE teniendo que cuadrar con el servidor: ponerla a `true` en
+ * una sección cuyo controlador no declare `$searchable` devuelve la caja a ser
+ * un adorno que no filtra nada.
  */
 export const SECTIONS = {
   dashboard: {
@@ -104,7 +112,7 @@ export const SECTIONS = {
   enrollments: {
     path: '/matriculas',
     endpoint: 'enrollments',
-    searchable: false,
+    searchable: true,
     group: 'sectionAcademic',
     // Cerrada al profesor: lleva `monthly_fee` (FR-037).
     access: { [ROLES.ORG_ADMIN]: WRITE },
@@ -112,14 +120,14 @@ export const SECTIONS = {
   sessions: {
     path: '/sesiones',
     endpoint: 'class-sessions',
-    searchable: false,
+    searchable: true,
     group: 'sectionAcademic',
     access: { [ROLES.ORG_ADMIN]: WRITE, [ROLES.TEACHER]: WRITE },
   },
   attendance: {
     path: '/asistencia',
     endpoint: 'attendances',
-    searchable: false,
+    searchable: true,
     group: 'sectionAcademic',
     access: { [ROLES.ORG_ADMIN]: WRITE, [ROLES.TEACHER]: WRITE },
   },
@@ -127,7 +135,7 @@ export const SECTIONS = {
   payments: {
     path: '/pagos',
     endpoint: 'payments',
-    searchable: false,
+    searchable: true,
     group: 'sectionFinance',
     // Cerrada al profesor: lleva `amount` (FR-037).
     access: { [ROLES.ORG_ADMIN]: WRITE },
