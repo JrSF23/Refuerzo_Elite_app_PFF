@@ -47,21 +47,64 @@ class DemoGuineaSeeder extends Seeder
     private const ORG = 1;
 
     /**
-     * El curso que se enseña es el 2025-2026, ya terminado, y no el que viene.
+     * El curso se ancla a HOY, no a un año escrito a mano.
      *
-     * No es un descuido: el 2026-2027 empieza el 14 de septiembre y hoy todavía
-     * no ha llegado, así que un centro en ese curso no tendría ni una sesión
-     * impartida ni una asistencia registrada — las dos pantallas saldrían
-     * vacías justo cuando hay que enseñarlas.
+     * Antes eran tres constantes fijas apuntando al curso 2025-2026, elegido a
+     * propósito por estar ya terminado: así había sesiones impartidas y
+     * asistencia registrada que enseñar, en vez de un curso recién empezado y
+     * vacío. El razonamiento era bueno mientras el panel mostraba listas de lo
+     * último ocurrido.
+     *
+     * Dejó de serlo cuando el panel pasó a medir la asistencia de los ÚLTIMOS
+     * TREINTA DÍAS. Un curso que terminó en junio no tiene ni un registro dentro
+     * de esa ventana, así que la tarjeta de asistencia salía vacía —correcta,
+     * porque de verdad no hay nada que medir, y con aspecto de estar a medio
+     * hacer justo en lo primero que se mira—. Y con fechas fijas el problema
+     * volvía solo con el paso de los meses: la demo caducaba sin que nadie
+     * tocara nada.
+     *
+     * Ahora el curso ENVUELVE la fecha de hoy —empezó hace ocho meses, termina
+     * dentro de dos— y las sesiones se cuentan hacia atrás desde hoy. La demo
+     * enseña un centro en mitad del curso, que es lo que un centro es casi
+     * siempre, y sigue estando viva dentro de un año.
      */
-    private const CURSO = '2025-2026';
+    private static function cursoInicio(): Carbon
+    {
+        return Carbon::today()->subMonths(9)->startOfMonth()->addDays(14);
+    }
 
-    private const CURSO_INICIO = '2025-09-15';
+    private static function cursoFin(): Carbon
+    {
+        return Carbon::today()->addMonths(3)->startOfMonth()->addDays(18);
+    }
 
-    private const CURSO_FIN = '2026-06-19';
+    /**
+     * Rótulo del curso: los dos años naturales que abarca.
+     *
+     * El tramo es de doce meses, así que SIEMPRE cruza un cambio de año y los
+     * dos números salen distintos. Con un tramo más corto podría caer entero
+     * dentro del mismo año natural y el rótulo quedaría en «2026-2026», que en
+     * un centro no significa nada.
+     */
+    private static function curso(): string
+    {
+        return self::cursoInicio()->year . '-' . self::cursoFin()->year;
+    }
 
-    /** Cuentas que sobreviven: superadmin, admin y admin.a. */
-    private const CUENTAS_QUE_SE_QUEDAN = [1, 2, 3];
+    /**
+     * Cuentas que sobreviven a la limpieza.
+     *
+     * 1, 2 y 3 son superadmin, admin y admin.a: la infraestructura de la demo.
+     *
+     * La 15 NO es de la demo: la creó una persona del sector que está evaluando
+     * la plataforma durante la fase de opiniones. Sin ella en esta lista, cada
+     * resiembra le quitaba el acceso sin previo aviso y sin forma de recuperarlo.
+     *
+     * Es el mismo criterio que ya protege a las organizaciones 3 y 4 en
+     * `limpiarCuentas()`, aplicado a una cuenta que vive DENTRO del centro de
+     * demostración y que por eso se colaba en el borrado.
+     */
+    private const CUENTAS_QUE_SE_QUEDAN = [1, 2, 3, 15];
 
     private const ALUMNOS = 150;
 
@@ -304,7 +347,7 @@ class DemoGuineaSeeder extends Seeder
                 'organization_id' => self::ORG,
                 'name' => $nombre,
                 'shift' => $turno,
-                'academic_year' => self::CURSO,
+                'academic_year' => self::curso(),
                 'sort_order' => $orden,
                 'status' => 'active',
                 'created_at' => $ahora,
@@ -416,7 +459,7 @@ class DemoGuineaSeeder extends Seeder
                 'phone' => $this->telefono(),
                 // La edad sale del aula. Un alumno de Pre-escolar nace hace tres
                 // años, no hace quince.
-                'date_of_birth' => Carbon::parse(self::CURSO_INICIO)
+                'date_of_birth' => Carbon::parse(self::cursoInicio()->toDateString())
                     ->subYears($aula['edad'])->subDays(mt_rand(0, 364))->toDateString(),
                 'school_name' => ['Colegio Nacional Rey Malabo', 'IES Rey Boncoro', 'Colegio Claret', 'IES Carlos Lwanga'][mt_rand(0, 3)],
                 'school_level' => $aula['nombre'],
@@ -497,11 +540,11 @@ class DemoGuineaSeeder extends Seeder
                     'teacher_id' => $profesores[$n % count($profesores)],
                     'name' => $nombreMateria . ' — ' . $turno . ' ' . ($t % 2 === 0 ? 'A' : 'B'),
                     'code' => 'RE-' . $codigo . '-' . ($n + 1),
-                    'academic_year' => self::CURSO,
+                    'academic_year' => self::curso(),
                     'schedule' => $turno . ' · ' . $horario,
                     'capacity' => 20,
-                    'start_date' => self::CURSO_INICIO,
-                    'end_date' => self::CURSO_FIN,
+                    'start_date' => self::cursoInicio()->toDateString(),
+                    'end_date' => self::cursoFin()->toDateString(),
                     'status' => 'active',
                     'created_at' => $ahora,
                     'updated_at' => $ahora,
@@ -599,7 +642,7 @@ class DemoGuineaSeeder extends Seeder
                     'organization_id' => self::ORG,
                     'student_id' => $alumno['id'],
                     'class_group_id' => $g['id'],
-                    'enrolled_at' => self::CURSO_INICIO,
+                    'enrolled_at' => self::cursoInicio()->toDateString(),
                     'monthly_fee' => $g['fee'],
                     'status' => 'active',
                     'created_at' => $ahora,
@@ -635,11 +678,19 @@ class DemoGuineaSeeder extends Seeder
 
         foreach ($grupos as $i => $g) {
             for ($s = 0; $s < 4; $s++) {
-                // Hacia atrás desde el final del curso, semana a semana. Las
-                // sesiones tienen que caer DENTRO del curso: una clase fechada
-                // fuera de sus propias fechas de inicio y fin es de las cosas
-                // que alguien del sector detecta en la primera mirada.
-                $dia = Carbon::parse(self::CURSO_FIN)->subDays(7 + $s * 7 + ($i % 5));
+                // Hacia atrás desde HOY, semana a semana.
+                //
+                // Antes se contaba desde el final del curso, que estaba en el
+                // pasado y funcionaba. Ahora el curso termina dentro de tres
+                // meses, así que contar desde su fin daría sesiones FUTURAS: un
+                // centro con la asistencia ya registrada de clases que no se han
+                // dado, y el panel midiendo un mes en el que no ha pasado nada.
+                //
+                // Desde hoy, las cuatro tandas caen dentro de las últimas cinco
+                // semanas —la ventana que mide el panel— y el desplazamiento
+                // `$i % 5` las reparte de lunes a viernes en vez de amontonarlas
+                // todas en el mismo día.
+                $dia = Carbon::today()->subDays($s * 7 + ($i % 5));
 
                 // Y en día lectivo: nadie da refuerzo en sábado o domingo.
                 if ($dia->isSunday()) {
