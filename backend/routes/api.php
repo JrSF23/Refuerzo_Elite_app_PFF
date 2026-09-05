@@ -60,6 +60,8 @@ Route::prefix('v1')->group(function (): void {
             // Pasar lista: la clase entera de una vez, en lugar de un alta por
             // alumno. La lista la compone el servidor con los matriculados del
             // grupo, así que no se puede registrar a quien no está en él.
+            // Histórico: las listas ya pasadas, con su reparto por estado.
+            Route::get('/attendance-rolls', [SessionRollController::class, 'index']);
             Route::get('/class-sessions/{id}/roll', [SessionRollController::class, 'show']);
             Route::post('/class-sessions/{id}/roll', [SessionRollController::class, 'store']);
             Route::apiResource('class-sessions', ClassSessionController::class);

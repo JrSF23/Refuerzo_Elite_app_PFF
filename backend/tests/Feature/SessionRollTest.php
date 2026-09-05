@@ -187,6 +187,87 @@ class SessionRollTest extends TestCase
             ->assertStatus(422);
     }
 
+    // ── Histórico de listas ────────────────────────────────────────────────
+
+    /**
+     * Solo salen las sesiones CON lista pasada. Una sesión sin asistencia no es
+     * una lista, y mezclarlas convertiría el histórico en el listado de sesiones
+     * que ya existe.
+     */
+    public function test_the_history_only_shows_sessions_with_a_roll(): void
+    {
+        $sinLista = $this->createClassSession($this->orgA, $this->group, ['title' => 'Sin pasar']);
+
+        $this->actingWithToken($this->adminToken)
+            ->postJson("/api/v1/class-sessions/{$this->session->getKey()}/roll", [
+                'entries' => [['student_id' => $this->students[0]->getKey(), 'status' => 'present']],
+            ])
+            ->assertOk();
+
+        $ids = array_column(
+            $this->actingWithToken($this->adminToken)->getJson('/api/v1/attendance-rolls')->json('data'),
+            'id'
+        );
+
+        $this->assertContains($this->session->getKey(), $ids);
+        $this->assertNotContains($sinLista->getKey(), $ids);
+    }
+
+    /** El reparto por estado lo cuenta el servidor, para verlo sin abrir la lista. */
+    public function test_the_history_carries_the_breakdown_by_status(): void
+    {
+        $this->actingWithToken($this->adminToken)
+            ->postJson("/api/v1/class-sessions/{$this->session->getKey()}/roll", [
+                'entries' => [
+                    ['student_id' => $this->students[0]->getKey(), 'status' => 'present'],
+                    ['student_id' => $this->students[1]->getKey(), 'status' => 'present'],
+                    ['student_id' => $this->students[2]->getKey(), 'status' => 'absent'],
+                ],
+            ])
+            ->assertOk();
+
+        $fila = collect(
+            $this->actingWithToken($this->adminToken)->getJson('/api/v1/attendance-rolls')->json('data')
+        )->firstWhere('id', $this->session->getKey());
+
+        $this->assertSame(3, $fila['attendances_count']);
+        $this->assertSame(2, $fila['present_count']);
+        $this->assertSame(1, $fila['absent_count']);
+        $this->assertSame(0, $fila['late_count']);
+        $this->assertSame(0, $fila['excused_count']);
+    }
+
+    /**
+     * El histórico recorta igual que todo lo demás: un profesor no ve las listas
+     * de los grupos de otro.
+     */
+    public function test_the_history_only_shows_what_the_teacher_teaches(): void
+    {
+        $teacherUser = $this->createUserFor($this->orgA, 'teacher');
+        $profile = $this->createTeacherProfile($this->orgA, $teacherUser);
+
+        $subject = $this->createSubject($this->orgA);
+        $suyo = $this->createClassGroup($this->orgA, [
+            'subject_id' => $subject->getKey(),
+            'teacher_id' => $profile->getKey(),
+        ]);
+        $suSesion = $this->createClassSession($this->orgA, $suyo);
+        $suAlumno = $this->createStudent($this->orgA);
+        $this->createEnrollment($this->orgA, $suAlumno, $suyo);
+        $this->createAttendance($this->orgA, $suSesion, $suAlumno);
+
+        // Lista en el grupo del que NO es profesor.
+        $this->createAttendance($this->orgA, $this->session, $this->students[0]);
+
+        $ids = array_column(
+            $this->actingWithToken($this->tokenFor($teacherUser))
+                ->getJson('/api/v1/attendance-rolls')->json('data'),
+            'id'
+        );
+
+        $this->assertSame([$suSesion->getKey()], $ids);
+    }
+
     /**
      * La sesión de otro profesor responde 404 y no 403: indistinguible de una
      * que no existe, para no delatar lo que hay en el grupo de otro (FR-020).

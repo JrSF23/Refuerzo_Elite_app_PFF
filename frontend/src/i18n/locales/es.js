@@ -424,6 +424,13 @@ export const es = {
     sessionsIntro: 'Elija una sesión y pase lista. El grupo tiene {count} alumnos matriculados.',
     noSessionsTitle: 'Este grupo no tiene sesiones',
     noSessionsBody: 'Cree una sesión desde Sesiones para poder pasar lista de ella.',
+    history: {
+      title: 'Listas guardadas',
+      intro: 'Las listas ya pasadas, de la más reciente a la más antigua. Pulse una para revisarla o corregirla.',
+      review: 'Revisar',
+      emptyTitle: 'Todavía no ha pasado ninguna lista',
+      emptyBody: 'Aquí aparecerán las listas que registre, agrupadas por sesión.',
+    },
     roll: {
       title: 'Pasar lista',
       open: 'Pasar lista',

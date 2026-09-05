@@ -53,6 +53,28 @@ class TutorGroupController extends BaseApiController
             ->orderBy('shift');
     }
 
+    /**
+     * El profesor solo ve las aulas donde imparte.
+     *
+     * Faltaba, y era la única sección legible por el profesor que no recortaba
+     * nada: veía las aulas del centro entero, incluidas aquellas en las que no
+     * da clase. No era una fuga de datos sensibles —el aula no lleva ningún campo
+     * monetario, por eso puede leerla— pero sí ruido que no le pertenece, y una
+     * incoherencia con el resto de la aplicación, donde todo lo suyo está
+     * recortado por lo que imparte.
+     *
+     * «Donde imparte» se resuelve por sus grupos de asignatura, no por
+     * `tutor_teacher_id`: ser tutor de un aula y dar clase en ella son cosas
+     * distintas, y lo que gobierna el alcance en todo el proyecto es lo segundo.
+     */
+    protected function applyTeacherScope(Builder $query): void
+    {
+        $query->whereHas(
+            'classGroups',
+            fn (Builder $groups) => $groups->whereIn('id', $this->taughtClassGroupIds())
+        );
+    }
+
     protected function rules(?int $id = null): array
     {
         return [

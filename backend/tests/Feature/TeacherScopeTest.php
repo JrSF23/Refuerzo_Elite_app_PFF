@@ -103,6 +103,86 @@ class TeacherScopeTest extends TestCase
             ->assertNotFound();
     }
 
+    // ── Aulas ──────────────────────────────────────────────────────────────
+
+    /**
+     * El profesor solo ve las AULAS donde imparte.
+     *
+     * Era la única sección legible por él que no recortaba nada: veía las aulas
+     * del centro entero, incluidas aquellas en las que no da clase. No es una
+     * fuga de datos sensibles —el aula no lleva ningún campo monetario, por eso
+     * puede leerla— pero sí ruido que no le pertenece, y una incoherencia con el
+     * resto de la aplicación.
+     */
+    public function test_teacher_only_lists_the_classrooms_where_it_teaches(): void
+    {
+        $miAula = $this->createTutorGroup($this->organization, ['name' => 'Aula propia']);
+        $otraAula = $this->createTutorGroup($this->organization, ['name' => 'Aula ajena']);
+
+        // Su grupo pasa a colgar de un aula; el del compañero, de la otra.
+        $this->fixture['mine']->forceFill(['tutor_group_id' => $miAula->getKey()])->save();
+        $this->fixture['theirs']->forceFill(['tutor_group_id' => $otraAula->getKey()])->save();
+
+        $response = $this->actingWithToken($this->token)
+            ->getJson('/api/v1/tutor-groups')
+            ->assertOk();
+
+        $this->assertSame(
+            [$miAula->getKey()],
+            array_column($response->json('data'), 'id'),
+            'El profesor ve aulas en las que no imparte.'
+        );
+    }
+
+    /**
+     * Y el administrador las sigue viendo todas: el recorte es del profesor, no
+     * de la pantalla.
+     */
+    public function test_the_administration_still_sees_every_classroom(): void
+    {
+        $this->createTutorGroup($this->organization, ['name' => 'Aula A']);
+        $this->createTutorGroup($this->organization, ['name' => 'Aula B']);
+
+        $admin = $this->createUserFor($this->organization, 'org_admin');
+
+        $this->actingWithToken($this->tokenFor($admin))
+            ->getJson('/api/v1/tutor-groups')
+            ->assertOk()
+            ->assertJsonPath('total', 2);
+    }
+
+    /**
+     * El panel del profesor usa la MISMA regla que el resto: un grupo asignado a
+     * su ficha pero de otra materia no aparece, porque no lo alcanza en ninguna
+     * otra pantalla. Antes el panel filtraba solo por `teacher_id` y lo enseñaba:
+     * lo veía, lo pulsaba y se encontraba con nada.
+     */
+    public function test_the_dashboard_hides_groups_the_teacher_cannot_reach(): void
+    {
+        $otraMateria = $this->createSubject($this->organization, ['name' => 'Filosofía']);
+
+        // Asignado a su ficha, pero de una materia que no imparte.
+        $descuadrado = $this->createClassGroup($this->organization, [
+            'subject_id' => $otraMateria->getKey(),
+            'teacher_id' => $this->ownProfile->getKey(),
+            'name' => 'Grupo descuadrado',
+        ]);
+
+        $data = $this->actingWithToken($this->token)
+            ->getJson('/api/v1/dashboard')
+            ->assertOk()
+            ->json();
+
+        $ids = array_column($data['myGroups'], 'id');
+
+        $this->assertContains($this->fixture['mine']->getKey(), $ids);
+        $this->assertNotContains(
+            $descuadrado->getKey(),
+            $ids,
+            'El panel enseña un grupo que el profesor no alcanza.'
+        );
+    }
+
     // ── Alumnos ────────────────────────────────────────────────────────────
 
     public function test_teacher_only_sees_students_enrolled_in_its_groups(): void

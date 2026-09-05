@@ -7,6 +7,7 @@ use App\Models\ClassSession;
 use App\Models\Enrollment;
 use App\Models\Teacher;
 use App\Support\AdminDashboard;
+use App\Support\TeacherScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -60,18 +61,32 @@ class DashboardController
             ]);
         }
 
-        // Los grupos SON el panel del profesor, así que vienen con sus recuentos
-        // reales resueltos en subconsulta: cuántos alumnos y cuántas sesiones.
-        // Sin ellos, la tarjeta de cada grupo tendría que contar sobre lo que
-        // cupo en una página y mentiría, que es el mismo fallo que ya se
-        // corrigió en el índice de alumnos.
-        $myGroups = ClassGroup::where('teacher_id', $teacher->id)
+        /*
+         * Los grupos que el profesor ALCANZA, resueltos por `TeacherScope`.
+         *
+         * Antes se filtraba aquí por `teacher_id` a secas, y eso NO es la regla:
+         * desde que la materia de la ficha gobierna el alcance, hacen falta las
+         * dos condiciones —grupo asignado Y materia coincidente—. Un grupo
+         * asignado a su ficha pero de otra materia aparecía en su panel y no lo
+         * alcanzaba en ninguna otra pantalla: lo veía, lo pulsaba y se
+         * encontraba con nada.
+         *
+         * Hoy no había ninguno descuadrado, así que era un fallo latente. Se
+         * corrige igual: el panel no puede tener su propia versión de la regla,
+         * porque el día que discrepe lo hará en silencio.
+         *
+         * Vienen con sus recuentos reales resueltos en subconsulta. Sin ellos, la
+         * tarjeta de cada grupo contaría sobre lo que cupo en una página y
+         * mentiría, que es el mismo fallo que ya se corrigió en el índice de
+         * alumnos.
+         */
+        $myGroupIds = collect(app(TeacherScope::class)->classGroupIdsFor($user));
+
+        $myGroups = ClassGroup::whereIn('id', $myGroupIds)
             ->with(['subject', 'tutorGroup'])
             ->withCount(['enrollments', 'classSessions'])
             ->orderBy('name')
             ->get();
-
-        $myGroupIds = $myGroups->pluck('id');
 
         $upcomingSessions = ClassSession::whereIn('class_group_id', $myGroupIds)
             ->where('session_date', '>=', today())

@@ -2228,3 +2228,9 @@
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-border);
 }
+
+/* Reparto de una lista guardada: «22 presentes · 2 faltas». Los ceros se omiten
+   en el componente, así que aquí solo hace falta separarlos. */
+.roll-sessions__slice + .roll-sessions__slice::before {
+  content: ' · ';
+}

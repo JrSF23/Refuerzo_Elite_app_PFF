@@ -37,6 +37,13 @@ export function AttendanceGroupsPage() {
 
       <div className="page-head">
         <h1 className="page-title">{t('attendance.title')}</h1>
+
+        {/* La otra mitad de la sección: aquí se pasa lista, ahí se revisa la ya
+            pasada. Mismo patrón que «Ver todos los alumnos» en el índice de
+            aulas, y por el mismo motivo — evita una entrada más en el menú. */}
+        <Link className="btn btn--secondary" to="/asistencia/listas">
+          {t('attendance.history.title')}
+        </Link>
       </div>
 
       <p className="page-intro">{t('attendance.groupsIntro')}</p>

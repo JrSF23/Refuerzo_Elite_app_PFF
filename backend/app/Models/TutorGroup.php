@@ -99,6 +99,17 @@ class TutorGroup extends Model
         return $this->belongsTo(Student::class, 'representative_student_id');
     }
 
+    /**
+     * Las materias que se imparten en el aula: aula × materia.
+     *
+     * Es la relación que permite saber quién da clase aquí, y con ella qué aulas
+     * ve un profesor.
+     */
+    public function classGroups(): HasMany
+    {
+        return $this->hasMany(ClassGroup::class);
+    }
+
     public function students(): HasMany
     {
         return $this->hasMany(Student::class, 'tutor_group_id');

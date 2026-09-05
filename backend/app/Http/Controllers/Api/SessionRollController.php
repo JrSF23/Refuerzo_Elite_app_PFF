@@ -48,6 +48,54 @@ class SessionRollController extends Controller
 {
     use AuthorizesRequests;
 
+    /**
+     * Las listas ya pasadas, agrupadas por sesión.
+     *
+     * Es el histórico: qué se registró y cuándo. Salen SOLO las sesiones que
+     * tienen asistencia —una sesión sin pasar lista no es una lista— y las más
+     * recientes primero, porque lo que se revisa es lo de esta semana, no lo de
+     * septiembre.
+     *
+     * El reparto por estado viene resuelto en subconsultas agregadas, no
+     * contando en PHP: es lo que permite ver de un vistazo «22 presentes, 2
+     * faltas» sin abrir la lista, y no crece con el número de alumnos.
+     *
+     * El recorte del profesor lo aplica `ClassSessionController` por su cuenta;
+     * aquí se repite porque esta consulta no pasa por él. Es la única duplicación
+     * de la regla que queda, y va contra `TeacherScope` igual que el resto, así
+     * que no puede divergir de la definición.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Attendance::class);
+
+        $query = ClassSession::query()
+            ->has('attendances')
+            ->with(['classGroup.tutorGroup', 'classGroup.subject'])
+            ->withCount([
+                'attendances',
+                'attendances as present_count' => fn ($q) => $q->where('status', 'present'),
+                'attendances as absent_count' => fn ($q) => $q->where('status', 'absent'),
+                'attendances as late_count' => fn ($q) => $q->where('status', 'late'),
+                'attendances as excused_count' => fn ($q) => $q->where('status', 'excused'),
+            ]);
+
+        $this->restrictToTeacher($query);
+
+        // Acotable a un grupo, para revisar el histórico de uno solo.
+        $classGroupId = $request->integer('class_group_id');
+
+        if ($classGroupId !== 0) {
+            $query->where('class_group_id', $classGroupId);
+        }
+
+        return response()->json(
+            $query->orderByDesc('session_date')
+                ->orderByDesc('id')
+                ->paginate(min((int) $request->integer('per_page', 20), 50))
+        );
+    }
+
     public function show(int $sessionId): JsonResponse
     {
         $session = $this->reachableSession($sessionId);
@@ -116,11 +164,7 @@ class SessionRollController extends Controller
     {
         $query = ClassSession::query();
 
-        $user = request()->user();
-
-        if ($user !== null && $user->hasRole('teacher') && ! $user->hasRole('org_admin')) {
-            $query->whereIn('class_group_id', app(TeacherScope::class)->classGroupIdsFor($user));
-        }
+        $this->restrictToTeacher($query);
 
         return $query->findOrFail($sessionId);
     }
@@ -138,6 +182,24 @@ class SessionRollController extends Controller
         request()->merge(['class_session_id' => $session->getKey()]);
 
         $this->authorize('create', Attendance::class);
+    }
+
+    /**
+     * Acota a lo que el profesor imparte; a la administración no le recorta nada.
+     *
+     * En un solo sitio para las dos consultas de esta clase. Repetir la
+     * comprobación de rol en cada una era pedir que un día se corrigiera solo en
+     * una: el histórico enseñaría lo que la lista niega, o al revés.
+     */
+    private function restrictToTeacher(\Illuminate\Database\Eloquent\Builder $query): void
+    {
+        $user = request()->user();
+
+        if ($user === null || ! $user->hasRole('teacher') || $user->hasRole('org_admin')) {
+            return;
+        }
+
+        $query->whereIn('class_group_id', app(TeacherScope::class)->classGroupIdsFor($user));
     }
 
     /** @return list<int> */

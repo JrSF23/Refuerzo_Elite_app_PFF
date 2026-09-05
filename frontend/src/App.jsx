@@ -23,6 +23,7 @@ import { EnrollmentsPage } from './pages/enrollments/EnrollmentsPage.jsx'
 import { SessionsPage } from './pages/sessions/SessionsPage.jsx'
 import { AttendanceGroupsPage } from './pages/attendance/AttendanceGroupsPage.jsx'
 import { GroupAttendancePage } from './pages/attendance/GroupAttendancePage.jsx'
+import { RollHistoryPage } from './pages/attendance/RollHistoryPage.jsx'
 import { PaymentsPage } from './pages/payments/PaymentsPage.jsx'
 import { UsersPage } from './pages/users/UsersPage.jsx'
 import { OrganizationsPage } from './pages/organizations/OrganizationsPage.jsx'
@@ -104,6 +105,19 @@ function AppRoutes() {
             </RequireSection>
           )}
           path="alumnos/grupo/:groupId"
+        />
+
+        {/* Listas guardadas: el histórico de lo ya registrado, por sesión. No
+            es sección del menú a propósito — «Asistencia» y «Listas» como dos
+            entradas hermanas repetirían la confusión de los dos «Grupos»— y se
+            llega desde el índice de asistencia. */}
+        <Route
+          element={(
+            <RequireSection section="attendance">
+              <RollHistoryPage />
+            </RequireSection>
+          )}
+          path="asistencia/listas"
         />
 
         {/* Asistencia de un grupo. El índice son los grupos, y la asistencia
