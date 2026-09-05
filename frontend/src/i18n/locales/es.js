@@ -421,6 +421,24 @@ export const es = {
   },
 
   attendance: {
+    sessionsIntro: 'Elija una sesión y pase lista. El grupo tiene {count} alumnos matriculados.',
+    noSessionsTitle: 'Este grupo no tiene sesiones',
+    noSessionsBody: 'Cree una sesión desde Sesiones para poder pasar lista de ella.',
+    roll: {
+      title: 'Pasar lista',
+      open: 'Pasar lista',
+      save: 'Guardar lista',
+      saved: 'Lista guardada: {count} alumnos.',
+      // La opción vacía se queda: es la única forma de decir «todavía no lo he
+      // mirado», y quitarla obligaría a marcar algo que no se ha comprobado.
+      unset: 'Sin marcar',
+      unmarked: 'Quedan {count} alumnos sin marcar.',
+      markRestPresent: 'Marcar el resto como presentes',
+      nothingToSave: 'No ha marcado a ningún alumno.',
+      noStudents: 'Este grupo no tiene alumnos matriculados.',
+      complete: 'Lista completa',
+      progress: '{marked} de {total}',
+    },
     groupsIntro: 'Elija un grupo para ver y registrar su asistencia. Cada grupo lleva su propio recuento y su propia lista.',
     searchGroups: 'Buscar grupo',
     noGroupsTitle: 'Todavía no hay grupos',

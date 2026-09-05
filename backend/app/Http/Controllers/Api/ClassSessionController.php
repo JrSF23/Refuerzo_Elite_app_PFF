@@ -15,6 +15,17 @@ class ClassSessionController extends BaseApiController
 {
     protected string $modelClass = ClassSession::class;
     protected array $with = ['classGroup.subject', 'classGroup.teacher', 'taughtByUser'];
+
+    /**
+     * Cuántos alumnos llevan asistencia marcada en cada sesión.
+     *
+     * Es lo que permite ver de un vistazo qué sesiones están sin pasar lista sin
+     * abrirlas una a una. Subconsulta agregada, no una consulta por sesión.
+     */
+    protected function query(): Builder
+    {
+        return parent::query()->withCount('attendances');
+    }
     /**
      * Título y aula son columnas propias; el grupo, la relación por la que de
      * verdad se filtra cuando un profesor busca «sus sesiones de Tarde A».

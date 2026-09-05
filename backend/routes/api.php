@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\GuardianController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\SessionRollController;
 use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\SubjectController;
@@ -55,6 +56,12 @@ Route::prefix('v1')->group(function (): void {
             // sesión como impartida es DEFINITIVO. Va antes del apiResource por
             // legibilidad; no colisiona con ninguna de sus rutas.
             Route::post('/class-sessions/{id}/taught', [ClassSessionController::class, 'markTaught']);
+
+            // Pasar lista: la clase entera de una vez, en lugar de un alta por
+            // alumno. La lista la compone el servidor con los matriculados del
+            // grupo, así que no se puede registrar a quien no está en él.
+            Route::get('/class-sessions/{id}/roll', [SessionRollController::class, 'show']);
+            Route::post('/class-sessions/{id}/roll', [SessionRollController::class, 'store']);
             Route::apiResource('class-sessions', ClassSessionController::class);
             Route::apiResource('attendances', AttendanceController::class);
         });

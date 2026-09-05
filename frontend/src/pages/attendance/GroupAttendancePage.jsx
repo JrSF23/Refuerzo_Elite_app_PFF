@@ -1,33 +1,42 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
-import { formatDate, t } from '../../i18n/index.js'
+import { formatDate, formatNumber, t } from '../../i18n/index.js'
 import { api } from '../../lib/api.js'
-import { AttendanceStatusBadge } from '../../components/ui/Badge.jsx'
-import { ResourcePage } from '../../components/data/ResourcePage.jsx'
+import { useResourceList } from '../../hooks/useResourceList.js'
+import { Badge } from '../../components/ui/Badge.jsx'
+import { Button } from '../../components/ui/Button.jsx'
+import { Breadcrumbs } from '../../components/layout/Breadcrumbs.jsx'
+import { Pagination } from '../../components/ui/Pagination.jsx'
+import { EmptyState, ErrorState, LoadingState } from '../../components/data/states.jsx'
+import { RollCall } from './RollCall.jsx'
 
 /**
- * Asistencia de un grupo.
+ * Asistencia de un grupo: sus sesiones, y en cada una, pasar lista.
  *
- * Segunda mitad del índice: aquí sí se listan registros, pero **acotados al
- * grupo y paginados dentro de él**. El recorte lo hace el servidor con
- * `class_group_id`, así que la pantalla nunca recibe la asistencia de los demás
- * grupos y su coste no crece con el tamaño del centro.
+ * ── Por qué sesiones y no registros sueltos ─────────────────────────────────
  *
- * ── Lo que cambia respecto a la lista general ────────────────────────────────
+ * La asistencia no existe por sí sola: existe DE UNA SESIÓN. Listar registros
+ * —«Ana, presente»— obligaba a reconstruir mentalmente a qué clase pertenecía
+ * cada uno, y para registrar había que elegir alumno y sesión en dos
+ * desplegables, uno por uno. Con 25 alumnos eso son 25 altas y 50 selecciones.
  *
- * Desaparece la columna de grupo —es la misma en todas las filas— y el
- * desplegable de sesión se acota a las de ESTE grupo. Antes ofrecía todas las
- * sesiones del centro, que es donde se cometía el error: pasar lista de 1º ESBA
- * sobre una sesión de 3º porque los títulos se parecen.
+ * La unidad de trabajo real del profesor es la clase: entra en la sesión de hoy
+ * y pasa lista de arriba abajo. Esta pantalla es esa jerarquía.
  *
- * Es la pantalla de uso DIARIO del profesor y casi siempre desde el móvil, así
- * que es la que más exige de la representación por tarjetas. El estado va con
- * color Y texto: el color por sí solo no transmite nada a quien no lo distingue.
+ * El recuento de cada sesión —marcados sobre matriculados— es lo que permite ver
+ * sin abrir nada cuáles quedan pendientes.
  */
 export function GroupAttendancePage() {
   const { groupId } = useParams()
+
   const [group, setGroup] = useState(null)
+  const [rollFor, setRollFor] = useState(null)
+
+  const sessions = useResourceList('class-sessions', {
+    perPage: 20,
+    params: { class_group_id: groupId },
+  })
 
   useEffect(() => {
     const controller = new AbortController()
@@ -48,72 +57,103 @@ export function GroupAttendancePage() {
       : group.name)
     : t('common.loading')
 
-  const teacherLine = group
-    ? `${t('fields.teacher')}: ${group.teacher?.full_name ?? t('tutorGroups.unassigned')}`
-    : null
+  const enrolled = group?.enrollments_count ?? 0
 
   return (
-    <ResourcePage
-      breadcrumbs={[
-        { label: t('attendance.title'), to: '/asistencia' },
-        { label: title },
-      ]}
-      columns={[
-        { key: 'student.full_name', label: t('fields.student') },
-        { key: 'class_session.title', label: t('fields.session') },
-        {
-          key: 'created_at',
-          label: t('fields.date'),
-          render: (record) => formatDate(record.created_at),
-        },
-        {
-          key: 'status',
-          label: t('fields.status'),
-          render: (record) => <AttendanceStatusBadge value={record.status} />,
-        },
-      ]}
-      emptyBody={t('attendance.emptyGroupBody')}
-      emptyTitle={t('attendance.emptyGroupTitle')}
-      fields={[
-        {
-          name: 'class_session_id',
-          label: t('fields.session'),
-          type: 'relation',
-          endpoint: 'class-sessions',
-          // Solo las sesiones de este grupo. Es lo que impide pasar lista sobre
-          // la sesión de otro grupo por parecido de título.
-          params: { class_group_id: groupId },
-          optionLabel: (session) => session.title,
-          required: true,
-        },
-        {
-          name: 'student_id',
-          label: t('fields.student'),
-          type: 'relation',
-          endpoint: 'students',
-          optionLabel: (student) => student.full_name,
-          required: true,
-        },
-        {
-          name: 'status',
-          label: t('fields.status'),
-          type: 'select',
-          required: true,
-          defaultValue: 'present',
-          options: [
-            { value: 'present', label: t('attendanceStatus.present') },
-            { value: 'absent', label: t('attendanceStatus.absent') },
-            { value: 'late', label: t('attendanceStatus.late') },
-            { value: 'excused', label: t('attendanceStatus.excused') },
-          ],
-        },
-        { name: 'comment', label: t('attendance.fields.comment'), type: 'textarea' },
-      ]}
-      getRecordName={(record) => record.student?.full_name ?? ''}
-      listParams={{ class_group_id: groupId }}
-      pageTitle={title}
-      section="attendance"
-      subtitle={teacherLine}
-    />
+    <>
+      <Breadcrumbs
+        items={[
+          { label: t('attendance.title'), to: '/asistencia' },
+          { label: title },
+        ]}
+      />
+
+      <div className="page-head">
+        <h1 className="page-title">{title}</h1>
+      </div>
+
+      <p className="page-intro">
+        {t('attendance.sessionsIntro', { count: formatNumber(enrolled) })}
+      </p>
+
+      <div className="table-card">
+        {sessions.status === 'loading' ? <LoadingState rows={4} /> : null}
+
+        {sessions.status === 'error' ? (
+          <ErrorState message={sessions.error?.message} onRetry={sessions.refresh} />
+        ) : null}
+
+        {sessions.status === 'ready' && sessions.records.length === 0 ? (
+          <EmptyState
+            body={t('attendance.noSessionsBody')}
+            title={t('attendance.noSessionsTitle')}
+          />
+        ) : null}
+
+        {sessions.status === 'ready' && sessions.records.length > 0 ? (
+          <ul className="roll-sessions">
+            {sessions.records.map((session) => (
+              <li className="roll-sessions__row" key={session.id}>
+                <div className="roll-sessions__main">
+                  <span className="roll-sessions__title">{session.title}</span>
+                  <span className="roll-sessions__date">{formatDate(session.session_date)}</span>
+                </div>
+
+                <RollProgress marked={session.attendances_count ?? 0} total={enrolled} />
+
+                <Button onClick={() => setRollFor(session)} size="sm" variant="primary">
+                  {t('attendance.roll.open')}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {sessions.status === 'ready' ? (
+          <Pagination
+            from={sessions.pagination?.from}
+            lastPage={sessions.pagination?.lastPage}
+            onChange={sessions.setPage}
+            page={sessions.pagination?.page}
+            to={sessions.pagination?.to}
+            total={sessions.pagination?.total}
+          />
+        ) : null}
+      </div>
+
+      <RollCall
+        isOpen={rollFor !== null}
+        onClose={() => setRollFor(null)}
+        onSaved={sessions.refresh}
+        sessionId={rollFor?.id}
+        sessionTitle={rollFor?.title}
+      />
+    </>
+  )
+}
+
+/**
+ * Cuántos llevan marca sobre el total de la clase.
+ *
+ * Con texto además de color: «Completa» y «X de Y» se leen igual en escala de
+ * grises, y quien no distingue el verde no puede quedarse sin saber qué sesión
+ * falta por pasar.
+ */
+function RollProgress({ marked, total }) {
+  if (total === 0) {
+    return <span className="text-muted">{t('attendance.roll.noStudents')}</span>
+  }
+
+  if (marked >= total) {
+    return <Badge tone="success">{t('attendance.roll.complete')}</Badge>
+  }
+
+  return (
+    <span className="roll-sessions__progress tabular">
+      {t('attendance.roll.progress', {
+        marked: formatNumber(marked),
+        total: formatNumber(total),
+      })}
+    </span>
   )
 }
