@@ -113,16 +113,17 @@ class DemoSeeder extends Seeder
         $subjects = [];
 
         foreach ([
-            ['Matemáticas', 'MAT', 'ESO / Bachillerato', 80.00],
-            ['Lengua Castellana', 'LEN', 'Primaria / ESO', 70.00],
-            ['Inglés', 'ING', 'Todos los niveles', 75.00],
-        ] as $index => [$name, $code, $level, $fee]) {
+            ['Matemáticas', 'MAT', 'ESO / Bachillerato'],
+            ['Lengua Castellana', 'LEN', 'Primaria / ESO'],
+            ['Inglés', 'ING', 'Todos los niveles'],
+        ] as $index => [$name, $code, $level]) {
+            // Sin importe: la asignatura dejó de ser unidad de cobro. La cuota
+            // se pacta en la matrícula, más abajo.
             $subjects[$index] = Subject::forceCreate([
                 'organization_id' => $orgId,
                 'name' => $name,
                 'code' => $code,
                 'level' => $level,
-                'monthly_fee' => $fee,
             ]);
         }
 
@@ -148,6 +149,29 @@ class DemoSeeder extends Seeder
                 'end_date' => '2026-06-15',
                 'status' => 'active',
             ]);
+        }
+
+        /*
+         * ── Materia de cada ficha de profesor ────────────────────────────────
+         *
+         * Se deduce de sus grupos, igual que el backfill de la migración. Un
+         * profesor alcanza un grupo cuando lo tiene asignado Y la materia del
+         * grupo es la de su ficha, así que sin este paso las cuentas de profesor
+         * de la demo entrarían y no verían nada.
+         *
+         * Se hace aquí, después de los grupos, y no al crear la ficha, para que
+         * la fuente sea una sola: si mañana cambia el reparto de grupos de
+         * arriba, la materia lo sigue sin que haya que acordarse de tocarla.
+         */
+        foreach ($groups as $group) {
+            if ($group->teacher_id === null) {
+                continue;
+            }
+
+            Teacher::query()
+                ->whereKey($group->teacher_id)
+                ->whereNull('subject_id')
+                ->update(['subject_id' => $group->subject_id]);
         }
 
         // ── Tutores ──────────────────────────────────────────────────────────

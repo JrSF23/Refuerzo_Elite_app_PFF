@@ -168,6 +168,246 @@ class TeacherScopeTest extends TestCase
         $this->assertSame([$this->fixture['mySession']->getKey()], array_column($response->json('data'), 'id'));
     }
 
+    /**
+     * Lo que pidió el centro: cada profesor da de alta sus propias sesiones, con
+     * su cuenta. El alta se autoriza contra el `class_group_id` que llega en la
+     * petición, porque todavía no hay sesión sobre la que decidir.
+     */
+    public function test_teacher_creates_sessions_in_its_own_group(): void
+    {
+        $this->actingWithToken($this->token)
+            ->postJson('/api/v1/class-sessions', [
+                'class_group_id' => $this->fixture['mine']->getKey(),
+                'title' => 'Repaso de ecuaciones',
+                'session_date' => '2026-02-10',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('class_group_id', $this->fixture['mine']->getKey());
+    }
+
+    public function test_teacher_cannot_create_sessions_in_another_teachers_group(): void
+    {
+        $this->actingWithToken($this->token)
+            ->postJson('/api/v1/class-sessions', [
+                'class_group_id' => $this->fixture['theirs']->getKey(),
+                'title' => 'Sesión intrusa',
+                'session_date' => '2026-02-10',
+            ])
+            ->assertForbidden();
+    }
+
+    /**
+     * El alta comprobaba el grupo de destino, pero la edición solo miraba el de
+     * origen: bastaba un PUT sobre una sesión propia cambiándole el grupo para
+     * colarla en el de un compañero, porque en ese instante la sesión todavía
+     * era suya. Origen y destino, las dos puntas.
+     */
+    public function test_teacher_cannot_move_its_session_into_another_teachers_group(): void
+    {
+        $session = $this->fixture['mySession'];
+
+        $this->actingWithToken($this->token)
+            ->putJson("/api/v1/class-sessions/{$session->getKey()}", [
+                'class_group_id' => $this->fixture['theirs']->getKey(),
+                'title' => 'Sesión movida',
+                'session_date' => '2026-02-11',
+            ])
+            ->assertForbidden();
+
+        $this->assertSame(
+            $this->fixture['mine']->getKey(),
+            (int) $session->fresh()->class_group_id,
+            'La sesión no debe haberse movido al grupo ajeno.'
+        );
+    }
+
+    // ── Sesión impartida ───────────────────────────────────────────────────
+
+    public function test_teacher_marks_its_own_session_as_taught(): void
+    {
+        $session = $this->fixture['mySession'];
+
+        $this->actingWithToken($this->token)
+            ->postJson("/api/v1/class-sessions/{$session->getKey()}/taught")
+            ->assertOk()
+            ->assertJsonPath('taught_by', $this->teacherUser->getKey());
+
+        $this->assertNotNull($session->fresh()->taught_at);
+    }
+
+    /**
+     * Una sesión de otro grupo responde 404 y no 403: el recorte de consulta
+     * actúa antes que la policy, así que para él no existe. Mismo criterio que el
+     * resto de la sección.
+     */
+    public function test_teacher_cannot_mark_a_session_of_another_group(): void
+    {
+        $this->actingWithToken($this->token)
+            ->postJson("/api/v1/class-sessions/{$this->fixture['theirSession']->getKey()}/taught")
+            ->assertNotFound();
+
+        $this->assertNull($this->fixture['theirSession']->fresh()->taught_at);
+    }
+
+    /**
+     * El marcado es definitivo por decisión del centro: no hay endpoint que lo
+     * deshaga, y volver a marcar responde 409 —el recurso ya está en ese estado—
+     * en lugar de refrescar la fecha en silencio.
+     */
+    public function test_marking_twice_is_refused_and_keeps_the_first_timestamp(): void
+    {
+        $session = $this->fixture['mySession'];
+
+        $this->actingWithToken($this->token)
+            ->postJson("/api/v1/class-sessions/{$session->getKey()}/taught")
+            ->assertOk();
+
+        $first = $session->fresh()->taught_at;
+
+        $this->actingWithToken($this->token)
+            ->postJson("/api/v1/class-sessions/{$session->getKey()}/taught")
+            ->assertStatus(409);
+
+        $this->assertEquals($first, $session->fresh()->taught_at);
+    }
+
+    /**
+     * La vía de escape que cerraría todo lo anterior: si `taught_at` fuese
+     * declarable, una edición corriente devolvería la sesión a pendiente sin
+     * pasar por el endpoint. Está fuera de `$fillable`, y esto lo fija.
+     */
+    public function test_the_edit_form_cannot_unmark_a_taught_session(): void
+    {
+        $session = $this->fixture['mySession'];
+
+        $this->actingWithToken($this->token)
+            ->postJson("/api/v1/class-sessions/{$session->getKey()}/taught")
+            ->assertOk();
+
+        $marked = $session->fresh()->taught_at;
+
+        $this->actingWithToken($this->token)
+            ->putJson("/api/v1/class-sessions/{$session->getKey()}", [
+                'class_group_id' => $this->fixture['mine']->getKey(),
+                'title' => 'Título corregido',
+                'session_date' => '2026-01-13',
+                'taught_at' => null,
+                'taught_by' => null,
+            ])
+            ->assertOk();
+
+        $fresh = $session->fresh();
+
+        $this->assertEquals($marked, $fresh->taught_at, 'La edición devolvió la sesión a pendiente.');
+        $this->assertSame($this->teacherUser->getKey(), (int) $fresh->taught_by);
+        $this->assertSame('Título corregido', $fresh->title);
+    }
+
+    /**
+     * Lo que pidió el centro: la administración lo ve. No marca por él, lo ve
+     * marcado, y con quién y cuándo.
+     */
+    public function test_the_administration_sees_the_session_as_taught(): void
+    {
+        $session = $this->fixture['mySession'];
+
+        $this->actingWithToken($this->token)
+            ->postJson("/api/v1/class-sessions/{$session->getKey()}/taught")
+            ->assertOk();
+
+        $admin = $this->createUserFor($this->organization, 'org_admin');
+
+        $this->actingWithToken($this->tokenFor($admin))
+            ->getJson("/api/v1/class-sessions/{$session->getKey()}")
+            ->assertOk()
+            ->assertJsonPath('taught_by', $this->teacherUser->getKey());
+    }
+
+    // ── La materia habilita, el grupo delimita ─────────────────────────────
+
+    /**
+     * El grupo sigue asignado a su ficha, pero pasa a ser de otra materia: deja
+     * de alcanzarlo. Es la mitad «la materia habilita» de la regla, y es la que
+     * no existía antes de que la materia fuera un dato de la ficha.
+     */
+    public function test_teacher_loses_the_group_when_its_subject_is_not_its_own(): void
+    {
+        $otherSubject = $this->createSubject($this->organization, ['name' => 'Filosofía']);
+
+        $this->fixture['mine']->forceFill(['subject_id' => $otherSubject->getKey()])->save();
+
+        $this->actingWithToken($this->token)
+            ->getJson('/api/v1/class-sessions')
+            ->assertOk()
+            ->assertJsonPath('total', 0);
+
+        $this->actingWithToken($this->token)
+            ->postJson('/api/v1/class-sessions', [
+                'class_group_id' => $this->fixture['mine']->getKey(),
+                'title' => 'Ya no es mía',
+                'session_date' => '2026-02-12',
+            ])
+            ->assertForbidden();
+    }
+
+    /**
+     * La otra mitad: comparten materia, pero cada uno solo llega a SUS grupos.
+     * Dos profesores de Matemáticas no se alcanzan entre sí.
+     */
+    public function test_two_teachers_of_the_same_subject_do_not_reach_each_other(): void
+    {
+        $colleagueUser = $this->createUserFor($this->organization, 'teacher');
+        $colleague = $this->createTeacherProfile($this->organization, $colleagueUser, [
+            'subject_id' => $this->fixture['mine']->subject_id,
+        ]);
+
+        $colleagueGroup = $this->createClassGroup($this->organization, [
+            'subject_id' => $this->fixture['mine']->subject_id,
+            'teacher_id' => $colleague->getKey(),
+            'name' => 'Mismo temario, otro profesor',
+        ]);
+
+        // Misma materia que yo, y aun así no puedo crear nada en su grupo.
+        $this->actingWithToken($this->token)
+            ->postJson('/api/v1/class-sessions', [
+                'class_group_id' => $colleagueGroup->getKey(),
+                'title' => 'En el grupo del compañero',
+                'session_date' => '2026-02-13',
+            ])
+            ->assertForbidden();
+
+        // Y él tampoco en el mío.
+        $this->actingWithToken($this->tokenFor($colleagueUser))
+            ->postJson('/api/v1/class-sessions', [
+                'class_group_id' => $this->fixture['mine']->getKey(),
+                'title' => 'En el grupo del otro',
+                'session_date' => '2026-02-13',
+            ])
+            ->assertForbidden();
+    }
+
+    /**
+     * Una ficha sin materia no alcanza nada, aunque conserve sus grupos: el fallo
+     * cierra el acceso, no lo abre (FR-015c).
+     */
+    public function test_teacher_without_subject_reaches_nothing(): void
+    {
+        $this->ownProfile->forceFill(['subject_id' => null])->save();
+
+        $this->actingWithToken($this->token)
+            ->getJson('/api/v1/class-sessions')
+            ->assertOk()
+            ->assertJsonPath('total', 0);
+
+        $this->actingWithToken($this->token)
+            ->postJson('/api/v1/class-sessions', [
+                'class_group_id' => $this->fixture['mine']->getKey(),
+                'title' => 'Sin materia',
+                'session_date' => '2026-02-14',
+            ])
+            ->assertForbidden();
+    }
+
     // ── Fuera de su alcance ────────────────────────────────────────────────
 
     public function test_teacher_cannot_reach_administrative_modules(): void

@@ -204,12 +204,29 @@ export function formatNumber(value, options) {
 /**
  * Importes con separador de millar y dos decimales (SC-010).
  *
- * Sin símbolo de divisa a propósito: la base de datos guarda el importe como
- * número desnudo, sin moneda asociada —deuda XII.b, registrada y ajena a esta
- * feature—. Inventar aquí un símbolo acoplaría la interfaz a un país, que es
- * justo lo que el Principio XII prohíbe. Cuando la moneda sea configuración de
- * la organización, se pasa aquí y se usa `style: 'currency'`.
+ * ── FCFA fijo, por decisión expresa del producto ────────────────────────────
+ *
+ * Antes no se ponía símbolo, y el motivo sigue siendo cierto: la base guarda el
+ * importe como número desnudo, sin moneda asociada (deuda XII.b), así que este
+ * sufijo lo pone la interfaz y no el dato. Vale para el centro de Guinea
+ * Ecuatorial y NO vale para ningún otro: en cuanto haya una organización que
+ * facture en otra divisa, esta línea muestra un importe falso en su pantalla.
+ *
+ * Queda escrito para que se lea como lo que es —una decisión tomada a sabiendas,
+ * no un descuido— y para que quien salde la deuda XII.b sepa que el arreglo
+ * completo es mover la moneda a la organización y usar `style: 'currency'`, no
+ * cambiar el literal de aquí.
  */
+const CURRENCY_SUFFIX = 'FCFA'
+
 export function formatAmount(value) {
-  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const amount = formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+  // Sin importe no hay moneda: «— FCFA» afirma que hay un pago en francos cuyo
+  // valor se desconoce, cuando lo que ocurre es que no hay pago del que hablar.
+  if (amount === EMPTY_VALUE) {
+    return amount
+  }
+
+  return `${amount} ${CURRENCY_SUFFIX}`
 }

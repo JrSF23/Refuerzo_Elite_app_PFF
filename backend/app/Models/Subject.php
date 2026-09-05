@@ -11,20 +11,17 @@ class Subject extends Model
 {
     use BelongsToOrganization, HasFactory;
 
+    /**
+     * Sin campo monetario, y es deliberado: la asignatura es contenido, no
+     * unidad de cobro. El importe vive en `Enrollment::$monthly_fee`, que es lo
+     * pactado con un alumno concreto y lo que de verdad se factura.
+     */
     protected $fillable = [
         'name',
         'code',
         'level',
-        'monthly_fee',
         'description',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'monthly_fee' => 'decimal:2',
-        ];
-    }
 
     public function classGroups(): HasMany
     {

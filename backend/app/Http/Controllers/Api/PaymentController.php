@@ -16,6 +16,21 @@ class PaymentController extends BaseApiController
 {
     protected string $modelClass = Payment::class;
     protected array $with = ['student', 'guardian', 'enrollment.classGroup'];
+    /**
+     * El alumno primero, que es por donde se busca un pago. `reference` y
+     * `period_label` son columnas propias y sí sirven: el justificante y el
+     * periodo son justo lo que se teclea cuando se busca un recibo concreto.
+     *
+     * `amount` NO se incluye: es un número, `like` sobre él daría coincidencias
+     * absurdas —«10» encontraría 100, 110 y 1000— y el importe no es como se
+     * localiza un pago.
+     */
+    protected array $searchable = [
+        'student.first_name',
+        'student.last_name',
+        'period_label',
+        'reference',
+    ];
     protected string $entityLabel = 'payment';
 
     protected function rules(?int $id = null): array

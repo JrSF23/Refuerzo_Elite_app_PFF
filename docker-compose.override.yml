@@ -11,7 +11,10 @@ services:
   laravel:
     environment:
       APP_ENV: local
-      APP_DEBUG: "true"
+      # TEMPORAL — apagado mientras el túnel de ngrok esté abierto. Con la
+      # aplicación publicada, un error 500 devolvería el volcado de Laravel con
+      # APP_KEY y la contraseña de MySQL dentro. Volver a "true" al cerrarlo.
+      APP_DEBUG: "false"
       LOG_CHANNEL: stderr
     volumes:
       # Monta el código fuente directamente: cualquier cambio PHP se refleja

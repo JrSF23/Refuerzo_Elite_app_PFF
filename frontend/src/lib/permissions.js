@@ -24,10 +24,18 @@ const WRITE = 'write'
  * Secciones de la aplicación.
  *
  * `path` es la ruta; `endpoint`, el recurso de la API; `searchable` indica si el
- * endpoint admite búsqueda, y de ahí depende que se muestre la caja (FR-024):
- * en matrículas, sesiones, asistencia y pagos la API ignora el parámetro porque
- * esos controladores no declaran campos buscables, así que ofrecerla sería
- * mentir al usuario.
+ * endpoint admite búsqueda, y de ahí depende que se muestre la caja (FR-024).
+ *
+ * Ya no hay ninguna sección sin búsqueda. Matrículas, sesiones, asistencia y
+ * pagos la tenían a `false` porque sus controladores no declaraban campos
+ * buscables, y ofrecer una caja que el servidor ignora es mentirle al usuario.
+ * El motivo de fondo era que en esas cuatro lo que se teclea —el nombre del
+ * alumno, el del grupo— no está en su fila sino en la tabla vecina; ahora
+ * `$searchable` admite relaciones y las cuatro declaran las suyas.
+ *
+ * Esta bandera SIGUE teniendo que cuadrar con el servidor: ponerla a `true` en
+ * una sección cuyo controlador no declare `$searchable` devuelve la caja a ser
+ * un adorno que no filtra nada.
  */
 export const SECTIONS = {
   dashboard: {
@@ -64,7 +72,12 @@ export const SECTIONS = {
     endpoint: 'subjects',
     searchable: true,
     group: 'sectionManagement',
-    // Cerrada al profesor: lleva `monthly_fee` (FR-037).
+    /*
+     * Cerrada al profesor. El motivo original —llevaba `monthly_fee`— YA NO
+     * EXISTE: esa columna se eliminó al separar el cobro de la asignatura. La
+     * restricción se mantiene porque el servidor la impone igual, no porque
+     * quede dinero aquí. Es la candidata natural a abrirse al profesor.
+     */
     access: { [ROLES.ORG_ADMIN]: WRITE },
   },
 
@@ -89,17 +102,35 @@ export const SECTIONS = {
     // administración. Puede tenerla porque no lleva ningún campo monetario.
     access: { [ROLES.ORG_ADMIN]: WRITE, [ROLES.TEACHER]: READ },
   },
+  /*
+   * FUERA DEL MENÚ, a propósito, y no borrada.
+   *
+   * Tener dos secciones llamadas «Grupos» era el mayor foco de confusión de la
+   * aplicación: al registrar una sesión había que elegir entre unos grupos que
+   * no eran los que el centro ve en su lista de aulas. Y se notaba en el uso
+   * real — dos centros que están evaluando la plataforma crearon 23 aulas y
+   * CERO grupos de asignatura, así que no podían registrar ni una sesión.
+   *
+   * La entidad sigue haciendo falta: es el aula × la materia, y de ella cuelgan
+   * las sesiones y las matrículas. Lo que sobraba era crearla a mano como si
+   * fuera algo aparte. Ahora se gestiona DENTRO del aula, en «Materias».
+   *
+   * La sección se conserva porque sigue gobernando permisos y rutas: el enlace
+   * directo `/grupos-asignatura` sigue funcionando para quien lo tuviera
+   * guardado, y `hidden` solo la retira de la navegación.
+   */
   classGroups: {
     path: '/grupos-asignatura',
     endpoint: 'class-groups',
     searchable: true,
     group: 'sectionAcademic',
+    hidden: true,
     access: { [ROLES.ORG_ADMIN]: WRITE, [ROLES.TEACHER]: READ },
   },
   enrollments: {
     path: '/matriculas',
     endpoint: 'enrollments',
-    searchable: false,
+    searchable: true,
     group: 'sectionAcademic',
     // Cerrada al profesor: lleva `monthly_fee` (FR-037).
     access: { [ROLES.ORG_ADMIN]: WRITE },
@@ -107,22 +138,36 @@ export const SECTIONS = {
   sessions: {
     path: '/sesiones',
     endpoint: 'class-sessions',
-    searchable: false,
+    searchable: true,
     group: 'sectionAcademic',
     access: { [ROLES.ORG_ADMIN]: WRITE, [ROLES.TEACHER]: WRITE },
   },
   attendance: {
     path: '/asistencia',
     endpoint: 'attendances',
-    searchable: false,
+    searchable: true,
     group: 'sectionAcademic',
     access: { [ROLES.ORG_ADMIN]: WRITE, [ROLES.TEACHER]: WRITE },
+  },
+
+  /*
+   * La etapa educativa —Pre-escolar, Primaria, ESBA, Bachillerato— es la unidad
+   * de cobro del centro: la cuota va por nivel y no por asignatura. Vive en
+   * COBROS y no en actividad académica porque lo que se administra aquí es el
+   * precio, y por eso está cerrada al profesor como el resto de lo monetario.
+   */
+  stages: {
+    path: '/etapas',
+    endpoint: 'stages',
+    searchable: true,
+    group: 'sectionFinance',
+    access: { [ROLES.ORG_ADMIN]: WRITE },
   },
 
   payments: {
     path: '/pagos',
     endpoint: 'payments',
-    searchable: false,
+    searchable: true,
     group: 'sectionFinance',
     // Cerrada al profesor: lleva `amount` (FR-037).
     access: { [ROLES.ORG_ADMIN]: WRITE },
@@ -145,16 +190,20 @@ export const SECTIONS = {
 }
 
 /**
- * INVARIANTE — las tres secciones cerradas al profesor son EXACTAMENTE las tres
- * que contienen campos monetarios: asignaturas (`monthly_fee`), matrículas
- * (`monthly_fee`) y pagos (`amount`).
+ * INVARIANTE — ninguna sección que vea el profesor contiene campos monetarios.
  *
- * No es casualidad: es el invariante FR-016 de la feature de tenancy, que el
- * servidor ya impone. Antes de abrir cualquiera de las tres al profesor, o de
- * añadir un campo monetario a una sección que sí ve, hay que cambiar primero lo
- * que autoriza el servidor.
+ * Las que sí los tienen son matrículas (`monthly_fee`) y pagos (`amount`), y
+ * ambas le están cerradas. Es el invariante FR-016 de la feature de tenancy, que
+ * el servidor ya impone: antes de añadir un campo monetario a una sección que el
+ * profesor sí ve, hay que cambiar primero lo que autoriza el servidor.
+ *
+ * Asignaturas también está cerrada, pero HOY YA NO POR ESTE MOTIVO: llevaba
+ * `monthly_fee` y esa columna se eliminó al separar el cobro de la asignatura.
+ * El enunciado dejó de ser «las cerradas son exactamente las que llevan dinero»
+ * y pasó a ser «las que llevan dinero están todas cerradas», que es la dirección
+ * que de verdad importa.
  */
-const MONETARY_SECTIONS = ['subjects', 'enrollments', 'payments']
+const MONETARY_SECTIONS = ['stages', 'subjects', 'enrollments', 'payments']
 
 export function isMonetarySection(key) {
   return MONETARY_SECTIONS.includes(key)
@@ -210,7 +259,10 @@ export function canWrite(sectionKey, roleNames) {
  */
 export function visibleSections(roleNames) {
   return Object.entries(SECTIONS)
-    .filter(([key]) => canAccess(key, roleNames))
+    // `hidden` retira de la navegación sin quitar acceso: la sección sigue
+    // teniendo ruta y permisos, simplemente no se ofrece como destino porque se
+    // llega a ella desde dentro de otra pantalla.
+    .filter(([key, section]) => !section.hidden && canAccess(key, roleNames))
     .map(([key, section]) => ({ key, ...section }))
 }
 

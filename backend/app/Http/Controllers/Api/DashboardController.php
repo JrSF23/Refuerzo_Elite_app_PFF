@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Attendance;
 use App\Models\ClassGroup;
 use App\Models\ClassSession;
 use App\Models\Enrollment;
-use App\Models\Payment;
-use App\Models\Student;
 use App\Models\Teacher;
+use App\Support\AdminDashboard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,28 +23,21 @@ class DashboardController
         return $this->adminDashboard();
     }
 
+    /**
+     * El panel de administración es un centro de control, no un escaparate de
+     * tablas: cada dato está para responder a «cómo va el centro» y «qué tengo
+     * que atender hoy».
+     *
+     * Los números se agregan en `App\Support\AdminDashboard`, contra la base y
+     * no sobre lo que quepa en una página. Aquí solo se decide QUIÉN pregunta.
+     *
+     * Ya no se devuelve `recentSessions`: las próximas sesiones son trabajo del
+     * módulo de Sesiones, y en el panel del administrador ocupaban el sitio de lo
+     * que sí necesita mirar.
+     */
     private function adminDashboard(): JsonResponse
     {
-        return response()->json([
-            // Discriminador de vista, no el nombre del rol: el frontend solo
-            // comprueba `=== 'teacher'` y todo lo demás cae en la vista de
-            // administración. Se conserva el valor para no cambiar la forma de la
-            // respuesta sin necesidad (FR-026).
-            'role'           => 'admin',
-            'stats'          => [
-                'students'   => Student::count(),
-                'teachers'   => Teacher::count(),
-                'groups'     => ClassGroup::count(),
-                'attendances'=> Attendance::count(),
-                'payments'   => Payment::count(),
-            ],
-            'recentStudents' => Student::with('guardian')->latest()->take(5)->get(),
-            'recentSessions' => ClassSession::with(['classGroup.subject', 'classGroup.teacher'])
-                ->orderByDesc('session_date')
-                ->take(5)
-                ->get(),
-            'recentPayments' => Payment::with(['student', 'guardian'])->latest()->take(5)->get(),
-        ]);
+        return response()->json(app(AdminDashboard::class)->payload());
     }
 
     private function teacherDashboard($user): JsonResponse
@@ -66,12 +57,17 @@ class DashboardController
                 'stats'              => ['groups' => 0, 'students' => 0, 'upcoming_sessions' => 0],
                 'myGroups'           => [],
                 'upcomingSessions'   => [],
-                'recentAttendances'  => [],
             ]);
         }
 
+        // Los grupos SON el panel del profesor, así que vienen con sus recuentos
+        // reales resueltos en subconsulta: cuántos alumnos y cuántas sesiones.
+        // Sin ellos, la tarjeta de cada grupo tendría que contar sobre lo que
+        // cupo en una página y mentiría, que es el mismo fallo que ya se
+        // corrigió en el índice de alumnos.
         $myGroups = ClassGroup::where('teacher_id', $teacher->id)
-            ->with('subject')
+            ->with(['subject', 'tutorGroup'])
+            ->withCount(['enrollments', 'classSessions'])
             ->orderBy('name')
             ->get();
 
@@ -90,15 +86,6 @@ class DashboardController
             ->distinct('student_id')
             ->count('student_id');
 
-        $recentAttendances = Attendance::whereHas(
-            'classSession',
-            fn ($q) => $q->whereIn('class_group_id', $myGroupIds)
-        )
-            ->with(['student', 'classSession.classGroup'])
-            ->latest()
-            ->take(8)
-            ->get();
-
         return response()->json([
             'role'              => 'teacher',
             'teacher'           => $teacher,
@@ -109,7 +96,6 @@ class DashboardController
             ],
             'myGroups'          => $myGroups,
             'upcomingSessions'  => $upcomingSessions,
-            'recentAttendances' => $recentAttendances,
         ]);
     }
 }

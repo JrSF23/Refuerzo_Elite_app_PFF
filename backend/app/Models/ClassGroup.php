@@ -13,6 +13,9 @@ class ClassGroup extends Model
     use BelongsToOrganization, HasFactory;
 
     protected $fillable = [
+        // El aula a la que pertenece. Un grupo de asignatura es el AULA × la
+        // MATERIA: «1º ESBA» da Matemáticas con Luis y Lengua con Marta.
+        'tutor_group_id',
         'subject_id',
         'teacher_id',
         'name',
@@ -31,6 +34,15 @@ class ClassGroup extends Model
             'start_date' => 'date',
             'end_date' => 'date',
         ];
+    }
+
+    /**
+     * El aula. Nulo en los grupos creados antes de que existiera el vínculo: no
+     * se les inventa una, porque sus alumnos venían de aulas distintas.
+     */
+    public function tutorGroup(): BelongsTo
+    {
+        return $this->belongsTo(TutorGroup::class);
     }
 
     public function subject(): BelongsTo

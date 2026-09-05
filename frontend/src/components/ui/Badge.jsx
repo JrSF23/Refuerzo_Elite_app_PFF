@@ -22,7 +22,12 @@ export function Badge({ tone = 'neutral', children }) {
 
 const RECORD_TONES = { active: 'success', inactive: 'neutral' }
 
-const ATTENDANCE_TONES = { present: 'success', late: 'warning', absent: 'error' }
+/**
+ * La falta JUSTIFICADA va en neutro, no en rojo: el centro sabe por qué faltó y
+ * no hay nada que atender. Gastar el rojo en ella lo volvería invisible en la
+ * ausencia que sí lo necesita.
+ */
+const ATTENDANCE_TONES = { present: 'success', late: 'warning', absent: 'error', excused: 'neutral' }
 
 /**
  * Un pago anulado va en tono NEUTRO, no de error: es un estado administrativo
@@ -32,6 +37,13 @@ const ATTENDANCE_TONES = { present: 'success', late: 'warning', absent: 'error' 
 const PAYMENT_TONES = { paid: 'success', pending: 'warning', cancelled: 'neutral' }
 
 const ORGANIZATION_TONES = { active: 'success', suspended: 'error' }
+
+/**
+ * Pendiente va en NEUTRO, no en ámbar: una sesión que aún no se ha dado no exige
+ * atención, es el estado normal de todo lo que está por venir. Reservar el ámbar
+ * para lo rutinario lo vuelve invisible cuando algo sí lo necesita.
+ */
+const SESSION_TONES = { taught: 'success', pending: 'neutral' }
 
 function statusBadge(map, catalog) {
   return function StatusBadge({ value }) {
@@ -45,3 +57,4 @@ export const RecordStatusBadge = statusBadge(RECORD_TONES, 'status')
 export const AttendanceStatusBadge = statusBadge(ATTENDANCE_TONES, 'attendanceStatus')
 export const PaymentStatusBadge = statusBadge(PAYMENT_TONES, 'paymentStatus')
 export const OrganizationStatusBadge = statusBadge(ORGANIZATION_TONES, 'status')
+export const SessionStatusBadge = statusBadge(SESSION_TONES, 'sessionStatus')

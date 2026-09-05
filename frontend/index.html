@@ -5,8 +5,37 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#111827" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="light dark" />
     <title>SmartWork — Gestión de centros educativos</title>
+
+    <!--
+      Tema, ANTES de pintar nada.
+
+      Va aquí y en línea, no en el paquete de la aplicación, por una razón
+      concreta: si se resolviera al montar React, el navegador ya habría pintado
+      un fotograma en claro y quien tiene el modo oscuro puesto vería un
+      fogonazo blanco en cada carga. Es el defecto que delata a un modo oscuro
+      añadido por encima.
+
+      El orden es: lo que la persona eligió, y si no eligió nada, lo que dice su
+      sistema. Envuelto en try/catch porque `localStorage` lanza en modo privado
+      de algunos navegadores, y quedarse sin tema es un fallo cosmético que no
+      debe impedir que la aplicación arranque.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('smartwork.theme')
+          var dark = stored
+            ? stored === 'dark'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+
+          if (dark) document.documentElement.setAttribute('data-theme', 'dark')
+        } catch (error) {
+          /* Sin acceso al almacenamiento se queda en claro, que es el defecto. */
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

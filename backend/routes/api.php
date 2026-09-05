@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\GuardianController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\StageController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherController;
@@ -49,11 +50,18 @@ Route::prefix('v1')->group(function (): void {
             // porque no lleva ningún campo monetario.
             Route::apiResource('tutor-groups', TutorGroupController::class)->only(['index', 'show']);
             Route::apiResource('class-groups', ClassGroupController::class)->only(['index', 'show']);
+            // Acto propio y deliberado, no un campo del formulario: marcar una
+            // sesión como impartida es DEFINITIVO. Va antes del apiResource por
+            // legibilidad; no colisiona con ninguna de sus rutas.
+            Route::post('/class-sessions/{id}/taught', [ClassSessionController::class, 'markTaught']);
             Route::apiResource('class-sessions', ClassSessionController::class);
             Route::apiResource('attendances', AttendanceController::class);
         });
 
         Route::middleware(['tenant', 'role.any:org_admin'])->group(function (): void {
+            // La etapa lleva la cuota del curso, así que es sección de
+            // administración: el profesor no ve ningún campo monetario (FR-016).
+            Route::apiResource('stages', StageController::class);
             Route::apiResource('guardians', GuardianController::class);
             Route::apiResource('teachers', TeacherController::class);
             Route::apiResource('subjects', SubjectController::class);

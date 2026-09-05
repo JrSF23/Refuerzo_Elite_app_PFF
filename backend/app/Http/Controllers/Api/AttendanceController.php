@@ -14,6 +14,18 @@ class AttendanceController extends BaseApiController
 {
     protected string $modelClass = Attendance::class;
     protected array $with = ['classSession.classGroup', 'student'];
+    /**
+     * Se busca por el alumno y por la sesión, que es como se pregunta: «la falta
+     * de Ana» o «la asistencia del repaso del martes». `comment` es la única
+     * columna propia con texto y no se incluye: nadie recuerda una asistencia por
+     * lo que se anotó en ella.
+     */
+    protected array $searchable = [
+        'student.first_name',
+        'student.last_name',
+        'classSession.title',
+        'classSession.classGroup.name',
+    ];
     protected string $entityLabel = 'attendance';
 
     protected function rules(?int $id = null): array
@@ -25,9 +37,39 @@ class AttendanceController extends BaseApiController
                 new BelongsToCurrentOrganization(Student::class),
                 Rule::unique('attendances')->ignore($id)->where(fn ($query) => $query->where('class_session_id', request('class_session_id'))),
             ],
-            'status' => ['required', Rule::in(['present', 'absent', 'late'])],
+            // `excused` es la falta JUSTIFICADA, y es un estado por derecho propio: no
+            // es una ausencia sin más —el centro sabe por qué— ni cuenta como haber
+            // asistido. La columna es un `string` sin restricción en base, así que
+            // admitirlo no necesitó migración; la lista de aquí es la única puerta.
+            'status' => ['required', Rule::in(['present', 'absent', 'late', 'excused'])],
             'comment' => ['nullable', 'string'],
         ];
+    }
+
+    /**
+     * Acota la asistencia a un grupo cuando la petición lo pide.
+     *
+     * Es lo que permite organizar la sección por grupos en vez de volcar todos
+     * los registros del centro en una lista. El motivo es el mismo que llevó a
+     * hacerlo así en alumnos: **la paginación es global**. Una página trae 20
+     * registros, de modo que cualquier agrupación hecha en el cliente enseñaría
+     * FRAGMENTOS de cada grupo con recuentos falsos.
+     *
+     * El filtro atraviesa la sesión, porque la asistencia no conoce al grupo
+     * directamente: cuelga de `class_sessions`, y es esa la que sabe de qué
+     * grupo es. Va por `whereHas` y no por un join, así el global scope de
+     * organización sigue aplicándose dentro de la subconsulta.
+     */
+    protected function applyIndexFilters(Builder $query): void
+    {
+        $classGroupId = request()->integer('class_group_id');
+
+        if ($classGroupId !== 0) {
+            $query->whereHas(
+                'classSession',
+                fn (Builder $sessions) => $sessions->where('class_group_id', $classGroupId)
+            );
+        }
     }
 
     /**

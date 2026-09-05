@@ -1,5 +1,7 @@
 import { t } from '../../i18n/index.js'
+import { useTheme } from '../../hooks/useTheme.js'
 import { Dropdown, DropdownItem } from '../ui/Dropdown.jsx'
+import { ThemeToggle } from './ThemeToggle.jsx'
 
 /**
  * Cabecera de la aplicación.
@@ -12,6 +14,8 @@ import { Dropdown, DropdownItem } from '../ui/Dropdown.jsx'
  * caso se rotula como plataforma en lugar de dejar el hueco vacío.
  */
 export function Header({ organization, user, roleNames, isPlatformAdmin, onLogout, onOpenNav }) {
+  const { isDark, toggle } = useTheme()
+
   const roleLabel = roleNames.length > 0
     ? roleNames.map((role) => t(`roles.${role}`)).join(', ')
     : t('roles.none')
@@ -52,9 +56,30 @@ export function Header({ organization, user, roleNames, isPlatformAdmin, onLogou
         )}
       >
         {({ close }) => (
-          <DropdownItem onClick={() => { close(); onLogout() }} tone="danger">
-            {t('auth.logout')}
-          </DropdownItem>
+          <>
+            {/* Quién eres, dentro del menú que lleva tu nombre. En la cabecera
+                el rótulo se oculta por debajo de 640 px para que quepa el resto,
+                así que en móvil este es el único sitio donde se puede comprobar
+                con qué cuenta se está trabajando antes de borrar algo. */}
+            <div className="dropdown__identity">
+              <span className="dropdown__identity-name">{user?.name}</span>
+              <span className="dropdown__identity-role">{roleLabel}</span>
+            </div>
+
+            {/* La apariencia NO es una opción del menú: es un interruptor.
+                Como opción habría que cerrar el menú para ver el resultado y
+                volver a abrirlo si no convence. Aquí se ve cambiar la pantalla
+                debajo mientras se pulsa, y por eso NO cierra el menú.
+
+                Va aquí y no en el panel porque es una preferencia que se toca
+                una vez: en mitad de la pantalla ocuparía sitio permanente a
+                cambio de un uso al año. */}
+            <ThemeToggle isDark={isDark} onToggle={toggle} />
+
+            <DropdownItem onClick={() => { close(); onLogout() }} tone="danger">
+              {t('auth.logout')}
+            </DropdownItem>
+          </>
         )}
       </Dropdown>
     </header>

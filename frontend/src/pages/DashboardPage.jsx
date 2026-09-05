@@ -1,15 +1,16 @@
-import { EMPTY_VALUE, formatAmount, formatDate, formatTime, t } from '../i18n/index.js'
+import { EMPTY_VALUE, formatAmount, formatDate, formatNumber, formatTime, t } from '../i18n/index.js'
 import { useSession } from '../context/SessionContext.jsx'
 import { useDashboard } from '../hooks/useDashboard.js'
 import { SECTIONS, canAccess } from '../lib/permissions.js'
+import { Link } from 'react-router-dom'
+
+import { Card, CardHeader } from '../components/ui/Card.jsx'
 import { StatCard } from '../components/dashboard/StatCard.jsx'
 import { RecentPanel } from '../components/dashboard/RecentPanel.jsx'
-import {
-  AttendanceStatusBadge,
-  PaymentStatusBadge,
-  RecordStatusBadge,
-} from '../components/ui/Badge.jsx'
-import { ErrorState, LoadingState } from '../components/data/states.jsx'
+import { AttendanceCard } from '../components/dashboard/AttendanceCard.jsx'
+import { AttentionPanel } from '../components/dashboard/AttentionPanel.jsx'
+import { PaymentStatusBadge } from '../components/ui/Badge.jsx'
+import { EmptyState, ErrorState, LoadingState } from '../components/data/states.jsx'
 
 /**
  * Panel operativo.
@@ -21,7 +22,7 @@ import { ErrorState, LoadingState } from '../components/data/states.jsx'
  */
 export function DashboardPage() {
   const { status, data, error, retry } = useDashboard()
-  const { roleNames } = useSession()
+  const { roleNames, user } = useSession()
 
   // Un indicador solo enlaza si el rol puede entrar en la sección; si no, sería
   // un enlace que acaba en redirección (FR-017).
@@ -34,7 +35,14 @@ export function DashboardPage() {
   // `switch` no hay hueco por donde pasar: los datos solo se leen en 'ready'.
   return (
     <>
-      <h1 className="page-title">{t('dashboard.title')}</h1>
+      {/* Saludo en vez de «Panel». El rótulo de la sección ya está en la barra
+          lateral, así que repetirlo aquí gasta el encabezado de nivel 1 —el
+          primero que anuncia un lector de pantalla— en decir dónde estás, que ya
+          sabías. Corto a propósito: nadie lee «aquí tienes el resumen de tu
+          centro» dos veces. */}
+      <h1 className="page-title page-title--greeting">
+        {t(greetingKey(), { name: user?.name ?? '' })}
+      </h1>
 
       {status === 'loading' ? <LoadingState rows={4} /> : null}
 
@@ -51,47 +59,72 @@ export function DashboardPage() {
   )
 }
 
+/**
+ * Saludo según la hora del reloj de quien mira.
+ *
+ * Se resuelve en el cliente y no en el servidor a propósito: la hora que importa
+ * es la de la persona que tiene la pantalla delante, no la del contenedor.
+ */
+function greetingKey() {
+  const hour = new Date().getHours()
+
+  if (hour < 13) return 'dashboard.greetingMorning'
+  if (hour < 21) return 'dashboard.greetingAfternoon'
+
+  return 'dashboard.greetingEvening'
+}
+
 /* ── Administración ────────────────────────────────────────────────────────── */
 
 function AdminDashboard({ data, linkTo }) {
-  const { stats, recentStudents, recentSessions, recentPayments } = data
+  const { stats, attendance, recentPayments, attentionItems } = data
 
   return (
     <>
+      {/* DATOS → CONTEXTO → ALERTAS → ACCIÓN.
+          La fila de indicadores da el estado general; la banda central, el
+          detalle de lo que se mira a diario; y «Requiere atención» cierra con lo
+          único que exige una decisión hoy. Va la última y no la primera a
+          propósito: se lee después de saber cómo está el centro, no antes. */}
       <section className="stats-grid">
-        <StatCard label={t('dashboard.stats.students')} to={linkTo('students')} value={stats.students} />
-        <StatCard label={t('dashboard.stats.teachers')} to={linkTo('teachers')} value={stats.teachers} />
-        <StatCard label={t('dashboard.stats.groups')} to={linkTo('classGroups')} value={stats.groups} />
-        <StatCard label={t('dashboard.stats.attendances')} to={linkTo('attendance')} value={stats.attendances} />
-        <StatCard label={t('dashboard.stats.payments')} to={linkTo('payments')} value={stats.payments} />
+        <StatCard
+          label={t('dashboard.stats.students')}
+          to={linkTo('students')}
+          value={formatNumber(stats.students)}
+        />
+        <StatCard
+          label={t('dashboard.stats.teachers')}
+          to={linkTo('teachers')}
+          value={formatNumber(stats.teachers)}
+        />
+        <StatCard
+          label={t('dashboard.stats.groups')}
+          to={linkTo('classGroups')}
+          value={formatNumber(stats.groups)}
+        />
+        {/* Un PORCENTAJE, no el recuento de registros. «24.318 registros de
+            asistencia» es una medida del tamaño de la base de datos, no del
+            centro: no se puede saber si es buena o mala cifra. */}
+        <StatCard
+          label={t('dashboard.stats.attendanceRate')}
+          to={linkTo('attendance')}
+          value={attendance.rate === null
+            ? EMPTY_VALUE
+            : `${formatNumber(attendance.rate, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}
+        />
+        {/* Pagos PENDIENTES, no pagos totales. El total es historia; lo
+            pendiente es trabajo. */}
+        <StatCard
+          hint={stats.pending_payments > 0 ? t('dashboard.stats.needsAttention') : undefined}
+          label={t('dashboard.stats.pendingPayments')}
+          to={linkTo('payments')}
+          tone={stats.pending_payments > 0 ? 'warn' : undefined}
+          value={formatNumber(stats.pending_payments)}
+        />
       </section>
 
-      <section className="panels-grid">
-        <RecentPanel
-          emptyText={t('dashboard.emptyStudents')}
-          items={recentStudents.map((student) => ({
-            key: student.id,
-            primary: student.full_name,
-            secondary: student.guardian?.full_name ?? t('dashboard.noGuardian'),
-            trailing: <RecordStatusBadge value={student.status} />,
-          }))}
-          title={t('dashboard.recentStudents')}
-          to={linkTo('students')}
-        />
-
-        <RecentPanel
-          emptyText={t('dashboard.emptySessions')}
-          items={recentSessions.map((session) => ({
-            key: session.id,
-            primary: session.title,
-            secondary: [
-              session.class_group?.name,
-              formatDate(session.session_date),
-            ].filter(Boolean).join(' · '),
-          }))}
-          title={t('dashboard.recentSessions')}
-          to={linkTo('sessions')}
-        />
+      <section className="dashboard-grid">
+        <AttendanceCard attendance={attendance} to={linkTo('attendance')} />
 
         <RecentPanel
           emptyText={t('dashboard.emptyPayments')}
@@ -114,6 +147,8 @@ function AdminDashboard({ data, linkTo }) {
           to={linkTo('payments')}
         />
       </section>
+
+      <AttentionPanel items={attentionItems} linkTo={linkTo} />
     </>
   )
 }
@@ -121,7 +156,7 @@ function AdminDashboard({ data, linkTo }) {
 /* ── Profesor ──────────────────────────────────────────────────────────────── */
 
 function TeacherDashboard({ data, linkTo }) {
-  const { teacher, stats, myGroups, upcomingSessions, recentAttendances } = data
+  const { teacher, stats, myGroups, upcomingSessions } = data
 
   return (
     <>
@@ -137,24 +172,69 @@ function TeacherDashboard({ data, linkTo }) {
       ) : null}
 
       <section className="stats-grid">
-        <StatCard label={t('dashboard.stats.myGroups')} to={linkTo('classGroups')} value={stats.groups} />
-        <StatCard label={t('dashboard.stats.myStudents')} to={linkTo('students')} value={stats.students} />
-        <StatCard label={t('dashboard.stats.upcomingSessions')} to={linkTo('sessions')} value={stats.upcoming_sessions} />
+        <StatCard label={t('dashboard.stats.myGroups')} value={formatNumber(stats.groups)} />
+        <StatCard label={t('dashboard.stats.myStudents')} to={linkTo('students')} value={formatNumber(stats.students)} />
+        <StatCard label={t('dashboard.stats.upcomingSessions')} to={linkTo('sessions')} value={formatNumber(stats.upcoming_sessions)} />
       </section>
 
-      <section className="panels-grid">
-        <RecentPanel
-          emptyText={t('dashboard.emptyGroups')}
-          items={myGroups.map((group) => ({
-            key: group.id,
-            primary: group.name,
-            secondary: [group.subject?.name, group.schedule].filter(Boolean).join(' · '),
-            trailing: <RecordStatusBadge value={group.status} />,
-          }))}
-          title={t('dashboard.myGroups')}
-          to={linkTo('classGroups')}
-        />
+      {/*
+        * SUS GRUPOS SON EL PANEL, y cada uno entra directo a pasar lista.
+        *
+        * Antes había aquí una lista plana de «asistencia reciente»: los últimos
+        * ocho registros, mezclando grupos y días. No servía para nada de lo que
+        * un profesor hace al abrir la aplicación —no dice de qué grupo toca
+        * hoy, ni cuántos alumnos tiene, ni le lleva a ninguna parte— y crecía
+        * sin organizarse. Se ha retirado.
+        *
+        * Lo que sí necesita es esto: sus grupos, con cuántos alumnos y cuántas
+        * sesiones lleva cada uno, y un solo toque para registrar la asistencia
+        * del que le toque ahora.
+        */}
+      <section className="dashboard-grid">
+        <Card as="section">
+          <CardHeader title={t('dashboard.myGroups')} />
 
+          {myGroups.length === 0 ? (
+            <EmptyState title={t('dashboard.emptyGroups')} />
+          ) : (
+            <ul className="group-index">
+              {myGroups.map((group) => (
+                <li key={group.id}>
+                  <Link className="group-card" to={`/asistencia/grupo/${group.id}`}>
+                    <div className="group-card__main">
+                      <span className="group-card__name">
+                        {group.tutor_group
+                          ? `${group.tutor_group.name} — ${group.subject?.name ?? group.name}`
+                          : group.name}
+                      </span>
+                      <span className="group-card__tutor">
+                        {t('dashboard.groupStudents', {
+                          count: formatNumber(group.enrollments_count ?? 0),
+                        })}
+                      </span>
+                    </div>
+
+                    <div className="group-card__meta">
+                      <span className="group-card__count tabular">
+                        {formatNumber(group.class_sessions_count ?? 0)}
+                      </span>
+                      <span className="group-card__count-label">
+                        {t((group.class_sessions_count ?? 0) === 1
+                          ? 'attendance.sessionCountOne'
+                          : 'attendance.sessionCountMany')}
+                      </span>
+                    </div>
+
+                    <span aria-hidden="true" className="group-card__chevron" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        {/* Las próximas sesiones SÍ se quedan: son literalmente el trabajo del
+            día, y son pocas por definición. */}
         <RecentPanel
           emptyText={t('dashboard.emptyUpcoming')}
           items={upcomingSessions.map((session) => ({
@@ -168,21 +248,6 @@ function TeacherDashboard({ data, linkTo }) {
           }))}
           title={t('dashboard.upcomingSessions')}
           to={linkTo('sessions')}
-        />
-
-        <RecentPanel
-          emptyText={t('dashboard.emptyAttendances')}
-          items={recentAttendances.map((attendance) => ({
-            key: attendance.id,
-            primary: attendance.student?.full_name ?? EMPTY_VALUE,
-            secondary: [
-              attendance.class_session?.title,
-              attendance.class_session?.class_group?.name,
-            ].filter(Boolean).join(' · '),
-            trailing: <AttendanceStatusBadge value={attendance.status} />,
-          }))}
-          title={t('dashboard.recentAttendances')}
-          to={linkTo('attendance')}
         />
       </section>
     </>
