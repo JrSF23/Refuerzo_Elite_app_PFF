@@ -2111,3 +2111,11 @@
     margin-left: calc(1.25rem + var(--space-3));
   }
 }
+
+/* Importe pendiente junto a su distintivo. El texto del distintivo dice el
+   estado, de modo que la columna se lee sin depender del color. */
+.billing__due {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}

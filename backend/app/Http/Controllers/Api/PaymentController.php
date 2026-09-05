@@ -15,7 +15,13 @@ use Illuminate\Validation\Rule;
 class PaymentController extends BaseApiController
 {
     protected string $modelClass = Payment::class;
-    protected array $with = ['student', 'guardian', 'enrollment.classGroup'];
+    /**
+     * La etapa del alumno viaja con el pago: es de donde sale la cuota contra la
+     * que se contrasta el importe. `enrollment` se conserva porque los pagos
+     * antiguos la tienen, pero ya no se pide al cobrar — la cuota es del curso,
+     * no de cada asignatura.
+     */
+    protected array $with = ['student.tutorGroup.stage', 'guardian', 'enrollment.classGroup'];
     /**
      * El alumno primero, que es por donde se busca un pago. `reference` y
      * `period_label` son columnas propias y sí sirven: el justificante y el

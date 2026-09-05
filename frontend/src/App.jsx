@@ -14,6 +14,7 @@ import { GroupStudentsPage } from './pages/students/GroupStudentsPage.jsx'
 import { GroupSubjectsPage } from './pages/classGroups/GroupSubjectsPage.jsx'
 import { GuardiansPage } from './pages/guardians/GuardiansPage.jsx'
 import { TeachersPage } from './pages/teachers/TeachersPage.jsx'
+import { BillingPage } from './pages/billing/BillingPage.jsx'
 import { StagesPage } from './pages/stages/StagesPage.jsx'
 import { SubjectsPage } from './pages/subjects/SubjectsPage.jsx'
 import { TutorGroupsPage } from './pages/tutorGroups/TutorGroupsPage.jsx'
@@ -43,6 +44,7 @@ const BUILT_SECTIONS = {
   teachers: TeachersPage,
   subjects: SubjectsPage,
   stages: StagesPage,
+  billing: BillingPage,
   tutorGroups: TutorGroupsPage,
   classGroups: ClassGroupsPage,
   enrollments: EnrollmentsPage,

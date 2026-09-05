@@ -17,6 +17,20 @@ export function PaymentsPage() {
     <ResourcePage
       columns={[
         { key: 'student.full_name', label: t('fields.student') },
+        {
+          // La cuota que le corresponde, que sale de la etapa de su aula. Sin
+          // ella, quien cobra no tiene contra qué contrastar el importe que
+          // acaba de teclear.
+          key: 'stage',
+          label: t('payments.fields.stageFee'),
+          render: (record) => {
+            const stage = record.student?.tutor_group?.stage
+
+            return stage
+              ? `${stage.name} · ${formatAmount(stage.fee)}`
+              : <span className="text-muted">{t('payments.fields.noStage')}</span>
+          },
+        },
         { key: 'period_label', label: t('payments.fields.period') },
         {
           key: 'amount',
@@ -50,17 +64,6 @@ export function PaymentsPage() {
           endpoint: 'students',
           optionLabel: (student) => student.full_name,
           required: true,
-        },
-        {
-          name: 'enrollment_id',
-          label: t('fields.enrollment'),
-          type: 'relation',
-          endpoint: 'enrollments',
-          optionLabel: (enrollment) => [
-            enrollment.student?.full_name,
-            enrollment.class_group?.name,
-          ].filter(Boolean).join(' — '),
-          hint: t('payments.fields.enrollmentHint'),
         },
         {
           name: 'amount',

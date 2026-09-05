@@ -164,6 +164,19 @@ export const SECTIONS = {
     access: { [ROLES.ORG_ADMIN]: WRITE },
   },
 
+  /*
+   * Estado de cobros: lo que cada alumno debe, restando lo cobrado de la cuota
+   * de su etapa. Solo lectura — se cobra desde Pagos— y cerrada al profesor como
+   * todo lo monetario.
+   */
+  billing: {
+    path: '/cobros',
+    endpoint: 'billing',
+    searchable: true,
+    group: 'sectionFinance',
+    access: { [ROLES.ORG_ADMIN]: READ },
+  },
+
   payments: {
     path: '/pagos',
     endpoint: 'payments',
@@ -203,7 +216,7 @@ export const SECTIONS = {
  * y pasó a ser «las que llevan dinero están todas cerradas», que es la dirección
  * que de verdad importa.
  */
-const MONETARY_SECTIONS = ['stages', 'subjects', 'enrollments', 'payments']
+const MONETARY_SECTIONS = ['stages', 'billing', 'subjects', 'enrollments', 'payments']
 
 export function isMonetarySection(key) {
   return MONETARY_SECTIONS.includes(key)

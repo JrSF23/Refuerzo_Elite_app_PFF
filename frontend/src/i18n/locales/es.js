@@ -439,6 +439,26 @@ export const es = {
     },
   },
 
+  billing: {
+    title: 'Estado de cobros',
+    intro: 'Lo que cada alumno debe del curso, según la cuota de su etapa y lo ya cobrado.',
+    searchStudents: 'Buscar alumno',
+    emptyTitle: 'Todavía no hay alumnos',
+    emptyBody: 'El estado de cobros se calcula sobre los alumnos del centro y la etapa de su aula.',
+    // «Sin cuota» y no «0»: el centro aún no ha dicho cuánto cuesta lo suyo, y
+    // fingir una cifra convierte un dato que falta en una afirmación sobre una
+    // familia.
+    noFee: 'Sin cuota',
+    settled: 'Al día',
+    due: 'Pendiente',
+    fields: {
+      stage: 'Etapa',
+      fee: 'Cuota del curso',
+      paid: 'Cobrado',
+      outstanding: 'Pendiente',
+    },
+  },
+
   payments: {
     title: 'Pagos',
     create: 'Registrar pago',
@@ -446,6 +466,10 @@ export const es = {
     emptyTitle: 'Todavía no hay pagos',
     emptyBody: 'Registre los cobros del centro para llevar su seguimiento.',
     fields: {
+      // La cuota que le corresponde al alumno, para contrastar el importe que
+      // se acaba de teclear. Sale de la etapa de su aula, no de la matrícula.
+      stageFee: 'Cuota del alumno',
+      noStage: 'Sin etapa asignada',
       amount: 'Importe',
       period: 'Periodo',
       periodHint: 'Por ejemplo: «Octubre 2025» o «1er trimestre».',

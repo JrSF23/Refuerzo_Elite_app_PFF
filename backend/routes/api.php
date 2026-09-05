@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\ClassGroupController;
 use App\Http\Controllers\Api\ClassSessionController;
 use App\Http\Controllers\Api\DashboardController;
@@ -62,6 +63,10 @@ Route::prefix('v1')->group(function (): void {
             // La etapa lleva la cuota del curso, así que es sección de
             // administración: el profesor no ve ningún campo monetario (FR-016).
             Route::apiResource('stages', StageController::class);
+
+            // Estado de cobros: lo que cada alumno debe, restando lo cobrado de
+            // la cuota de su etapa. Solo lectura y solo administración.
+            Route::get('/billing', BillingController::class);
             Route::apiResource('guardians', GuardianController::class);
             Route::apiResource('teachers', TeacherController::class);
             Route::apiResource('subjects', SubjectController::class);
