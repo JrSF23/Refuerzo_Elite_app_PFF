@@ -187,14 +187,6 @@ export const es = {
     },
 
     attendance: {
-    groupsIntro: 'Elija un grupo para ver y registrar su asistencia. Cada grupo lleva su propio recuento y su propia lista.',
-    searchGroups: 'Buscar grupo',
-    noGroupsTitle: 'Todavía no hay grupos',
-    noGroupsBody: 'La asistencia se registra dentro de un grupo. Añada las materias de un aula desde Grupos para poder pasar lista.',
-    sessionCountOne: 'sesión',
-    sessionCountMany: 'sesiones',
-    emptyGroupTitle: 'Este grupo no tiene asistencia registrada',
-    emptyGroupBody: 'Registre la asistencia de una de sus sesiones. Solo se ofrecen las sesiones de este grupo.',
       title: 'Asistencia',
       noTrend: 'Todavía no hay asistencia registrada esta semana.',
       // Iniciales del día en castellano: el miércoles es X para no chocar con
@@ -429,6 +421,14 @@ export const es = {
   },
 
   attendance: {
+    groupsIntro: 'Elija un grupo para ver y registrar su asistencia. Cada grupo lleva su propio recuento y su propia lista.',
+    searchGroups: 'Buscar grupo',
+    noGroupsTitle: 'Todavía no hay grupos',
+    noGroupsBody: 'La asistencia se registra dentro de un grupo. Añada las materias de un aula desde Grupos para poder pasar lista.',
+    sessionCountOne: 'sesión',
+    sessionCountMany: 'sesiones',
+    emptyGroupTitle: 'Este grupo no tiene asistencia registrada',
+    emptyGroupBody: 'Registre la asistencia de una de sus sesiones. Solo se ofrecen las sesiones de este grupo.',
     title: 'Asistencia',
     create: 'Registrar asistencia',
     edit: 'Editar asistencia',
