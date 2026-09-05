@@ -263,8 +263,8 @@ class AdminDashboardTest extends TestCase
     }
 
     /**
-     * El panel del profesor NO se toca en este rediseño: sigue con su forma y sus
-     * próximas sesiones, que para él sí son su trabajo del día.
+     * El panel del profesor conserva su forma y sus próximas sesiones, que para
+     * él sí son su trabajo del día.
      */
     public function test_the_teacher_dashboard_keeps_its_own_shape(): void
     {
@@ -279,6 +279,43 @@ class AdminDashboardTest extends TestCase
         $this->assertSame('teacher', $data['role']);
         $this->assertArrayHasKey('upcomingSessions', $data);
         $this->assertArrayNotHasKey('attentionItems', $data);
+    }
+
+    /**
+     * Sus grupos SON su panel, y por eso vienen con recuentos reales.
+     *
+     * Antes traía una lista plana de «asistencia reciente»: los últimos ocho
+     * registros, mezclando grupos y días. No respondía a nada de lo que un
+     * profesor hace al abrir la aplicación —no dice de qué grupo toca hoy, ni
+     * cuántos alumnos tiene, ni lleva a ninguna parte— y crecía sin
+     * organizarse. Se retiró, y estas comprobaciones lo fijan.
+     */
+    public function test_the_teacher_dashboard_carries_group_counts_and_no_flat_list(): void
+    {
+        $teacherUser = $this->createUserFor($this->orgA, 'teacher');
+        $profile = $this->createTeacherProfile($this->orgA, $teacherUser);
+
+        $subject = $this->createSubject($this->orgA);
+        $group = $this->createClassGroup($this->orgA, [
+            'subject_id' => $subject->getKey(),
+            'teacher_id' => $profile->getKey(),
+        ]);
+
+        $this->createClassSession($this->orgA, $group);
+        $this->createClassSession($this->orgA, $group);
+        $this->createEnrollment($this->orgA, $this->createStudent($this->orgA), $group);
+
+        $data = $this->actingWithToken($this->tokenFor($teacherUser))
+            ->getJson('/api/v1/dashboard')
+            ->assertOk()
+            ->json();
+
+        $this->assertArrayNotHasKey('recentAttendances', $data, 'La lista plana de asistencia sigue ahí.');
+
+        $suyo = collect($data['myGroups'])->firstWhere('id', $group->getKey());
+
+        $this->assertSame(2, $suyo['class_sessions_count']);
+        $this->assertSame(1, $suyo['enrollments_count']);
     }
 
     public function test_recent_payments_only_shows_this_centre(): void

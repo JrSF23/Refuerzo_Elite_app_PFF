@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Attendance;
 use App\Models\ClassGroup;
 use App\Models\ClassSession;
 use App\Models\Enrollment;
@@ -58,12 +57,17 @@ class DashboardController
                 'stats'              => ['groups' => 0, 'students' => 0, 'upcoming_sessions' => 0],
                 'myGroups'           => [],
                 'upcomingSessions'   => [],
-                'recentAttendances'  => [],
             ]);
         }
 
+        // Los grupos SON el panel del profesor, así que vienen con sus recuentos
+        // reales resueltos en subconsulta: cuántos alumnos y cuántas sesiones.
+        // Sin ellos, la tarjeta de cada grupo tendría que contar sobre lo que
+        // cupo en una página y mentiría, que es el mismo fallo que ya se
+        // corrigió en el índice de alumnos.
         $myGroups = ClassGroup::where('teacher_id', $teacher->id)
-            ->with('subject')
+            ->with(['subject', 'tutorGroup'])
+            ->withCount(['enrollments', 'classSessions'])
             ->orderBy('name')
             ->get();
 
@@ -82,15 +86,6 @@ class DashboardController
             ->distinct('student_id')
             ->count('student_id');
 
-        $recentAttendances = Attendance::whereHas(
-            'classSession',
-            fn ($q) => $q->whereIn('class_group_id', $myGroupIds)
-        )
-            ->with(['student', 'classSession.classGroup'])
-            ->latest()
-            ->take(8)
-            ->get();
-
         return response()->json([
             'role'              => 'teacher',
             'teacher'           => $teacher,
@@ -101,7 +96,6 @@ class DashboardController
             ],
             'myGroups'          => $myGroups,
             'upcomingSessions'  => $upcomingSessions,
-            'recentAttendances' => $recentAttendances,
         ]);
     }
 }

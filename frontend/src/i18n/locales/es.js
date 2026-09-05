@@ -187,6 +187,14 @@ export const es = {
     },
 
     attendance: {
+    groupsIntro: 'Elija un grupo para ver y registrar su asistencia. Cada grupo lleva su propio recuento y su propia lista.',
+    searchGroups: 'Buscar grupo',
+    noGroupsTitle: 'Todavía no hay grupos',
+    noGroupsBody: 'La asistencia se registra dentro de un grupo. Añada las materias de un aula desde Grupos para poder pasar lista.',
+    sessionCountOne: 'sesión',
+    sessionCountMany: 'sesiones',
+    emptyGroupTitle: 'Este grupo no tiene asistencia registrada',
+    emptyGroupBody: 'Registre la asistencia de una de sus sesiones. Solo se ofrecen las sesiones de este grupo.',
       title: 'Asistencia',
       noTrend: 'Todavía no hay asistencia registrada esta semana.',
       // Iniciales del día en castellano: el miércoles es X para no chocar con
@@ -222,7 +230,9 @@ export const es = {
     recentPayments: 'Últimos pagos',
     myGroups: 'Mis grupos',
     upcomingSessions: 'Próximas sesiones',
-    recentAttendances: 'Asistencia reciente',
+    // El panel del profesor ya no lista asistencia suelta: sus grupos son el
+    // panel, y cada uno entra directo a pasar lista.
+    groupStudents: '{count} alumnos',
     teacherUnlinkedTitle: 'Cuenta sin ficha de profesor',
     teacherUnlinkedBody: 'Su cuenta todavía no está vinculada a una ficha de profesor, así que no se muestran grupos ni sesiones. Pida a la administración del centro que complete la vinculación.',
     emptyStudents: 'Todavía no hay alumnos dados de alta.',
@@ -230,7 +240,6 @@ export const es = {
     emptyPayments: 'Todavía no hay pagos registrados.',
     emptyGroups: 'No tiene ningún grupo asignado.',
     emptyUpcoming: 'No tiene sesiones próximas.',
-    emptyAttendances: 'Todavía no hay asistencia registrada.',
     noGuardian: 'Sin tutor asignado',
   },
 

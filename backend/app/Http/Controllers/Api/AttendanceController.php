@@ -47,6 +47,32 @@ class AttendanceController extends BaseApiController
     }
 
     /**
+     * Acota la asistencia a un grupo cuando la petición lo pide.
+     *
+     * Es lo que permite organizar la sección por grupos en vez de volcar todos
+     * los registros del centro en una lista. El motivo es el mismo que llevó a
+     * hacerlo así en alumnos: **la paginación es global**. Una página trae 20
+     * registros, de modo que cualquier agrupación hecha en el cliente enseñaría
+     * FRAGMENTOS de cada grupo con recuentos falsos.
+     *
+     * El filtro atraviesa la sesión, porque la asistencia no conoce al grupo
+     * directamente: cuelga de `class_sessions`, y es esa la que sabe de qué
+     * grupo es. Va por `whereHas` y no por un join, así el global scope de
+     * organización sigue aplicándose dentro de la subconsulta.
+     */
+    protected function applyIndexFilters(Builder $query): void
+    {
+        $classGroupId = request()->integer('class_group_id');
+
+        if ($classGroupId !== 0) {
+            $query->whereHas(
+                'classSession',
+                fn (Builder $sessions) => $sessions->where('class_group_id', $classGroupId)
+            );
+        }
+    }
+
+    /**
      * El profesor solo ve la asistencia de sus propias sesiones.
      */
     protected function applyTeacherScope(Builder $query): void

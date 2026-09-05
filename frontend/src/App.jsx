@@ -20,7 +20,8 @@ import { TutorGroupsPage } from './pages/tutorGroups/TutorGroupsPage.jsx'
 import { ClassGroupsPage } from './pages/classGroups/ClassGroupsPage.jsx'
 import { EnrollmentsPage } from './pages/enrollments/EnrollmentsPage.jsx'
 import { SessionsPage } from './pages/sessions/SessionsPage.jsx'
-import { AttendancePage } from './pages/attendance/AttendancePage.jsx'
+import { AttendanceGroupsPage } from './pages/attendance/AttendanceGroupsPage.jsx'
+import { GroupAttendancePage } from './pages/attendance/GroupAttendancePage.jsx'
 import { PaymentsPage } from './pages/payments/PaymentsPage.jsx'
 import { UsersPage } from './pages/users/UsersPage.jsx'
 import { OrganizationsPage } from './pages/organizations/OrganizationsPage.jsx'
@@ -46,7 +47,7 @@ const BUILT_SECTIONS = {
   classGroups: ClassGroupsPage,
   enrollments: EnrollmentsPage,
   sessions: SessionsPage,
-  attendance: AttendancePage,
+  attendance: AttendanceGroupsPage,
   payments: PaymentsPage,
   users: UsersPage,
   organizations: OrganizationsPage,
@@ -101,6 +102,18 @@ function AppRoutes() {
             </RequireSection>
           )}
           path="alumnos/grupo/:groupId"
+        />
+
+        {/* Asistencia de un grupo. El índice son los grupos, y la asistencia
+            se registra dentro de uno: la paginación es global, así que una lista
+            única enseñaría fragmentos de cada grupo con recuentos falsos. */}
+        <Route
+          element={(
+            <RequireSection section="attendance">
+              <GroupAttendancePage />
+            </RequireSection>
+          )}
+          path="asistencia/grupo/:groupId"
         />
 
         {/* Materias de un aula. Sustituye a la sección «Grupos de asignatura»,

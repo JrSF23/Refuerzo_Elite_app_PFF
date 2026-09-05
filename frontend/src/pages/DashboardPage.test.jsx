@@ -163,7 +163,6 @@ describe('DashboardPage', () => {
         stats: { groups: 2, students: 5, upcoming_sessions: 0 },
         myGroups: [],
         upcomingSessions: [],
-        recentAttendances: [],
       },
     })
 
@@ -188,7 +187,6 @@ describe('DashboardPage', () => {
         stats: { groups: 0, students: 0, upcoming_sessions: 0 },
         myGroups: [],
         upcomingSessions: [],
-        recentAttendances: [],
       },
     })
 

@@ -87,11 +87,31 @@ abstract class BaseApiController extends Controller
         return app(TeacherScope::class)->classGroupIdsFor(request()->user());
     }
 
+    /**
+     * Acotaciones que valen SOLO para el listado.
+     *
+     * Existe porque poner un filtro en `query()` fue un error caro: ese método
+     * lo usan también `show`, `update` y `destroy`, así que un parámetro del
+     * cuerpo de la petición se colaba como condición de búsqueda. Editar una
+     * sesión enviando el `class_group_id` de DESTINO hacía que `findOrFail` no
+     * encontrara la sesión —su grupo actual es otro— y la respuesta pasaba de
+     * 403 a 404.
+     *
+     * Ahí está lo grave: un 404 en lugar de un 403 no es una molestia de
+     * códigos, es que la comprobación de permisos deja de ejecutarse. La regla
+     * seguía cumpliéndose por accidente, pero por el motivo equivocado.
+     */
+    protected function applyIndexFilters(Builder $query): void
+    {
+    }
+
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', $this->modelClass);
 
         $query = $this->query();
+
+        $this->applyIndexFilters($query);
 
         if ($request->filled('search') && $this->searchable !== []) {
             $search = $request->string('search')->toString();

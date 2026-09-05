@@ -40,6 +40,25 @@ class ClassSessionController extends BaseApiController
     }
 
     /**
+     * Acota a un grupo cuando la petición lo pide.
+     *
+     * Lo usa el desplegable de sesión al pasar lista: ofrecer las sesiones del
+     * centro entero es donde se cometía el error, porque los títulos se parecen
+     * y se acababa registrando la asistencia de 1º ESBA sobre una sesión de 3º.
+     *
+     * Se SUMA al recorte del profesor, no lo sustituye: pedir un grupo que no
+     * imparte devuelve vacío, no las sesiones de otro.
+     */
+    protected function applyIndexFilters(Builder $query): void
+    {
+        $classGroupId = request()->integer('class_group_id');
+
+        if ($classGroupId !== 0) {
+            $query->where('class_group_id', $classGroupId);
+        }
+    }
+
+    /**
      * El profesor solo ve las sesiones de los grupos que imparte.
      */
     protected function applyTeacherScope(Builder $query): void

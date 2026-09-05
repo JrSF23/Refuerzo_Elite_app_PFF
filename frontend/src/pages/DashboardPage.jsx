@@ -2,16 +2,15 @@ import { EMPTY_VALUE, formatAmount, formatDate, formatNumber, formatTime, t } fr
 import { useSession } from '../context/SessionContext.jsx'
 import { useDashboard } from '../hooks/useDashboard.js'
 import { SECTIONS, canAccess } from '../lib/permissions.js'
+import { Link } from 'react-router-dom'
+
+import { Card, CardHeader } from '../components/ui/Card.jsx'
 import { StatCard } from '../components/dashboard/StatCard.jsx'
 import { RecentPanel } from '../components/dashboard/RecentPanel.jsx'
 import { AttendanceCard } from '../components/dashboard/AttendanceCard.jsx'
 import { AttentionPanel } from '../components/dashboard/AttentionPanel.jsx'
-import {
-  AttendanceStatusBadge,
-  PaymentStatusBadge,
-  RecordStatusBadge,
-} from '../components/ui/Badge.jsx'
-import { ErrorState, LoadingState } from '../components/data/states.jsx'
+import { PaymentStatusBadge } from '../components/ui/Badge.jsx'
+import { EmptyState, ErrorState, LoadingState } from '../components/data/states.jsx'
 
 /**
  * Panel operativo.
@@ -157,7 +156,7 @@ function AdminDashboard({ data, linkTo }) {
 /* ── Profesor ──────────────────────────────────────────────────────────────── */
 
 function TeacherDashboard({ data, linkTo }) {
-  const { teacher, stats, myGroups, upcomingSessions, recentAttendances } = data
+  const { teacher, stats, myGroups, upcomingSessions } = data
 
   return (
     <>
@@ -173,24 +172,69 @@ function TeacherDashboard({ data, linkTo }) {
       ) : null}
 
       <section className="stats-grid">
-        <StatCard label={t('dashboard.stats.myGroups')} to={linkTo('classGroups')} value={stats.groups} />
-        <StatCard label={t('dashboard.stats.myStudents')} to={linkTo('students')} value={stats.students} />
-        <StatCard label={t('dashboard.stats.upcomingSessions')} to={linkTo('sessions')} value={stats.upcoming_sessions} />
+        <StatCard label={t('dashboard.stats.myGroups')} value={formatNumber(stats.groups)} />
+        <StatCard label={t('dashboard.stats.myStudents')} to={linkTo('students')} value={formatNumber(stats.students)} />
+        <StatCard label={t('dashboard.stats.upcomingSessions')} to={linkTo('sessions')} value={formatNumber(stats.upcoming_sessions)} />
       </section>
 
-      <section className="panels-grid">
-        <RecentPanel
-          emptyText={t('dashboard.emptyGroups')}
-          items={myGroups.map((group) => ({
-            key: group.id,
-            primary: group.name,
-            secondary: [group.subject?.name, group.schedule].filter(Boolean).join(' · '),
-            trailing: <RecordStatusBadge value={group.status} />,
-          }))}
-          title={t('dashboard.myGroups')}
-          to={linkTo('classGroups')}
-        />
+      {/*
+        * SUS GRUPOS SON EL PANEL, y cada uno entra directo a pasar lista.
+        *
+        * Antes había aquí una lista plana de «asistencia reciente»: los últimos
+        * ocho registros, mezclando grupos y días. No servía para nada de lo que
+        * un profesor hace al abrir la aplicación —no dice de qué grupo toca
+        * hoy, ni cuántos alumnos tiene, ni le lleva a ninguna parte— y crecía
+        * sin organizarse. Se ha retirado.
+        *
+        * Lo que sí necesita es esto: sus grupos, con cuántos alumnos y cuántas
+        * sesiones lleva cada uno, y un solo toque para registrar la asistencia
+        * del que le toque ahora.
+        */}
+      <section className="dashboard-grid">
+        <Card as="section">
+          <CardHeader title={t('dashboard.myGroups')} />
 
+          {myGroups.length === 0 ? (
+            <EmptyState title={t('dashboard.emptyGroups')} />
+          ) : (
+            <ul className="group-index">
+              {myGroups.map((group) => (
+                <li key={group.id}>
+                  <Link className="group-card" to={`/asistencia/grupo/${group.id}`}>
+                    <div className="group-card__main">
+                      <span className="group-card__name">
+                        {group.tutor_group
+                          ? `${group.tutor_group.name} — ${group.subject?.name ?? group.name}`
+                          : group.name}
+                      </span>
+                      <span className="group-card__tutor">
+                        {t('dashboard.groupStudents', {
+                          count: formatNumber(group.enrollments_count ?? 0),
+                        })}
+                      </span>
+                    </div>
+
+                    <div className="group-card__meta">
+                      <span className="group-card__count tabular">
+                        {formatNumber(group.class_sessions_count ?? 0)}
+                      </span>
+                      <span className="group-card__count-label">
+                        {t((group.class_sessions_count ?? 0) === 1
+                          ? 'attendance.sessionCountOne'
+                          : 'attendance.sessionCountMany')}
+                      </span>
+                    </div>
+
+                    <span aria-hidden="true" className="group-card__chevron" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        {/* Las próximas sesiones SÍ se quedan: son literalmente el trabajo del
+            día, y son pocas por definición. */}
         <RecentPanel
           emptyText={t('dashboard.emptyUpcoming')}
           items={upcomingSessions.map((session) => ({
@@ -204,21 +248,6 @@ function TeacherDashboard({ data, linkTo }) {
           }))}
           title={t('dashboard.upcomingSessions')}
           to={linkTo('sessions')}
-        />
-
-        <RecentPanel
-          emptyText={t('dashboard.emptyAttendances')}
-          items={recentAttendances.map((attendance) => ({
-            key: attendance.id,
-            primary: attendance.student?.full_name ?? EMPTY_VALUE,
-            secondary: [
-              attendance.class_session?.title,
-              attendance.class_session?.class_group?.name,
-            ].filter(Boolean).join(' · '),
-            trailing: <AttendanceStatusBadge value={attendance.status} />,
-          }))}
-          title={t('dashboard.recentAttendances')}
-          to={linkTo('attendance')}
         />
       </section>
     </>

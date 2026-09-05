@@ -30,15 +30,22 @@ class ClassGroupController extends BaseApiController
      */
     protected function query(): Builder
     {
-        $query = parent::query();
+        // Recuentos REALES, resueltos con subconsulta agregada y no con una
+        // consulta por grupo. Es lo que permite que el índice de asistencia diga
+        // la verdad: sin esto, la cifra tendría que salir de los registros
+        // paginados y un grupo con 40 asistencias aparecería con «20».
+        $query = parent::query()->withCount(['classSessions', 'enrollments']);
 
+        return $query;
+    }
+
+    protected function applyIndexFilters(Builder $query): void
+    {
         $tutorGroupId = request()->integer('tutor_group_id');
 
         if ($tutorGroupId !== 0) {
             $query->where('tutor_group_id', $tutorGroupId);
         }
-
-        return $query;
     }
 
     protected function rules(?int $id = null): array
