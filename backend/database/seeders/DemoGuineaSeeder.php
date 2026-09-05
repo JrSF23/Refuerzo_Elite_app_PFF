@@ -92,19 +92,21 @@ class DemoGuineaSeeder extends Seeder
     }
 
     /**
-     * Cuentas que sobreviven a la limpieza.
+     * Cuentas de infraestructura de la demo: superadmin, admin y admin.a.
      *
-     * 1, 2 y 3 son superadmin, admin y admin.a: la infraestructura de la demo.
+     * Ya NO es la lista de «lo que se salva». Serlo fue un error que costó caro:
+     * una persona que estaba evaluando la plataforma tenía cuenta dentro del
+     * centro de demostración, se añadió su id a esta lista, y una resiembra
+     * posterior la borró igualmente — porque entretanto se había vuelto a
+     * registrar con OTRO id. Proteger por identificador fijo protege a una fila,
+     * no a una persona.
      *
-     * La 15 NO es de la demo: la creó una persona del sector que está evaluando
-     * la plataforma durante la fase de opiniones. Sin ella en esta lista, cada
-     * resiembra le quitaba el acceso sin previo aviso y sin forma de recuperarlo.
-     *
-     * Es el mismo criterio que ya protege a las organizaciones 3 y 4 en
-     * `limpiarCuentas()`, aplicado a una cuenta que vive DENTRO del centro de
-     * demostración y que por eso se colaba en el borrado.
+     * Lo que se salva se decide ahora por criterio, en `limpiarCuentas()`.
      */
-    private const CUENTAS_QUE_SE_QUEDAN = [1, 2, 3, 15];
+    private const CUENTAS_DE_LA_DEMO = [1, 2, 3];
+
+    /** Dominio de las cuentas que crea el propio seeder. */
+    private const CORREO_DE_LA_DEMO = '@refuerzoelite.test';
 
     private const ALUMNOS = 150;
 
@@ -301,16 +303,28 @@ class DemoGuineaSeeder extends Seeder
     }
 
     /**
-     * Deja solo las cuentas de la demostración.
+     * Retira las cuentas que ha creado este seeder, y SOLO esas.
      *
-     * NO se tocan las de las organizaciones 3 y 4: las creó gente que está
-     * evaluando la plataforma y su acceso tiene que seguir funcionando.
+     * El criterio es el correo: el seeder crea las suyas bajo
+     * `@refuerzoelite.test`, así que cualquier otra cuenta de las organizaciones
+     * 1 y 2 la ha creado una persona y no se toca.
+     *
+     * Antes se borraba «todo lo que no esté en esta lista de ids», y eso borró
+     * la cuenta de alguien que estaba evaluando la plataforma: se había
+     * registrado dentro del centro de demostración, se añadió su id a la lista,
+     * y al volver a registrarse con otro id la siguiente resiembra se la llevó
+     * por delante. Una lista de ids protege filas concretas; lo que hay que
+     * proteger es «lo que no es mío», y eso se decide por criterio.
+     *
+     * Las organizaciones 3 y 4 siguen intactas por el mismo motivo de siempre:
+     * son de gente evaluando y su acceso tiene que seguir funcionando.
      */
     private function limpiarCuentas(): void
     {
         $sobran = DB::table('users')
             ->whereIn('organization_id', [1, 2])
-            ->whereNotIn('id', self::CUENTAS_QUE_SE_QUEDAN)
+            ->whereNotIn('id', self::CUENTAS_DE_LA_DEMO)
+            ->where('email', 'like', '%'.self::CORREO_DE_LA_DEMO)
             ->pluck('id');
 
         if ($sobran->isEmpty()) {
