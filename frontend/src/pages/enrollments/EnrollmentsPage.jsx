@@ -51,7 +51,11 @@ export function EnrollmentsPage() {
           label: t('fields.group'),
           type: 'relation',
           endpoint: 'class-groups',
-          optionLabel: (group) => group.name,
+          optionLabel: (group) => (
+            group.tutor_group
+              ? `${group.tutor_group.name} — ${group.subject?.name ?? group.name}`
+              : group.name
+          ),
           required: true,
         },
         {

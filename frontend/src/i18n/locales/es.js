@@ -358,12 +358,17 @@ export const es = {
   // Grupos DE ASIGNATURA. Renombrada para no dejar dos secciones llamadas
   // «Grupos»: un alumno pertenece a un grupo tutorial y a varios de asignatura.
   classGroups: {
+    subjectsOf: 'Materias',
+    emptyGroupTitle: 'Este grupo todavía no imparte ninguna materia',
+    emptyGroupBody: 'Añada las materias que se dan en este grupo y quién las imparte. Sin al menos una, no se pueden registrar sesiones ni pasar lista.',
     title: 'Grupos de asignatura',
     create: 'Nuevo grupo de asignatura',
     edit: 'Editar grupo de asignatura',
     emptyTitle: 'Todavía no hay grupos de asignatura',
     emptyBody: 'Cada grupo imparte una asignatura. Cree primero las asignaturas y los profesores.',
     fields: {
+      teacherHint: 'Quien imparte esta materia en este grupo. Puede dejarse sin asignar.',
+      nameInGroupHint: 'Como lo llame el centro. Si lo deja en blanco no pasa nada: lo que se ve en las listas es «grupo — materia».',
       name: 'Grupo',
       codeHint: 'Identificador corto y único dentro del centro.',
       academicYear: 'Curso académico',

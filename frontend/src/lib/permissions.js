@@ -102,11 +102,29 @@ export const SECTIONS = {
     // administración. Puede tenerla porque no lleva ningún campo monetario.
     access: { [ROLES.ORG_ADMIN]: WRITE, [ROLES.TEACHER]: READ },
   },
+  /*
+   * FUERA DEL MENÚ, a propósito, y no borrada.
+   *
+   * Tener dos secciones llamadas «Grupos» era el mayor foco de confusión de la
+   * aplicación: al registrar una sesión había que elegir entre unos grupos que
+   * no eran los que el centro ve en su lista de aulas. Y se notaba en el uso
+   * real — dos centros que están evaluando la plataforma crearon 23 aulas y
+   * CERO grupos de asignatura, así que no podían registrar ni una sesión.
+   *
+   * La entidad sigue haciendo falta: es el aula × la materia, y de ella cuelgan
+   * las sesiones y las matrículas. Lo que sobraba era crearla a mano como si
+   * fuera algo aparte. Ahora se gestiona DENTRO del aula, en «Materias».
+   *
+   * La sección se conserva porque sigue gobernando permisos y rutas: el enlace
+   * directo `/grupos-asignatura` sigue funcionando para quien lo tuviera
+   * guardado, y `hidden` solo la retira de la navegación.
+   */
   classGroups: {
     path: '/grupos-asignatura',
     endpoint: 'class-groups',
     searchable: true,
     group: 'sectionAcademic',
+    hidden: true,
     access: { [ROLES.ORG_ADMIN]: WRITE, [ROLES.TEACHER]: READ },
   },
   enrollments: {
@@ -241,7 +259,10 @@ export function canWrite(sectionKey, roleNames) {
  */
 export function visibleSections(roleNames) {
   return Object.entries(SECTIONS)
-    .filter(([key]) => canAccess(key, roleNames))
+    // `hidden` retira de la navegación sin quitar acceso: la sección sigue
+    // teniendo ruta y permisos, simplemente no se ofrece como destino porque se
+    // llega a ella desde dentro de otra pantalla.
+    .filter(([key, section]) => !section.hidden && canAccess(key, roleNames))
     .map(([key, section]) => ({ key, ...section }))
 }
 

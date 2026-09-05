@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 import { EMPTY_VALUE, t } from '../../i18n/index.js'
 import { RecordStatusBadge } from '../../components/ui/Badge.jsx'
 import { ResourcePage } from '../../components/data/ResourcePage.jsx'
@@ -15,6 +17,14 @@ import { ResourcePage } from '../../components/data/ResourcePage.jsx'
 export function TutorGroupsPage() {
   return (
     <ResourcePage
+      // Entrada a las materias del aula. Es donde vive ahora lo que antes era la
+      // sección «Grupos de asignatura»: se llega desde el aula, que es la
+      // entidad que el centro reconoce.
+      extraRowActions={(record) => (
+        <Link className="btn btn--ghost btn--sm" to={`/grupos/${record.id}/materias`}>
+          {t('classGroups.subjectsOf')}
+        </Link>
+      )}
       columns={[
         { key: 'name', label: t('tutorGroups.fields.name') },
         {

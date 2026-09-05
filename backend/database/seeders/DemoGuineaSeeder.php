@@ -255,7 +255,7 @@ class DemoGuineaSeeder extends Seeder
         $tutores = $this->crearTutores($ahora);
         $alumnos = $this->crearAlumnos($ahora, $aulas, $tutores);
         $this->asignarTutoresYDelegados($aulas, $profesores);
-        $grupos = $this->crearGruposDeAsignatura($ahora, $asignaturas, $profesores);
+        $grupos = $this->crearGruposDeAsignatura($ahora, $aulas, $asignaturas, $profesores);
         $matriculas = $this->crearMatriculas($ahora, $alumnos, $grupos);
         $sesiones = $this->crearSesiones($ahora, $grupos);
         $this->crearAsistencia($ahora, $sesiones, $matriculas);
@@ -432,7 +432,7 @@ class DemoGuineaSeeder extends Seeder
 
         $salida = [];
         foreach (self::AULAS as $i => [$nombre, , $etapa, $edad]) {
-            $salida[] = ['id' => $ids[$i], 'etapa' => $etapa, 'edad' => $edad, 'nombre' => $nombre];
+            $salida[] = ['id' => $ids[$i], 'etapa' => $etapa, 'edad' => $edad, 'nombre' => $nombre, 'turno' => self::AULAS[$i][1]];
         }
 
         return $salida;
@@ -505,6 +505,7 @@ class DemoGuineaSeeder extends Seeder
     {
         $filas = [];
         $etapaPorOrden = [];
+        $aulaPorOrden = [];
         $apellidoHermano = null;
 
         for ($i = 0; $i < self::ALUMNOS; $i++) {
@@ -518,6 +519,7 @@ class DemoGuineaSeeder extends Seeder
 
             $aula = $aulas[$i % count($aulas)];
             $etapaPorOrden[] = $aula['etapa'];
+            $aulaPorOrden[] = $aula['id'];
 
             $filas[] = [
                 'organization_id' => self::ORG,
@@ -549,7 +551,7 @@ class DemoGuineaSeeder extends Seeder
 
         $salida = [];
         foreach ($ids as $i => $id) {
-            $salida[] = ['id' => (int) $id, 'etapa' => $etapaPorOrden[$i]];
+            $salida[] = ['id' => (int) $id, 'etapa' => $etapaPorOrden[$i], 'aula' => $aulaPorOrden[$i]];
         }
 
         return $salida;
@@ -594,37 +596,60 @@ class DemoGuineaSeeder extends Seeder
      * @param list<int> $profesores
      * @return list<array{id:int,fee:float,etapas:list<string>}>
      */
-    private function crearGruposDeAsignatura(\DateTimeInterface $ahora, array $asignaturas, array $profesores): array
+    private function crearGruposDeAsignatura(\DateTimeInterface $ahora, array $aulas, array $asignaturas, array $profesores): array
     {
         $filas = [];
         $meta = [];
         $n = 0;
 
-        foreach ($asignaturas as $indice => $asignatura) {
-            [$nombreMateria, $codigo] = self::ASIGNATURAS[$indice];
+        // Un profesor imparte SU materia, y la imparte en varias aulas. Se
+        // reparte una materia por profesor y luego se van repitiendo: es como
+        // funciona un centro, donde el de Matemáticas da Matemáticas en 1º, en
+        // 2º y en 3º.
+        $profesorDeMateria = [];
 
-            foreach ([['Mañana', '08:00 – 10:00'], ['Mañana', '10:30 – 12:30'], ['Tarde', '15:00 – 17:00'], ['Tarde', '17:30 – 19:30']] as $t => [$turno, $horario]) {
+        foreach ($aulas as $aula) {
+            foreach ($asignaturas as $indice => $asignatura) {
+                // Lo que impide los disparates: Contabilidad no se da en
+                // Pre-escolar, y la iniciación a la lectura no llega a la ESBA.
+                if (! in_array($aula['etapa'], $asignatura['etapas'], true)) {
+                    continue;
+                }
+
+                [$nombreMateria, $codigo] = self::ASIGNATURAS[$indice];
+
+                $profesorDeMateria[$indice] ??= $profesores[count($profesorDeMateria) % count($profesores)];
+
                 $filas[] = [
                     'organization_id' => self::ORG,
+                    // EL vínculo que faltaba: el grupo de asignatura es el aula
+                    // por la materia, y no una entidad suelta.
+                    'tutor_group_id' => $aula['id'],
                     'subject_id' => $asignatura['id'],
-                    'teacher_id' => $profesores[$n % count($profesores)],
-                    'name' => $nombreMateria . ' — ' . $turno . ' ' . ($t % 2 === 0 ? 'A' : 'B'),
-                    'code' => 'RE-' . $codigo . '-' . ($n + 1),
+                    'teacher_id' => $profesorDeMateria[$indice],
+                    // El nombre se compone de las dos partes, así que la lista
+                    // se lee sin tener que saber qué es un «grupo de
+                    // asignatura»: «1º ESBA — Matemáticas».
+                    'name' => $aula['nombre'] . ' — ' . $nombreMateria,
+                    'code' => $codigo . '-' . $aula['id'],
                     'academic_year' => self::curso(),
-                    'schedule' => $turno . ' · ' . $horario,
-                    'capacity' => 20,
+                    'schedule' => $aula['turno'] === 'morning' ? 'Mañana' : 'Tarde',
+                    'capacity' => 25,
                     'start_date' => self::cursoInicio()->toDateString(),
                     'end_date' => self::cursoFin()->toDateString(),
                     'status' => 'active',
                     'created_at' => $ahora,
                     'updated_at' => $ahora,
                 ];
-                $meta[] = ['fee' => $asignatura['fee'], 'etapas' => $asignatura['etapas']];
+
+                $meta[] = ['aula' => $aula['id'], 'fee' => $asignatura['fee'], 'etapas' => $asignatura['etapas']];
                 $n++;
             }
         }
 
-        DB::table('class_groups')->insert($filas);
+        foreach (array_chunk($filas, 200) as $trozo) {
+            DB::table('class_groups')->insert($trozo);
+        }
 
         $this->asignarMateriaALasFichas($filas);
 
@@ -633,7 +658,12 @@ class DemoGuineaSeeder extends Seeder
 
         $salida = [];
         foreach ($ids as $i => $id) {
-            $salida[] = ['id' => (int) $id, 'fee' => $meta[$i]['fee'], 'etapas' => $meta[$i]['etapas']];
+            $salida[] = [
+                'id' => (int) $id,
+                'aula' => $meta[$i]['aula'],
+                'fee' => $meta[$i]['fee'],
+                'etapas' => $meta[$i]['etapas'],
+            ];
         }
 
         return $salida;
@@ -685,35 +715,28 @@ class DemoGuineaSeeder extends Seeder
     {
         $filas = [];
 
-        foreach ($alumnos as $i => $alumno) {
-            // El filtro por etapa es lo que evita al niño de Pre-escolar
-            // matriculado en Contabilidad.
-            $posibles = array_values(array_filter(
-                $grupos,
-                fn (array $g) => in_array($alumno['etapa'], $g['etapas'], true)
-            ));
+        // El alumno cursa las materias de SU AULA, todas. Ya no se eligen unas
+        // cuantas al azar: eso venía del modelo de centro de refuerzo, donde
+        // cada uno se apunta a lo que quiere, y producía alumnos de un mismo
+        // grupo repartidos por once aulas distintas.
+        //
+        // El filtro por etapa ya está hecho aguas arriba: un aula solo tiene
+        // materias de su etapa, así que el niño de Pre-escolar no puede acabar
+        // en Contabilidad.
+        foreach ($alumnos as $alumno) {
+            $suyos = array_filter($grupos, fn (array $g) => $g['aula'] === $alumno['aula']);
 
-            if ($posibles === []) {
-                continue;
-            }
-
-            $cuantas = min(1 + ($i % 3), count($posibles));
-            $usados = [];
-
-            for ($k = 0; $k < $cuantas; $k++) {
-                $g = $posibles[($i * 7 + $k * 13) % count($posibles)];
-
-                if (in_array($g['id'], $usados, true)) {
-                    continue;
-                }
-                $usados[] = $g['id'];
-
+            foreach ($suyos as $g) {
                 $filas[] = [
                     'organization_id' => self::ORG,
                     'student_id' => $alumno['id'],
                     'class_group_id' => $g['id'],
                     'enrolled_at' => self::cursoInicio()->toDateString(),
-                    'monthly_fee' => $g['fee'],
+                    // La cuota vive ahora en la ETAPA, no aquí. Esta columna
+                    // sigue existiendo y todavía es lo que se factura, así que
+                    // se deja a cero en vez de repetir un importe por materia
+                    // que ya no es como cobra el centro.
+                    'monthly_fee' => 0,
                     'status' => 'active',
                     'created_at' => $ahora,
                     'updated_at' => $ahora,
@@ -862,7 +885,15 @@ class DemoGuineaSeeder extends Seeder
          * periodo que cobraban. Nadie se cree una plataforma de cobros que
          * muestra eso en su propia demostración.
          */
-        $meses = [['Marzo 2026', '2026-03'], ['Abril 2026', '2026-04'], ['Mayo 2026', '2026-05']];
+        // Los tres últimos meses, calculados desde hoy. Estaban escritos a mano
+        // —«Marzo 2026»— y con el curso ya anclado a la fecha actual quedaban
+        // meses de otro año en una demo que se enseña hoy.
+        $meses = [];
+        for ($k = 2; $k >= 0; $k--) {
+            $mes = Carbon::today()->subMonths($k);
+            $meses[] = [ucfirst($mes->locale('es')->isoFormat('MMMM YYYY')), $mes->format('Y-m')];
+        }
+
         $filas = [];
 
         foreach ($alumnos as $i => $alumno) {
@@ -884,7 +915,11 @@ class DemoGuineaSeeder extends Seeder
                 'student_id' => $alumno['id'],
                 'guardian_id' => DB::table('students')->where('id', $alumno['id'])->value('guardian_id'),
                 'enrollment_id' => $m['id'],
-                'amount' => $m['fee'],
+                // UN PLAZO de la cuota de su etapa, no el importe de una
+                // matrícula por materia. El centro cobra por nivel y por curso
+                // académico, y admite fraccionarlo: nueve plazos es el reparto
+                // habitual de un curso de septiembre a junio.
+                'amount' => round((self::ETAPAS[$alumno['etapa']][1] ?? 0) / 9),
                 'period_label' => $meses[$i % 3][0],
                 // Dentro del mes que se cobra: entre el 1 y el 28.
                 'paid_at' => $meses[$i % 3][1] . '-' . str_pad((string) mt_rand(1, 28), 2, '0', STR_PAD_LEFT),

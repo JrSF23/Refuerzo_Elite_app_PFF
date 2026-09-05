@@ -11,6 +11,7 @@ import { DashboardPage } from './pages/DashboardPage.jsx'
 import { StudentsPage } from './pages/students/StudentsPage.jsx'
 import { AllStudentsPage } from './pages/students/AllStudentsPage.jsx'
 import { GroupStudentsPage } from './pages/students/GroupStudentsPage.jsx'
+import { GroupSubjectsPage } from './pages/classGroups/GroupSubjectsPage.jsx'
 import { GuardiansPage } from './pages/guardians/GuardiansPage.jsx'
 import { TeachersPage } from './pages/teachers/TeachersPage.jsx'
 import { StagesPage } from './pages/stages/StagesPage.jsx'
@@ -100,6 +101,18 @@ function AppRoutes() {
             </RequireSection>
           )}
           path="alumnos/grupo/:groupId"
+        />
+
+        {/* Materias de un aula. Sustituye a la sección «Grupos de asignatura»,
+            que sale del menú: la entidad es la misma, pero se gestiona desde el
+            aula, que es donde el centro la reconoce. */}
+        <Route
+          element={(
+            <RequireSection section="classGroups">
+              <GroupSubjectsPage />
+            </RequireSection>
+          )}
+          path="grupos/:groupId/materias"
         />
         <Route
           element={(
