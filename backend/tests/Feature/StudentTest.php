@@ -164,6 +164,57 @@ class StudentTest extends TestCase
             ->assertJsonPath('status', 'inactive');
     }
 
+    /**
+     * Mover a un alumno de aula.
+     *
+     * La operación más corriente del curso —un alumno cambia de clase— devolvía
+     * 404 y no movía nada. El filtro por `tutor_group_id` vivía en `query()`, que
+     * usan también `show`, `update` y `destroy`, así que al editar se buscaba al
+     * alumno filtrando por el aula de DESTINO, donde todavía no estaba.
+     *
+     * Lo insidioso era que editar funcionaba mientras NO se cambiara el aula: el
+     * único cambio que fallaba era justo el que se quería hacer.
+     */
+    public function test_admin_can_move_a_student_to_another_tutor_group(): void
+    {
+        $origen = $this->createTutorGroup($this->organization);
+        $destino = $this->createTutorGroup($this->organization);
+
+        $student = Student::factory()->forOrganization($this->organization)->create([
+            'tutor_group_id' => $origen->getKey(),
+        ]);
+
+        $this->actingAsAdmin()
+            ->putJson("/api/v1/students/{$student->id}", $this->studentPayload([
+                'tutor_group_id' => $destino->getKey(),
+            ]))
+            ->assertOk()
+            ->assertJsonPath('tutor_group_id', $destino->getKey());
+
+        $this->assertSame($destino->getKey(), $student->fresh()->tutor_group_id);
+    }
+
+    /**
+     * El mismo fallo, en su forma de solo lectura: un parámetro de listado no
+     * puede decidir si un registro concreto existe. Se comprueba aparte porque
+     * `show` no lleva cuerpo, y sin esto la regresión podría volver por la
+     * cadena de consulta sin que nada la delate.
+     */
+    public function test_a_listing_filter_does_not_hide_a_single_student(): void
+    {
+        $suya = $this->createTutorGroup($this->organization);
+        $ajena = $this->createTutorGroup($this->organization);
+
+        $student = Student::factory()->forOrganization($this->organization)->create([
+            'tutor_group_id' => $suya->getKey(),
+        ]);
+
+        $this->actingAsAdmin()
+            ->getJson("/api/v1/students/{$student->id}?tutor_group_id={$ajena->getKey()}")
+            ->assertOk()
+            ->assertJsonPath('id', $student->id);
+    }
+
     // ── destroy ────────────────────────────────────────────────────────────
 
     public function test_admin_can_delete_student(): void
