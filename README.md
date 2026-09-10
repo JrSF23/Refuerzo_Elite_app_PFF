@@ -1,4 +1,4 @@
-# Refuerzo Elite V2
+# SmartWork
 
 Système de gestion **multi-organisation** pour centres de soutien scolaire. Plusieurs centres cohabitent sur une même installation avec des données **totalement isolées** : chacun perçoit le système comme s'il lui appartenait en propre.
 
