@@ -26,3 +26,25 @@ services:
       - /var/www/backend/vendor
 
   # mysql: port non exposé — XAMPP occupe déjà 3306 et 3307 sur cet hôte.
+
+  # El scheduler recibe el mismo trato de desarrollo que `laravel`.
+  #
+  # Sin esto ejecutaría el código HORNEADO en la imagen mientras `laravel`
+  # ejecuta el montado desde el anfitrión: los dos correrían versiones distintas
+  # del mismo proyecto, y una tarea programada seguiría comportándose como antes
+  # de un cambio que ya está en pantalla. Es de los desajustes más difíciles de
+  # diagnosticar, porque todo «parece» actualizado.
+  scheduler:
+    environment:
+      APP_ENV: local
+      # Igual que arriba: apagado mientras el túnel esté abierto.
+      APP_DEBUG: "false"
+      # A stderr para poder seguir las tareas con `docker compose logs
+      # scheduler`, que es la única ventana a lo que hace un proceso de fondo.
+      LOG_CHANNEL: stderr
+    volumes:
+      - ./backend:/var/www/backend
+      - backend_storage:/var/www/backend/storage
+      - /var/www/backend/vendor
+      # Su caché sigue siendo suya también en desarrollo.
+      - scheduler_cache:/var/www/backend/bootstrap/cache

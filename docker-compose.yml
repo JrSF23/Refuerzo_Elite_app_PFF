@@ -1,3 +1,48 @@
+# ── Definiciones compartidas ───────────────────────────────────────────────
+#
+# `laravel` y `scheduler` son el MISMO programa ejecutando dos procesos
+# distintos: uno atiende peticiones por PHP-FPM y el otro despierta cada minuto
+# a mirar si toca alguna tarea. Comparten imagen y entorno, así que se declaran
+# aquí una vez y se referencian con anclas de YAML.
+#
+# La alternativa —copiar los quince valores de entorno en el segundo servicio—
+# funciona hasta que alguien cambia uno solo de los dos, y entonces el scheduler
+# se conecta a otra base o corre con otra clave sin que nadie lo note.
+x-laravel-build: &laravel-build
+  context: .
+  dockerfile: docker/php/Dockerfile
+
+x-laravel-env: &laravel-env
+  APP_NAME: "Refuerzo Elite"
+  APP_ENV: production
+  APP_KEY: ${APP_KEY}
+  APP_DEBUG: "false"
+  APP_URL: ${APP_URL:-http://localhost}
+
+  DB_CONNECTION: mysql
+  DB_HOST: mysql
+  DB_PORT: 3306
+  DB_DATABASE: ${MYSQL_DATABASE}
+  DB_USERNAME: ${MYSQL_USER}
+  DB_PASSWORD: ${MYSQL_PASSWORD}
+
+  QUEUE_CONNECTION: database
+  CACHE_STORE: database
+  SESSION_DRIVER: database
+
+  APP_LOCALE: ${APP_LOCALE:-es}
+  # Respaldo en ESPAÑOL, no en inglés: es el idioma base del producto y el
+  # único con todos los catálogos completos. Con `en` de respaldo, una clave
+  # que faltara en francés saldría en inglés dentro de una pantalla en
+  # francés; con `es` sale en el idioma del que se tradujo, que es lo que
+  # también hace el catálogo del navegador.
+  APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-es}
+
+  ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+  # Sin esta variable el super administrador de plataforma nacería con la
+  # contraseña por defecto que lleva el seeder en el código.
+  SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD}
+
 services:
 
   # ── Nginx — reverse proxy y servidor de estáticos ─────────────────────────
@@ -16,34 +61,11 @@ services:
 
   # ── Laravel — PHP-FPM ─────────────────────────────────────────────────────
   laravel:
-    build:
-      context: .
-      dockerfile: docker/php/Dockerfile
-    environment:
-      APP_NAME: "Refuerzo Elite"
-      APP_ENV: production
-      APP_KEY: ${APP_KEY}
-      APP_DEBUG: "false"
-      APP_URL: ${APP_URL:-http://localhost}
-
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: ${MYSQL_DATABASE}
-      DB_USERNAME: ${MYSQL_USER}
-      DB_PASSWORD: ${MYSQL_PASSWORD}
-
-      QUEUE_CONNECTION: database
-      CACHE_STORE: database
-      SESSION_DRIVER: database
-
-      APP_LOCALE: ${APP_LOCALE:-es}
-      APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-en}
-
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      # Sin esta variable el super administrador de plataforma nacería con la
-      # contraseña por defecto que lleva el seeder en el código.
-      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD}
+    build: *laravel-build
+    # Imagen nombrada para que `scheduler` reutilice EXACTAMENTE esta y no se
+    # construya una segunda copia del mismo Dockerfile.
+    image: refuerzo-elite/laravel:latest
+    environment: *laravel-env
     volumes:
       - backend_storage:/var/www/backend/storage
       - backend_cache:/var/www/backend/bootstrap/cache
@@ -52,6 +74,44 @@ services:
         condition: service_healthy
     networks:
       - app
+    restart: unless-stopped
+
+  # ── Scheduler — el reloj de Laravel ───────────────────────────────────────
+  #
+  # `schedule:work` se queda en primer plano y despierta cada minuto a preguntar
+  # si toca alguna tarea de `routes/console.php`. Sin este proceso, el
+  # planificador está declarado y no se ejecuta nunca: es exactamente lo que
+  # pasaba con la poda de tokens caducados, que dejó crecer
+  # `personal_access_tokens` hasta 32 filas de las que 31 estaban muertas.
+  #
+  # Misma imagen y mismo entorno que `laravel`; lo único que cambia es el proceso
+  # que se ejecuta. Por eso NO hay un Dockerfile nuevo.
+  scheduler:
+    build: *laravel-build
+    image: refuerzo-elite/laravel:latest
+    environment: *laravel-env
+    # Sustituye a `php-fpm` del Dockerfile. La entrada del contenedor se
+    # conserva —espera a MySQL y cachea configuración— y termina en `exec "$@"`,
+    # así que este comando queda como PID 1 y Docker puede reiniciarlo y pararlo
+    # limpiamente.
+    command: ["php", "artisan", "schedule:work"]
+    volumes:
+      - backend_storage:/var/www/backend/storage
+      # Caché PROPIA, no la de `laravel`.
+      #
+      # La entrada del contenedor ejecuta `config:cache` y `route:cache` al
+      # arrancar. Con un volumen compartido, los dos contenedores escribirían el
+      # mismo fichero a la vez al levantar la pila, y una lectura a medias deja
+      # la aplicación sin configuración. Cada uno cachea la suya: son ficheros
+      # derivados del código, no datos, así que duplicarlos no cuesta nada.
+      - scheduler_cache:/var/www/backend/bootstrap/cache
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - app
+    # Un planificador que muere y no vuelve es peor que no tenerlo: nadie se
+    # entera hasta que se echa en falta una tarea.
     restart: unless-stopped
 
   # ── MySQL 8 ───────────────────────────────────────────────────────────────
@@ -79,6 +139,7 @@ volumes:
   mysql_data:
   backend_storage:
   backend_cache:
+  scheduler_cache:
 
 # ── Red interna — los servicios se ven entre sí por nombre ────────────────
 networks:
