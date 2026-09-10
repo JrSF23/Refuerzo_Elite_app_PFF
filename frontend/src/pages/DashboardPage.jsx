@@ -1,6 +1,7 @@
 import { EMPTY_VALUE, formatAmount, formatDate, formatNumber, formatTime, t } from '../i18n/index.js'
 import { useSession } from '../context/SessionContext.jsx'
 import { useDashboard } from '../hooks/useDashboard.js'
+import { useDeferredLoading } from '../hooks/useDeferredLoading.js'
 import { SECTIONS, canAccess } from '../lib/permissions.js'
 import { Link } from 'react-router-dom'
 
@@ -24,6 +25,8 @@ export function DashboardPage() {
   const { status, data, error, retry } = useDashboard()
   const { roleNames, user } = useSession()
 
+  const showLoader = useDeferredLoading(status === 'loading')
+
   // Un indicador solo enlaza si el rol puede entrar en la sección; si no, sería
   // un enlace que acaba en redirección (FR-017).
   const linkTo = (key) => (canAccess(key, roleNames) ? SECTIONS[key].path : undefined)
@@ -44,16 +47,18 @@ export function DashboardPage() {
         {t(greetingKey(), { name: user?.name ?? '' })}
       </h1>
 
-      {status === 'loading' ? <LoadingState rows={4} /> : null}
+      {showLoader ? <LoadingState rows={4} variant="cards" /> : null}
 
-      {status === 'error' ? (
+      {!showLoader && status === 'error' ? (
         <ErrorState message={error?.message} onRetry={retry} />
       ) : null}
 
-      {status === 'ready' ? (
-        data.role === 'teacher'
-          ? <TeacherDashboard data={data} linkTo={linkTo} />
-          : <AdminDashboard data={data} linkTo={linkTo} />
+      {!showLoader && status === 'ready' ? (
+        <div className="fade-in">
+          {data.role === 'teacher'
+            ? <TeacherDashboard data={data} linkTo={linkTo} />
+            : <AdminDashboard data={data} linkTo={linkTo} />}
+        </div>
       ) : null}
     </>
   )

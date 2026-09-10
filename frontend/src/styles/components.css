@@ -1225,30 +1225,92 @@
 
 /* El esqueleto reserva la altura de las filas para que la página no crezca de
    golpe al llegar los datos (FR-042). */
-.skeleton-list {
+.skeleton {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   width: 100%;
-  margin-bottom: var(--space-4);
 }
 
-.skeleton-row {
+.skeleton__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   height: 40px;
   border-radius: var(--radius-md);
+}
+
+/*
+ * El brillo va en las PIEZAS, no en la fila.
+ *
+ * Antes la fila entera era un bloque con degradado. Ahora, en las variantes con
+ * forma, la fila es el hueco y las piezas de dentro son lo que se anima: se
+ * parece a un renglón de tabla esperando su texto en lugar de a una barra, y al
+ * llegar los datos el salto es mucho menor.
+ */
+.skeleton--rows .skeleton__row,
+.skeleton__bar {
   background: linear-gradient(
     90deg,
     var(--color-surface-sunken) 25%,
-    var(--color-border) 50%,
+    var(--color-skeleton-highlight) 50%,
     var(--color-surface-sunken) 75%
   );
   background-size: 200% 100%;
-  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton__bar {
+  height: 0.75rem;
+  border-radius: var(--radius-full);
+}
+
+.skeleton__bar--wide { flex: 3; }
+.skeleton__bar--narrow { flex: 1; }
+
+/* Cada fila arranca un poco después que la anterior: el brillo recorre la lista
+   en lugar de latir todo a la vez, que es lo que hace que una espera larga
+   resulte machacona. */
+.skeleton__row:nth-child(2) .skeleton__bar { animation-delay: 0.12s; }
+.skeleton__row:nth-child(3) .skeleton__bar { animation-delay: 0.24s; }
+.skeleton__row:nth-child(4) .skeleton__bar { animation-delay: 0.36s; }
+.skeleton__row:nth-child(5) .skeleton__bar { animation-delay: 0.48s; }
+
+.skeleton--rows .skeleton__row:nth-child(2) { animation-delay: 0.12s; }
+.skeleton--rows .skeleton__row:nth-child(3) { animation-delay: 0.24s; }
+.skeleton--rows .skeleton__row:nth-child(4) { animation-delay: 0.36s; }
+.skeleton--rows .skeleton__row:nth-child(5) { animation-delay: 0.48s; }
+
+/* Las tarjetas son más altas y llevan su borde: el hueco ocupa exactamente lo
+   que ocupará la tarjeta, no una barra de 40 px. */
+.skeleton--cards .skeleton__row {
+  height: 64px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
 }
 
 @keyframes skeleton-shimmer {
   from { background-position: 200% 0; }
   to   { background-position: -200% 0; }
+}
+
+/* El contenido no aparece de golpe: entra en 180 ms desde un pelo más abajo. Es
+   suficiente para que el ojo lo lea como «esto se ha revelado» y no como «la
+   pantalla ha cambiado». Quien pide menos movimiento no ve el desplazamiento,
+   porque la regla global de `base.css` anula la duración. */
+.fade-in {
+  animation: fade-in 180ms ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ═══ Indicador de progreso ════════════════════════════════════════════════ */
@@ -2233,4 +2295,43 @@
    en el componente, así que aquí solo hace falta separarlos. */
 .roll-sessions__slice + .roll-sessions__slice::before {
   content: ' · ';
+}
+
+/* ── Selector de idioma ──────────────────────────────────────────────────── */
+
+.language-menu__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.language-menu__globe {
+  font-size: var(--text-base);
+  line-height: 1;
+}
+
+/* Ancho fijo: sin él, el disparador cambia de tamaño al pasar de ES a FR y
+   empuja al avatar de la cuenta cada vez que se cambia de idioma. */
+.language-menu__code {
+  min-width: 1.6em;
+}
+
+.language-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* La marca ocupa sitio siempre, esté o no: si apareciera y desapareciera, los
+   nombres de los idiomas bailarían al cambiar de uno a otro. */
+.language-menu__check {
+  width: 1em;
+  color: var(--color-primary);
+}
+
+.language-menu__item.is-active {
+  font-weight: var(--weight-semibold);
 }

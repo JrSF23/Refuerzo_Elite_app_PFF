@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { t } from '../../i18n/index.js'
 import { api } from '../../lib/api.js'
 import { useToast } from '../../context/ToastContext.jsx'
+import { useDeferredLoading } from '../../hooks/useDeferredLoading.js'
 import { Button } from '../../components/ui/Button.jsx'
 import { Drawer } from '../../components/ui/Drawer.jsx'
 import { ErrorState, LoadingState } from '../../components/data/states.jsx'
@@ -45,6 +46,8 @@ export function RollCall({ sessionId, sessionTitle, isOpen, onClose, onSaved }) 
   const [error, setError] = useState(null)
   const [rows, setRows] = useState([])
   const [isSaving, setIsSaving] = useState(false)
+
+  const showLoader = useDeferredLoading(status === 'loading')
 
   const load = useCallback(async (signal) => {
     setStatus('loading')
@@ -117,13 +120,13 @@ export function RollCall({ sessionId, sessionTitle, isOpen, onClose, onSaved }) 
       side="right"
       title={sessionTitle ? `${t('attendance.roll.title')} — ${sessionTitle}` : t('attendance.roll.title')}
     >
-      {status === 'loading' ? <LoadingState rows={5} /> : null}
+      {showLoader ? <LoadingState rows={5} variant="table" /> : null}
 
-      {status === 'error' ? (
+      {!showLoader && status === 'error' ? (
         <ErrorState message={error?.message} onRetry={() => load()} />
       ) : null}
 
-      {status === 'ready' ? (
+      {!showLoader && status === 'ready' ? (
         <>
           {/* Atajo para el caso corriente: casi todos vinieron. Rellena SOLO a
               los que están sin marcar, así que no pisa lo ya decidido. */}

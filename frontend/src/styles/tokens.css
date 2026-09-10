@@ -88,6 +88,10 @@
      que se estila, y es lo que hace falta.
      ───────────────────────────────────────────────────────────────────────── */
   --color-border:         #E2E8F0;
+  /* Brillo del esqueleto de carga. Token propio y no `--color-border`: el borde
+     tiene que verse, y un brillo que se ve tanto como un borde convierte la
+     espera en un parpadeo. Este queda deliberadamente por debajo. */
+  --color-skeleton-highlight: #EDF2F7;
   --color-border-strong:  #CBD5E1;
   --color-border-control: #64748B;
 
@@ -306,6 +310,10 @@
 
   /* ── Bordes — el trabajo pesado del tema ─────────────────────────────────── */
   --color-border:         #2C3A57;
+  /* En oscuro el brillo ACLARA sobre la superficie hundida, igual que en claro,
+     pero con menos recorrido: sobre casi negro, el mismo salto de luminancia se
+     percibe mucho más fuerte. */
+  --color-skeleton-highlight: #25314B;
   --color-border-strong:  #3D4E70;
   --color-border-control: #7C8CA6;
 

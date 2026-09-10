@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom'
 import { formatDate, formatNumber, t } from '../../i18n/index.js'
 import { api } from '../../lib/api.js'
 import { useResourceList } from '../../hooks/useResourceList.js'
+import { useDeferredLoading } from '../../hooks/useDeferredLoading.js'
 import { Badge } from '../../components/ui/Badge.jsx'
 import { Button } from '../../components/ui/Button.jsx'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs.jsx'
@@ -37,6 +38,8 @@ export function GroupAttendancePage() {
     perPage: 20,
     params: { class_group_id: groupId },
   })
+
+  const showLoader = useDeferredLoading(sessions.status === 'loading')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -77,20 +80,20 @@ export function GroupAttendancePage() {
       </p>
 
       <div className="table-card">
-        {sessions.status === 'loading' ? <LoadingState rows={4} /> : null}
+        {showLoader ? <LoadingState rows={4} variant="table" /> : null}
 
-        {sessions.status === 'error' ? (
+        {!showLoader && sessions.status === 'error' ? (
           <ErrorState message={sessions.error?.message} onRetry={sessions.refresh} />
         ) : null}
 
-        {sessions.status === 'ready' && sessions.records.length === 0 ? (
+        {!showLoader && sessions.status === 'ready' && sessions.records.length === 0 ? (
           <EmptyState
             body={t('attendance.noSessionsBody')}
             title={t('attendance.noSessionsTitle')}
           />
         ) : null}
 
-        {sessions.status === 'ready' && sessions.records.length > 0 ? (
+        {!showLoader && sessions.status === 'ready' && sessions.records.length > 0 ? (
           <ul className="roll-sessions">
             {sessions.records.map((session) => (
               <li className="roll-sessions__row" key={session.id}>
@@ -109,7 +112,7 @@ export function GroupAttendancePage() {
           </ul>
         ) : null}
 
-        {sessions.status === 'ready' ? (
+        {!showLoader && sessions.status === 'ready' ? (
           <Pagination
             from={sessions.pagination?.from}
             lastPage={sessions.pagination?.lastPage}

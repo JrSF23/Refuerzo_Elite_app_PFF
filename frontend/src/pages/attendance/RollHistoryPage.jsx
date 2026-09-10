@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { formatDate, formatNumber, t } from '../../i18n/index.js'
 import { useResourceList } from '../../hooks/useResourceList.js'
+import { useDeferredLoading } from '../../hooks/useDeferredLoading.js'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs.jsx'
 import { Button } from '../../components/ui/Button.jsx'
 import { Pagination } from '../../components/ui/Pagination.jsx'
@@ -37,6 +38,8 @@ export function RollHistoryPage() {
 
   const rolls = useResourceList('attendance-rolls', { perPage: 20 })
 
+  const showLoader = useDeferredLoading(rolls.status === 'loading')
+
   return (
     <>
       <Breadcrumbs
@@ -53,20 +56,20 @@ export function RollHistoryPage() {
       <p className="page-intro">{t('attendance.history.intro')}</p>
 
       <div className="table-card">
-        {rolls.status === 'loading' ? <LoadingState rows={4} /> : null}
+        {showLoader ? <LoadingState rows={4} variant="table" /> : null}
 
-        {rolls.status === 'error' ? (
+        {!showLoader && rolls.status === 'error' ? (
           <ErrorState message={rolls.error?.message} onRetry={rolls.refresh} />
         ) : null}
 
-        {rolls.status === 'ready' && rolls.records.length === 0 ? (
+        {!showLoader && rolls.status === 'ready' && rolls.records.length === 0 ? (
           <EmptyState
             body={t('attendance.history.emptyBody')}
             title={t('attendance.history.emptyTitle')}
           />
         ) : null}
 
-        {rolls.status === 'ready' && rolls.records.length > 0 ? (
+        {!showLoader && rolls.status === 'ready' && rolls.records.length > 0 ? (
           <ul className="roll-sessions">
             {rolls.records.map((session) => (
               <li className="roll-sessions__row" key={session.id}>
@@ -92,7 +95,7 @@ export function RollHistoryPage() {
           </ul>
         ) : null}
 
-        {rolls.status === 'ready' ? (
+        {!showLoader && rolls.status === 'ready' ? (
           <Pagination
             from={rolls.pagination?.from}
             lastPage={rolls.pagination?.lastPage}

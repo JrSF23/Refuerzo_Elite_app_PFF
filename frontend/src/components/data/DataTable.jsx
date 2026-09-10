@@ -2,6 +2,7 @@ import { EMPTY_VALUE, t } from '../../i18n/index.js'
 import { useContainerWidth } from '../../hooks/useContainerWidth.js'
 import { Pagination } from '../ui/Pagination.jsx'
 import { SearchInput } from '../ui/SearchInput.jsx'
+import { useDeferredLoading } from '../../hooks/useDeferredLoading.js'
 import { EmptyState, ErrorState, LoadingState, NoResultsState } from './states.jsx'
 
 /**
@@ -42,6 +43,14 @@ export function DataTable({
 }) {
   const [containerRef, containerWidth] = useContainerWidth()
 
+  /*
+   * El esqueleto no se enseña por estar cargando, sino por llevar cargando un
+   * rato. Una respuesta de 150 ms sustituye el contenido sin que haya habido
+   * indicador; una de 800 ms lo enseña y lo mantiene el tiempo suficiente para
+   * que no parpadee.
+   */
+  const showLoader = useDeferredLoading(status === 'loading')
+
   const needed = columns.length * MIN_COLUMN_WIDTH + (rowActions ? ACTIONS_WIDTH : 0)
   // Hasta la primera medición se asume tabla: en escritorio es lo habitual y
   // evita un parpadeo de tarjetas a tabla en cada carga.
@@ -61,19 +70,19 @@ export function DataTable({
         </div>
       ) : null}
 
-      {status === 'loading' ? <LoadingState rows={5} /> : null}
+      {showLoader ? <LoadingState rows={5} variant={asCards ? 'cards' : 'table'} /> : null}
 
-      {status === 'error' ? (
+      {!showLoader && status === 'error' ? (
         <ErrorState message={error?.message} onRetry={onRetry} />
       ) : null}
 
-      {status === 'ready' && records.length === 0 ? (
+      {!showLoader && status === 'ready' && records.length === 0 ? (
         hasSearch
           ? <NoResultsState onClear={() => onSearchChange('')} term={search} />
           : <EmptyState action={emptyAction} body={emptyBody} title={emptyTitle} />
       ) : null}
 
-      {status === 'ready' && records.length > 0 ? (
+      {!showLoader && status === 'ready' && records.length > 0 ? (
         <Rows
           asCards={asCards}
           columns={columns}
