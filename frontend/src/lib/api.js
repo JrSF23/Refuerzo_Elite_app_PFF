@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+import { getLocale } from '../i18n/index.js'
+
 import { t } from '../i18n/index.js'
 import { clearToken, readToken } from './auth.js'
 
@@ -33,6 +35,22 @@ export function setAuthToken(token) {
 
   delete api.defaults.headers.common.Authorization
 }
+
+/**
+ * Anuncia el idioma activo en cada petición.
+ *
+ * Va en un interceptor y no en `headers.common` porque el idioma cambia en
+ * caliente: fijarlo al arrancar dejaría al servidor respondiendo en el idioma
+ * con el que se cargó la página, y los errores de validación saldrían en otro
+ * idioma que el resto de la pantalla.
+ *
+ * Es lo que hace que los mensajes DEL SERVIDOR —validación, permisos, avisos—
+ * lleguen traducidos. Lo que el usuario escribió viaja intacto: son datos.
+ */
+api.interceptors.request.use((config) => {
+  config.headers['Accept-Language'] = getLocale()
+  return config
+})
 
 // Restaura el token al arrancar, antes de que se monte cualquier componente, de
 // modo que la primera llamada a /me ya vaya autenticada (FR-006).

@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { SessionProvider, useSession } from './context/SessionContext.jsx'
@@ -24,6 +25,8 @@ import { SessionsPage } from './pages/sessions/SessionsPage.jsx'
 import { AttendanceGroupsPage } from './pages/attendance/AttendanceGroupsPage.jsx'
 import { GroupAttendancePage } from './pages/attendance/GroupAttendancePage.jsx'
 import { RollHistoryPage } from './pages/attendance/RollHistoryPage.jsx'
+import { LocaleContext } from './context/LocaleContext.js'
+import { getLocale, setLocale } from './i18n/index.js'
 import { PaymentsPage } from './pages/payments/PaymentsPage.jsx'
 import { UsersPage } from './pages/users/UsersPage.jsx'
 import { OrganizationsPage } from './pages/organizations/OrganizationsPage.jsx'
@@ -172,6 +175,28 @@ function AppRoutes() {
 }
 
 export default function App() {
+  /*
+   * El idioma remonta el subárbol en lugar de propagarse por contexto.
+   *
+   * `t()` se resuelve en TIEMPO DE RENDER leyendo estado de módulo, no de React,
+   * así que cambiar el idioma no invalida nada por sí solo: los componentes que
+   * no vuelvan a dibujarse seguirían en el idioma anterior, y quedarían medias
+   * pantallas traducidas.
+   *
+   * Un contexto no lo arregla —solo repintaría a quien lo consuma, y ningún
+   * componente consume nada para llamar a `t()`— y suscribir 400 llamadas a un
+   * contexto sería peor. Cambiar de idioma es algo que se hace una vez, así que
+   * un remontado completo es la respuesta proporcionada: cuesta un parpadeo y
+   * garantiza que no queda ni un texto sin actualizar.
+   */
+  const [localeKey, setLocaleKey] = useState(getLocale())
+
+  const changeLocale = useCallback((locale) => {
+    if (setLocale(locale)) {
+      setLocaleKey(locale)
+    }
+  }, [])
+
   return (
     // Envuelve TODO, proveedores incluidos: un fallo al restaurar la sesión o al
     // montar el contexto también dejaría la página en blanco, y es justo el
@@ -179,7 +204,9 @@ export default function App() {
     <ErrorBoundary>
       <SessionProvider>
         <ToastProvider>
-          <AppRoutes />
+          <LocaleContext.Provider value={changeLocale}>
+            <AppRoutes key={localeKey} />
+          </LocaleContext.Provider>
         </ToastProvider>
       </SessionProvider>
     </ErrorBoundary>

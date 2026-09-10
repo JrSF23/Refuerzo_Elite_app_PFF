@@ -3,7 +3,9 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
+import { en } from './locales/en.js'
 import { es } from './locales/es.js'
+import { fr } from './locales/fr.js'
 
 /**
  * Toda clave usada en el código tiene que existir en el catálogo.
@@ -103,5 +105,39 @@ describe('catálogo de traducciones', () => {
     }
 
     expect(objetos).toEqual([])
+  })
+
+  /**
+   * Los catálogos tienen que llevar EXACTAMENTE las mismas claves.
+   *
+   * Sin esto, un idioma se queda atrás en silencio: `t()` cae al español y la
+   * pantalla sale medio traducida, que es peor que no traducida — parece un
+   * fallo del producto y no una traducción pendiente. Y al revés, una clave que
+   * solo exista en francés es texto muerto que nadie verá nunca.
+   *
+   * El respaldo al español existe para que un despiste no rompa la pantalla, no
+   * para tolerarlo. Esta prueba es la que lo convierte en red de seguridad en
+   * lugar de en costumbre.
+   */
+  it('todos los catálogos llevan las mismas claves', () => {
+    function rutas(nodo, prefijo = '') {
+      return Object.entries(nodo).flatMap(([clave, valor]) => (
+        valor && typeof valor === 'object'
+          ? rutas(valor, `${prefijo}${clave}.`)
+          : [`${prefijo}${clave}`]
+      ))
+    }
+
+    const base = rutas(es).sort()
+
+    for (const [nombre, catalogo] of [['fr', fr], ['en', en]]) {
+      const suyas = rutas(catalogo).sort()
+
+      const faltan = base.filter((clave) => !suyas.includes(clave))
+      const sobran = suyas.filter((clave) => !base.includes(clave))
+
+      expect({ [`${nombre} sin traducir`]: faltan }).toEqual({ [`${nombre} sin traducir`]: [] })
+      expect({ [`${nombre} de más`]: sobran }).toEqual({ [`${nombre} de más`]: [] })
+    }
   })
 })

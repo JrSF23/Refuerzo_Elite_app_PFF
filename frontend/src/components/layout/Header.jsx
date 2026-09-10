@@ -1,6 +1,7 @@
 import { t } from '../../i18n/index.js'
 import { useTheme } from '../../hooks/useTheme.js'
 import { Dropdown, DropdownItem } from '../ui/Dropdown.jsx'
+import { LanguageMenu } from './LanguageMenu.jsx'
 import { ThemeToggle } from './ThemeToggle.jsx'
 
 /**
@@ -39,6 +40,12 @@ export function Header({ organization, user, roleNames, isPlatformAdmin, onLogou
         <span className="header__context-label">{t('fields.organization')}</span>
         <span className="header__context-value">{contextLabel}</span>
       </div>
+
+      {/* El idioma va en la barra y no dentro del menú de la cuenta: quien
+          necesita cambiarlo probablemente no entiende el rótulo del menú que
+          tendría que abrir para encontrarlo. La apariencia sí puede vivir
+          dentro, porque a esa se llega sabiendo lo que se busca. */}
+      <LanguageMenu />
 
       <Dropdown
         align="end"
