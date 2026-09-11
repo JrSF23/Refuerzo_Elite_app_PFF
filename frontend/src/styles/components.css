@@ -2368,3 +2368,90 @@
   text-decoration: underline;
   white-space: nowrap;
 }
+
+/* ── Barras de desplazamiento discretas ──────────────────────────────────────
+ *
+ * Aparecen al pasar el ratón por encima del contenedor y se desvanecen al
+ * salir. Solo en los contenedores INTERNOS —cajón, modal, lista del buscador,
+ * barra lateral y el detalle del error—; el desplazamiento de la PÁGINA se deja
+ * intacto a propósito, porque es el que más ayuda a orientarse y es donde
+ * esconder la señal de «hay más contenido» sale más caro.
+ *
+ * ── Por qué se anima el color y nunca el ancho ───────────────────────────────
+ *
+ * Es la trampa de este efecto. Ocultar la barra con `width: 0` y sacarla en
+ * hover DESPLAZA el contenido cada vez que entra el ratón: el texto salta unos
+ * píxeles y la lectura se rompe. Así que el hueco se reserva siempre y lo único
+ * que cambia es el color del pulgar, de transparente a visible. El ancho no se
+ * toca jamás.
+ *
+ * ── Tres condiciones que no son opcionales ───────────────────────────────────
+ *
+ * - `(hover: hover) and (pointer: fine)` envuelve todo. En un táctil no hay
+ *   hover que provoque la aparición, así que sin esta guarda el pulgar quedaría
+ *   invisible PARA SIEMPRE. Y no hace falta tocarlo: ahí el navegador ya usa
+ *   barras superpuestas que se ocultan solas.
+ * - `:focus-within` acompaña siempre a `:hover`. Quien entra con el tabulador y
+ *   baja con las flechas no genera hover, y se quedaría desplazándose a ciegas
+ *   justo cuando más falta hace la referencia.
+ * - La lista del buscador engancha el foco en `.combo`, no en sí misma: el foco
+ *   se queda en el campo de texto —es un `aria-autocomplete`, la lista nunca lo
+ *   recibe—, así que `.combo__list:focus-within` no casaría nunca.
+ *
+ * Firefox va aparte porque no entiende `::-webkit-scrollbar`. Con
+ * `scrollbar-color` hace lo mismo, aunque sin transición: el cambio es seco. Es
+ * degradación aceptable, y el comportamiento —aparecer y desaparecer— es igual.
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+@media (hover: hover) and (pointer: fine) {
+  :is(.sidebar__scroll, .combo__list, .modal__body, .drawer__body, .crash__detail)::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  :is(.sidebar__scroll, .combo__list, .modal__body, .drawer__body, .crash__detail)::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  :is(.sidebar__scroll, .combo__list, .modal__body, .drawer__body, .crash__detail)::-webkit-scrollbar-thumb {
+    /* Transparente, pero ocupando su sitio: de ahí que no haya salto. */
+    background-color: transparent;
+    /* Borde transparente + recorte al contenido: pulgar fino y con aire, sin
+       necesidad de un segundo elemento. */
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: var(--radius-full);
+    transition: background-color 150ms ease;
+  }
+
+  :is(.sidebar__scroll, .combo__list, .modal__body, .drawer__body, .crash__detail):hover::-webkit-scrollbar-thumb,
+  :is(.sidebar__scroll, .modal__body, .drawer__body, .crash__detail):focus-within::-webkit-scrollbar-thumb,
+  .combo:focus-within .combo__list::-webkit-scrollbar-thumb {
+    background-color: var(--color-border-strong);
+  }
+
+  /* Con el ratón encima del propio pulgar, un punto más de contraste: es la
+     señal de que se puede arrastrar. */
+  :is(.sidebar__scroll, .combo__list, .modal__body, .drawer__body, .crash__detail)::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-border-control);
+  }
+
+  /* ── Firefox ─────────────────────────────────────────────────────────────── */
+
+  :is(.sidebar__scroll, .combo__list, .modal__body, .drawer__body, .crash__detail) {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  :is(.sidebar__scroll, .combo__list, .modal__body, .drawer__body, .crash__detail):hover,
+  :is(.sidebar__scroll, .modal__body, .drawer__body, .crash__detail):focus-within,
+  .combo:focus-within .combo__list {
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.sidebar__scroll, .combo__list, .modal__body, .drawer__body, .crash__detail)::-webkit-scrollbar-thumb {
+    transition: none;
+  }
+}
