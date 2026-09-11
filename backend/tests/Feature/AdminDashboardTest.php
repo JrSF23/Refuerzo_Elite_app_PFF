@@ -318,6 +318,75 @@ class AdminDashboardTest extends TestCase
         $this->assertSame(1, $suyo['enrollments_count']);
     }
 
+    /**
+     * Una sesión marcada como impartida deja de ser «próxima».
+     *
+     * La consulta filtraba SOLO por `session_date >= today()` y no miraba
+     * `taught_at`, así que marcarla no la sacaba del resumen. Y como el marcado
+     * no se deshace, el profesor se quedaba con ella delante sin forma de
+     * quitarla: una sesión impartida hoy seguía ahí hasta medianoche, que es
+     * justo el momento en que acaba de marcarla y espera verla desaparecer.
+     */
+    public function test_a_session_marked_as_taught_leaves_the_upcoming_list(): void
+    {
+        $teacherUser = $this->createUserFor($this->orgA, 'teacher');
+        $profile = $this->createTeacherProfile($this->orgA, $teacherUser);
+
+        $group = $this->createClassGroup($this->orgA, ['teacher_id' => $profile->getKey()]);
+
+        $impartida = $this->createClassSession($this->orgA, $group, [
+            'session_date' => today()->toDateString(),
+        ]);
+        $pendiente = $this->createClassSession($this->orgA, $group, [
+            'session_date' => today()->addDay()->toDateString(),
+        ]);
+
+        $impartida->forceFill(['taught_at' => now(), 'taught_by' => $teacherUser->getKey()])->save();
+
+        $data = $this->actingWithToken($this->tokenFor($teacherUser))
+            ->getJson('/api/v1/dashboard')
+            ->assertOk()
+            ->json();
+
+        $ids = collect($data['upcomingSessions'])->pluck('id')->all();
+
+        $this->assertNotContains($impartida->getKey(), $ids, 'La sesión impartida sigue en próximas.');
+        $this->assertContains($pendiente->getKey(), $ids);
+        $this->assertSame(1, $data['stats']['upcoming_sessions']);
+    }
+
+    /**
+     * La cifra de la tarjeta es el TOTAL, no lo que cupo en la lista.
+     *
+     * La lista se recorta a ocho a propósito —es un resumen—, pero el recuento
+     * se sacaba de esa misma colección ya recortada, así que no podía pasar de
+     * ocho: un profesor con doce sesiones pendientes leía «8».
+     *
+     * Es exactamente el fallo que este mismo controlador ya evita para los
+     * grupos, con recuentos resueltos en subconsulta y no sobre lo paginado.
+     */
+    public function test_the_upcoming_count_is_the_real_total_and_not_the_page(): void
+    {
+        $teacherUser = $this->createUserFor($this->orgA, 'teacher');
+        $profile = $this->createTeacherProfile($this->orgA, $teacherUser);
+
+        $group = $this->createClassGroup($this->orgA, ['teacher_id' => $profile->getKey()]);
+
+        foreach (range(1, 12) as $dia) {
+            $this->createClassSession($this->orgA, $group, [
+                'session_date' => today()->addDays($dia)->toDateString(),
+            ]);
+        }
+
+        $data = $this->actingWithToken($this->tokenFor($teacherUser))
+            ->getJson('/api/v1/dashboard')
+            ->assertOk()
+            ->json();
+
+        $this->assertCount(8, $data['upcomingSessions'], 'La lista sigue siendo un resumen de ocho.');
+        $this->assertSame(12, $data['stats']['upcoming_sessions'], 'La cifra se quedó en lo que cupo.');
+    }
+
     public function test_recent_payments_only_shows_this_centre(): void
     {
         $orgB = $this->createOrganization(['name' => 'Centro B']);

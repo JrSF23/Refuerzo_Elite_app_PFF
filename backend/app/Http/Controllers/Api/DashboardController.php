@@ -88,13 +88,36 @@ class DashboardController
             ->orderBy('name')
             ->get();
 
-        $upcomingSessions = ClassSession::whereIn('class_group_id', $myGroupIds)
+        /*
+         * Próximas es PENDIENTES, no «con fecha de hoy en adelante».
+         *
+         * Antes solo se filtraba por fecha, así que una sesión ya marcada como
+         * impartida seguía en el resumen. Y el marcado no se deshace: el profesor
+         * la marcaba, la veía seguir ahí y no tenía forma de quitarla — una
+         * sesión impartida hoy aguantaba hasta medianoche, justo cuando acaba de
+         * darla y espera verla desaparecer.
+         */
+        $upcoming = ClassSession::whereIn('class_group_id', $myGroupIds)
             ->where('session_date', '>=', today())
+            ->whereNull('taught_at');
+
+        $upcomingSessions = (clone $upcoming)
             ->with('classGroup.subject')
             ->orderBy('session_date')
             ->orderBy('starts_at')
             ->take(8)
             ->get();
+
+        /*
+         * El recuento sale de la consulta SIN recortar.
+         *
+         * Sacarlo de `$upcomingSessions` lo dejaba topado en ocho, que es el
+         * tamaño del resumen: un profesor con doce pendientes leía «8». Es el
+         * mismo fallo que este controlador ya evita para los grupos —recuentos
+         * en subconsulta y no sobre lo paginado— y que el índice de alumnos
+         * corrigió en su día. La lista es un resumen; la cifra, un total.
+         */
+        $upcomingCount = $upcoming->count();
 
         $studentCount = Enrollment::whereIn('class_group_id', $myGroupIds)
             ->where('status', 'active')
@@ -107,7 +130,7 @@ class DashboardController
             'stats'             => [
                 'groups'            => $myGroups->count(),
                 'students'          => $studentCount,
-                'upcoming_sessions' => $upcomingSessions->count(),
+                'upcoming_sessions' => $upcomingCount,
             ],
             'myGroups'          => $myGroups,
             'upcomingSessions'  => $upcomingSessions,
