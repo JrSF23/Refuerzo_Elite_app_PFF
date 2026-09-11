@@ -1,6 +1,7 @@
 import { formatAmount, formatDate, t } from '../../i18n/index.js'
 import { PaymentStatusBadge } from '../../components/ui/Badge.jsx'
 import { ResourcePage } from '../../components/data/ResourcePage.jsx'
+import { useUrlFilter } from '../../hooks/useUrlFilter.js'
 
 /**
  * Pagos.
@@ -13,8 +14,23 @@ import { ResourcePage } from '../../components/data/ResourcePage.jsx'
  * regla de negocio en el cliente es garantizar que las dos se desincronicen.
  */
 export function PaymentsPage() {
+  // `?estado=pendiente` es a donde apunta el aviso del panel.
+  const { listParams, activeFilter } = useUrlFilter([
+    {
+      param: 'estado',
+      values: {
+        pendiente: {
+          params: { status: 'pending' },
+          label: () => t('payments.filters.pending'),
+        },
+      },
+    },
+  ])
+
   return (
     <ResourcePage
+      activeFilter={activeFilter}
+      listParams={listParams}
       columns={[
         { key: 'student.full_name', label: t('fields.student') },
         {

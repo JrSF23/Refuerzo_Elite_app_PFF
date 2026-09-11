@@ -29,6 +29,7 @@ export const en = {
     search: 'Search',
     clear: 'Clear',
     view: 'View',
+    clearFilter: 'Clear filter',
     select: 'Select',
     noOptions: 'No options available',
 
@@ -207,6 +208,9 @@ export const en = {
   },
 
   students: {
+    filters: {
+      lowAttendance: 'Students with low attendance only',
+    },
     title: 'Students',
     create: 'New student',
     edit: 'Edit student',
@@ -229,6 +233,7 @@ export const en = {
     countMany: '{count} students',
     pagedBlocksNotice: 'The blocks match the page shown. A group with many students may continue on the next one.',
     fields: {
+      attendance: 'Attendance',
       fullName: 'Student',
       dateOfBirth: 'Date of birth',
       schoolName: 'Previous school',
@@ -321,6 +326,10 @@ export const en = {
   },
 
   classGroups: {
+    filters: {
+      withoutTeacher: 'Groups without a teacher only',
+      subjectMismatch: 'Groups whose teacher teaches another subject only',
+    },
     subjectsOf: 'Subjects',
     emptyGroupTitle: 'This group teaches no subjects yet',
     emptyGroupBody: 'Add the subjects taught in this group and who teaches them. Without at least one, no sessions can be recorded and no attendance taken.',
@@ -437,6 +446,9 @@ export const en = {
   },
 
   payments: {
+    filters: {
+      pending: 'Pending payments only',
+    },
     title: 'Payments',
     create: 'Record payment',
     edit: 'Edit payment',

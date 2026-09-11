@@ -46,6 +46,63 @@ class ClassGroupController extends BaseApiController
         if ($tutorGroupId !== 0) {
             $query->where('tutor_group_id', $tutorGroupId);
         }
+
+        $this->applyTeacherFilter($query);
+    }
+
+    /**
+     * Filtro por profesor titular.
+     *
+     * Existe para que el aviso de «grupos sin profesor» del panel lleve a esos
+     * grupos y no al listado entero.
+     *
+     * `none` acota a los que NO tienen titular, y hace falta un valor explícito
+     * porque el parámetro ausente ya significa «no filtrar»: sin él no habría
+     * forma de listar justo los que el aviso cuenta. Es el mismo convenio que ya
+     * usa `tutor_group_id=none` en los alumnos sin aula.
+     */
+    private function applyTeacherFilter(Builder $query): void
+    {
+        if (! request()->filled('teacher_id')) {
+            return;
+        }
+
+        if (request('teacher_id') === 'none') {
+            $query->whereNull('teacher_id');
+
+            return;
+        }
+
+        /*
+         * `mismatch` son los grupos que SÍ tienen titular y aun así nadie puede
+         * atender: su profesor imparte otra materia —o ninguna—, así que no
+         * alcanza el grupo y no puede crearle sesiones.
+         *
+         * Es el otro aviso del panel, y aquí filtrar por grupo es lo correcto y
+         * no un rodeo: el problema es del grupo, no de una persona. La condición
+         * es la MISMA que cuenta el panel; si se tocara una habría que tocar la
+         * otra, y por eso conviene que sigan leyéndose juntas.
+         *
+         * La condición vive en `ClassGroup::scopeSubjectMismatch()`.
+         */
+        if (request('teacher_id') === 'mismatch') {
+            $query->subjectMismatch();
+
+            return;
+        }
+
+        $teacherId = request()->integer('teacher_id');
+
+        // Validado contra Eloquent para que el global scope aplique. Un profesor
+        // de otro centro devuelve conjunto VACÍO, nunca el listado completo: eso
+        // enseñaría datos que el usuario pidió acotar creyendo ver los de otro.
+        if (Teacher::query()->whereKey($teacherId)->exists()) {
+            $query->where('teacher_id', $teacherId);
+
+            return;
+        }
+
+        $query->whereRaw('1 = 0');
     }
 
     protected function rules(?int $id = null): array

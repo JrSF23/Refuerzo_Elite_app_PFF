@@ -33,7 +33,16 @@ export function AttentionPanel({ items, linkTo }) {
 
       <ul className="attention__list">
         {items.map((item) => {
-          const to = linkTo(SECTION_FOR[item.key])
+          const destination = DESTINATION_FOR[item.key]
+
+          // El permiso se comprueba SIEMPRE contra la sección; `path` solo
+          // cambia a qué pantalla de esa sección se entra.
+          const allowed = destination ? linkTo(destination.section) : undefined
+          const base = allowed ? destination.path ?? allowed : undefined
+
+          // Sin permiso de sección `linkTo` devuelve indefinido y el aviso se
+          // queda sin enlace: mejor eso que ofrecer una redirección.
+          const to = base ? `${base}${destination.query ?? ''}` : undefined
 
           return (
             <li className="attention__row" key={item.key}>
@@ -58,16 +67,32 @@ export function AttentionPanel({ items, linkTo }) {
 }
 
 /**
- * A qué sección lleva cada aviso.
+ * A qué lleva cada aviso.
+ *
+ * La acotación va en la URL para que el destino sea ENLAZABLE: el aviso cuenta
+ * un problema y el enlace tiene que dejar al usuario delante de él. Enlazar solo
+ * a la sección obligaba a buscar a mano lo que el aviso acababa de decir, que es
+ * justo lo que la primera regla de arriba dice que no debe pasar.
+ *
+ * Los dos que todavía no llevan `query` son los que aún no tienen destino
+ * acotado en el servidor: `lowAttendance` es hoy un agregado que solo sabe
+ * devolver un número, y `groupsSubjectMismatch`, una condición compuesta. Hasta
+ * que lo tengan siguen enlazando a su sección, que es mejor que no enlazar.
  *
  * Vive en la interfaz y no en la API a propósito: las rutas son cosa del
  * frontend, y mandarlas desde el servidor obligaría a desplegar backend para
  * cambiar un enlace. El servidor manda la clave y el número; dónde se arregla lo
  * sabe quien dibuja.
  */
-const SECTION_FOR = {
-  pendingPayments: 'payments',
-  lowAttendance: 'attendance',
-  groupsWithoutTeacher: 'classGroups',
-  groupsSubjectMismatch: 'classGroups',
+const DESTINATION_FOR = {
+  pendingPayments: { section: 'payments', query: '?estado=pendiente' },
+  /*
+   * Va a `/alumnos/todos` y NO a `/alumnos`, que es el índice de AULAS. Mandarlo
+   * a la sección dejaría al administrador delante de una lista de aulas para
+   * buscar dentro de ellas a los alumnos de los que acaba de avisarse — que es
+   * el defecto que esto arregla, servido con otro disfraz.
+   */
+  lowAttendance: { section: 'students', path: '/alumnos/todos', query: '?asistencia=baja' },
+  groupsWithoutTeacher: { section: 'classGroups', query: '?profesor=sin-asignar' },
+  groupsSubjectMismatch: { section: 'classGroups', query: '?profesor=descuadrado' },
 }

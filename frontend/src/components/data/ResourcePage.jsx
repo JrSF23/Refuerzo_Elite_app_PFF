@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { t } from '../../i18n/index.js'
 import { api } from '../../lib/api.js'
@@ -46,6 +47,14 @@ export function ResourcePage({
   subtitle,
   /** Acotación fija enviada al servidor en cada carga. */
   listParams,
+  /**
+   * Acotación activa llegada por la URL, para anunciarla y poder deshacerla.
+   *
+   * Sin distintivo, una lista acortada es indistinguible de una lista corta: el
+   * usuario ve cuatro filas donde había cuarenta y no tiene forma de saber que
+   * está mirando un subconjunto, ni cómo volver.
+   */
+  activeFilter,
   /** Valores con los que nace un registro creado desde esta pantalla. */
   createDefaults,
   /** Acciones propias de la entidad, antes de editar y eliminar. */
@@ -128,6 +137,15 @@ export function ResourcePage({
           </Button>
         ) : null}
       </div>
+
+      {activeFilter ? (
+        <p className="filter-chip">
+          <span className="filter-chip__label">{activeFilter.label}</span>
+          <Link className="filter-chip__clear" to={definition.path}>
+            {t('common.clearFilter')}
+          </Link>
+        </p>
+      ) : null}
 
       <DataTable
         columns={columns}

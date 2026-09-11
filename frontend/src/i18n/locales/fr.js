@@ -30,6 +30,7 @@ export const fr = {
     search: 'Rechercher',
     clear: 'Effacer',
     view: 'Voir',
+    clearFilter: 'Retirer le filtre',
     select: 'Sélectionnez',
     noOptions: 'Aucune option disponible',
 
@@ -210,6 +211,9 @@ export const fr = {
   },
 
   students: {
+    filters: {
+      lowAttendance: 'Uniquement les élèves peu assidus',
+    },
     title: 'Élèves',
     create: 'Nouvel élève',
     edit: 'Modifier l’élève',
@@ -232,6 +236,7 @@ export const fr = {
     countMany: '{count} élèves',
     pagedBlocksNotice: 'Les blocs correspondent à la page affichée. Un groupe comptant beaucoup d’élèves peut se poursuivre sur la suivante.',
     fields: {
+      attendance: 'Assiduité',
       fullName: 'Élève',
       dateOfBirth: 'Date de naissance',
       schoolName: 'Établissement d’origine',
@@ -324,6 +329,10 @@ export const fr = {
   },
 
   classGroups: {
+    filters: {
+      withoutTeacher: 'Uniquement les groupes sans enseignant',
+      subjectMismatch: 'Uniquement les groupes dont l’enseignant enseigne une autre matière',
+    },
     subjectsOf: 'Matières',
     emptyGroupTitle: 'Ce groupe n’assure encore aucune matière',
     emptyGroupBody: 'Ajoutez les matières enseignées dans ce groupe et qui les assure. Sans au moins une, impossible d’enregistrer des séances ni de faire l’appel.',
@@ -440,6 +449,9 @@ export const fr = {
   },
 
   payments: {
+    filters: {
+      pending: 'Uniquement les paiements en attente',
+    },
     title: 'Paiements',
     create: 'Enregistrer un paiement',
     edit: 'Modifier le paiement',

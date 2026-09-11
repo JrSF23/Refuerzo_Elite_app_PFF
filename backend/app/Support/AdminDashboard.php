@@ -34,13 +34,10 @@ use Illuminate\Support\Collection;
 class AdminDashboard
 {
     /** Ventana del titular y de las alertas. Un mes es lo que cubre un ciclo de cobro. */
-    private const WINDOW_DAYS = 30;
 
     /** Por debajo de esto, el alumno aparece en «Requiere atención». */
-    private const LOW_ATTENDANCE = 75.0;
 
     /** Sin al menos estos registros, un porcentaje por alumno no dice nada. */
-    private const MIN_RECORDS_FOR_ALERT = 4;
 
     public function payload(): array
     {
@@ -71,7 +68,10 @@ class AdminDashboard
 
     private function windowStart(): Carbon
     {
-        return Carbon::now()->subDays(self::WINDOW_DAYS)->startOfDay();
+        // La ventana la fija `LowAttendance`, que es quien define el criterio
+        // del aviso. Duplicarla aquí haría que el panel y la lista de alumnos
+        // midieran periodos distintos en cuanto alguien tocara uno de los dos.
+        return LowAttendance::windowStart();
     }
 
     /**
@@ -206,19 +206,10 @@ class AdminDashboard
      */
     private function lowAttendanceCount(): int
     {
-        $from = $this->windowStart();
-
-        return Attendance::query()
-            ->whereHas('classSession', fn ($sessions) => $sessions->whereBetween('session_date', [$from, Carbon::now()]))
-            ->selectRaw('student_id')
-            ->groupBy('student_id')
-            ->havingRaw('COUNT(*) >= ?', [self::MIN_RECORDS_FOR_ALERT])
-            ->havingRaw(
-                'SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) * 100.0 / COUNT(*) < ?',
-                ['present', self::LOW_ATTENDANCE]
-            )
-            ->get()
-            ->count();
+        // Misma consulta que alimenta `/students?attendance=low`. El aviso dice
+        // cuántos hay y la lista enseña a esos; salen del mismo sitio para que
+        // no puedan discrepar.
+        return LowAttendance::studentIds()->get()->count();
     }
 
     private function groupsWithoutTeacherCount(): int
@@ -237,16 +228,8 @@ class AdminDashboard
      */
     private function groupsSubjectMismatchCount(): int
     {
-        // Una sola condición cubre los dos casos: la ficha sin materia y la ficha
-        // con otra materia. Si `teachers.subject_id` es nulo, la comparación de
-        // columnas no casa, y el grupo entra igual — que es lo correcto, porque
-        // el efecto para el profesor es el mismo: no lo alcanza.
-        return ClassGroup::query()
-            ->whereNotNull('teacher_id')
-            ->whereDoesntHave(
-                'teacher',
-                fn ($teacher) => $teacher->whereColumn('teachers.subject_id', 'class_groups.subject_id')
-            )
-            ->count();
+        // El criterio vive en el modelo: lo comparte con el filtro que alimenta
+        // el enlace de este mismo aviso.
+        return ClassGroup::query()->subjectMismatch()->count();
     }
 }

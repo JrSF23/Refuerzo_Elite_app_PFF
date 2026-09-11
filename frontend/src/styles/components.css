@@ -2335,3 +2335,36 @@
 .language-menu__item.is-active {
   font-weight: var(--weight-semibold);
 }
+
+/* ── Acotación activa de un listado ──────────────────────────────────────────
+ *
+ * Va ENTRE el encabezado y la tabla, no dentro de la barra de herramientas: es
+ * una afirmación sobre lo que se está viendo —«solo pagos pendientes»—, no un
+ * control más. Y por eso lleva siempre su forma de deshacerse al lado: una lista
+ * acortada sin salida visible es una trampa, porque el usuario no distingue un
+ * subconjunto de una lista corta.
+ *
+ * Usa los tokens de información, no los de aviso: acotar no es un problema.
+ */
+.filter-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-info-soft);
+  color: var(--color-info-text);
+  font-size: var(--text-sm);
+}
+
+.filter-chip__label {
+  font-weight: var(--weight-semibold);
+}
+
+.filter-chip__clear {
+  color: inherit;
+  text-decoration: underline;
+  white-space: nowrap;
+}

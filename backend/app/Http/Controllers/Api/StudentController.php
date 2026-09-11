@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Student;
+use App\Support\LowAttendance;
 use App\Rules\BelongsToCurrentOrganization;
 use App\Models\Guardian;
 use App\Models\TutorGroup;
@@ -70,6 +71,8 @@ class StudentController extends BaseApiController
      */
     protected function applyIndexFilters(Builder $query): void
     {
+        $this->applyLowAttendanceFilter($query);
+
         if (! request()->filled('tutor_group_id')) {
             return;
         }
@@ -98,6 +101,50 @@ class StudentController extends BaseApiController
 
         // Grupo inexistente o ajeno: conjunto vacío, nunca el listado entero.
         $query->whereRaw('1 = 0');
+    }
+
+    /**
+     * Alumnos por debajo del umbral de asistencia.
+     *
+     * Es el destino del aviso del panel: enlazaba a la sección y dejaba al
+     * administrador buscando a mano a los cinco alumnos de los que acababa de
+     * avisar. El criterio NO se define aquí —lo define `LowAttendance`, que es
+     * también de donde sale el recuento del panel—, de modo que la lista y el
+     * número no pueden discrepar.
+     *
+     * ── Lo que se cuenta, y por qué ─────────────────────────────────────────
+     *
+     * Se añaden dos recuentos sobre la MISMA ventana: sesiones registradas y
+     * faltas. Con los dos, la pantalla puede mostrar «16/22 · 72,7 %» en vez de
+     * un porcentaje pelado, y eso importa: 50 % sobre 4 registros y 72,7 % sobre
+     * 22 son cosas distintas, y la segunda es la que hay que atender. Un
+     * porcentaje solo pondría delante al caso con menos evidencia.
+     *
+     * Por eso el orden es por FALTAS ABSOLUTAS y no por porcentaje. `latest()`
+     * de `index()` se aplica después, así que queda de desempate.
+     *
+     * Los recuentos se añaden solo cuando el filtro está activo: cobrárselos a
+     * cada listado de alumnos sería pagar dos agregados por una columna que casi
+     * nunca se mira.
+     */
+    protected function applyLowAttendanceFilter(Builder $query): void
+    {
+        if (request('attendance') !== 'low') {
+            return;
+        }
+
+        $query
+            ->whereIn('id', LowAttendance::studentIds())
+            // La etapa solo se carga aquí: la lista acotada la muestra para que
+            // el patrón salte a la vista —cuatro de cinco en Primaria dice más
+            // que cinco alumnos sueltos—, y el resto de listados no la usan.
+            ->with('tutorGroup.stage')
+            ->withCount([
+                'attendances as attendance_records' => fn (Builder $records) => LowAttendance::inWindow($records),
+                'attendances as attendance_absences' => fn (Builder $records) => LowAttendance::inWindow($records)
+                    ->where('status', '!=', 'present'),
+            ])
+            ->orderByDesc('attendance_absences');
     }
 
     /**

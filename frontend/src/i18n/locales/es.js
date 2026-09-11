@@ -36,6 +36,7 @@ export const es = {
     search: 'Buscar',
     clear: 'Limpiar',
     view: 'Ver',
+    clearFilter: 'Quitar filtro',
     select: 'Seleccione',
     noOptions: 'No hay opciones disponibles',
 
@@ -246,6 +247,9 @@ export const es = {
      de cada dominio se añade en la fase que construye esa pantalla.
      ───────────────────────────────────────────────────────────────────────── */
   students: {
+    filters: {
+      lowAttendance: 'Solo alumnos con baja asistencia',
+    },
     title: 'Alumnos',
     create: 'Nuevo alumno',
     edit: 'Editar alumno',
@@ -268,6 +272,7 @@ export const es = {
     countMany: '{count} alumnos',
     pagedBlocksNotice: 'Los bloques corresponden a la página mostrada. Un grupo con muchos alumnos puede continuar en la siguiente.',
     fields: {
+      attendance: 'Asistencia',
       fullName: 'Alumno',
       dateOfBirth: 'Fecha de nacimiento',
       schoolName: 'Centro escolar',
@@ -364,6 +369,10 @@ export const es = {
   // Grupos DE ASIGNATURA. Renombrada para no dejar dos secciones llamadas
   // «Grupos»: un alumno pertenece a un grupo tutorial y a varios de asignatura.
   classGroups: {
+    filters: {
+      withoutTeacher: 'Solo grupos sin profesor',
+      subjectMismatch: 'Solo grupos cuyo profesor imparte otra materia',
+    },
     subjectsOf: 'Materias',
     emptyGroupTitle: 'Este grupo todavía no imparte ninguna materia',
     emptyGroupBody: 'Añada las materias que se dan en este grupo y quién las imparte. Sin al menos una, no se pueden registrar sesiones ni pasar lista.',
@@ -490,6 +499,9 @@ export const es = {
   },
 
   payments: {
+    filters: {
+      pending: 'Solo pagos pendientes',
+    },
     title: 'Pagos',
     create: 'Registrar pago',
     edit: 'Editar pago',
