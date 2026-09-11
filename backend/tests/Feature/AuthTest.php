@@ -116,6 +116,22 @@ class AuthTest extends TestCase
         $this->getJson('/api/v1/me')->assertUnauthorized();
     }
 
+    /**
+     * La misma denegación, para un cliente que NO pide JSON.
+     *
+     * `getJson()` manda `Accept: application/json`, así que la prueba de arriba
+     * nunca recorrió este camino: sin esa cabecera, Laravel da por hecho que
+     * quien llama es un navegador y trata de REDIRIGIRLO a la ruta `login`, que
+     * en una aplicación solo-API no existe. El resultado era un 500 donde
+     * corresponde un 401.
+     */
+    public function test_me_denies_a_client_that_does_not_ask_for_json(): void
+    {
+        $this->get('/api/v1/me', ['Accept' => 'text/html,application/xhtml+xml'])
+            ->assertUnauthorized()
+            ->assertHeader('content-type', 'application/json');
+    }
+
     // ── Logout ─────────────────────────────────────────────────────────────
 
     public function test_logout_invalidates_token(): void
