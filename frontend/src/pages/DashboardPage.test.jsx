@@ -15,15 +15,45 @@ vi.mock('../lib/api.js', () => ({
 // La pantalla solo usa la sesión para decidir qué indicadores enlazan. Se
 // sustituye para que la prueba se centre en el estado de los datos.
 vi.mock('../context/SessionContext.jsx', () => ({
-  useSession: () => ({ roleNames: ['org_admin'] }),
+  useSession: () => ({ roleNames: ['org_admin'], user: { name: 'Administrador' } }),
 }))
 
+/**
+ * Forma que devuelve `GET /dashboard` para la administración.
+ *
+ * Ya no trae `recentSessions` —las próximas sesiones son trabajo del módulo de
+ * Sesiones— ni `attendances` como recuento: la asistencia es ahora un porcentaje
+ * agregado en el servidor, con su tendencia y su desglose.
+ */
 const ADMIN_PAYLOAD = {
   role: 'admin',
-  stats: { students: 8, teachers: 2, groups: 4, attendances: 24, payments: 21 },
-  recentStudents: [],
-  recentSessions: [],
+  stats: {
+    students: 8,
+    teachers: 2,
+    groups: 4,
+    attendance_rate: 91.4,
+    pending_payments: 18,
+  },
+  attendance: {
+    rate: 91.4,
+    delta: 3.2,
+    trend: [
+      { day: 'mon', rate: 88.0 },
+      { day: 'tue', rate: 92.5 },
+      // Un día sin clase: nulo, no cero. La gráfica debe cortarse, no desplomarse.
+      { day: 'wed', rate: null },
+      { day: 'thu', rate: 93.1 },
+      { day: 'fri', rate: 91.4 },
+    ],
+    breakdown: [
+      { status: 'present', share: 91.4 },
+      { status: 'absent', share: 5.6 },
+      { status: 'late', share: 2.0 },
+      { status: 'excused', share: 1.0 },
+    ],
+  },
   recentPayments: [],
+  attentionItems: [],
 }
 
 function renderDashboard({ strict = true } = {}) {
@@ -133,7 +163,6 @@ describe('DashboardPage', () => {
         stats: { groups: 2, students: 5, upcoming_sessions: 0 },
         myGroups: [],
         upcomingSessions: [],
-        recentAttendances: [],
       },
     })
 
@@ -158,7 +187,6 @@ describe('DashboardPage', () => {
         stats: { groups: 0, students: 0, upcoming_sessions: 0 },
         myGroups: [],
         upcomingSessions: [],
-        recentAttendances: [],
       },
     })
 

@@ -2,19 +2,16 @@
 
 namespace App\Policies\Concerns;
 
-use App\Models\ClassGroup;
 use App\Models\Enrollment;
 use App\Models\User;
+use App\Support\TeacherScope;
 
 /**
  * Resolución del alcance del profesor, compartida por las policies.
  *
- * Los grupos que un usuario "imparte" son los asignados a la ficha vinculada a su
- * cuenta por `teachers.user_id` (FR-015a). Nunca se emparejan por correo: eso era
- * frágil y convertirlo en regla de acceso sería un fallo de seguridad (D6).
- *
- * Deliberadamente sin caché: el vínculo debe poder reasignarse y surtir efecto en
- * la petición siguiente, sin cerrar sesión.
+ * La regla en sí vive en `App\Support\TeacherScope`, que es también de donde la
+ * toma `BaseApiController` para recortar los listados. Aquí solo se envuelve,
+ * para que autorizar y listar no puedan responder cosas distintas.
  */
 trait ResolvesTeacherAccess
 {
@@ -31,23 +28,24 @@ trait ResolvesTeacherAccess
     /**
      * Identificadores de los grupos que imparte.
      *
-     * Un profesor sin ficha vinculada devuelve un array vacío, y por tanto no
-     * alcanza nada: el fallo cierra el acceso, nunca lo abre (FR-015c).
-     *
      * @return list<int>
      */
     protected function taughtClassGroupIds(User $user): array
     {
-        $teacherId = $user->teacher()->value('id');
+        return app(TeacherScope::class)->classGroupIdsFor($user);
+    }
 
-        if ($teacherId === null) {
-            return [];
-        }
-
-        return ClassGroup::query()
-            ->where('teacher_id', $teacherId)
-            ->pluck('id')
-            ->all();
+    /**
+     * ¿Alcanza el grupo que llega en la petición?
+     *
+     * Se pregunta por el identificador entrante, no por el que ya tiene guardado
+     * el registro. En un alta no hay registro todavía; en una edición, el grupo
+     * de destino puede ser distinto del de origen, y comprobar solo el de origen
+     * dejaría mover una sesión al grupo de otro profesor.
+     */
+    protected function reachesClassGroup(User $user, int $classGroupId): bool
+    {
+        return app(TeacherScope::class)->reachesClassGroup($user, $classGroupId);
     }
 
     /**

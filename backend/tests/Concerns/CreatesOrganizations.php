@@ -117,16 +117,28 @@ trait CreatesOrganizations
             'organization_id' => $organization->getKey(),
             'name' => 'Matemáticas',
             'code' => 'MAT-'.Str::upper(Str::random(6)),
-            'monthly_fee' => 80,
         ], $overrides));
     }
 
+    /**
+     * Crea un grupo y, si lleva profesor, le alinea la materia.
+     *
+     * Un profesor alcanza un grupo cuando lo tiene asignado Y la materia del
+     * grupo es la de su ficha (App\Support\TeacherScope). En un centro real es
+     * la administración quien mantiene esas dos cosas coherentes al montar el
+     * curso; aquí lo hace el fixture, y solo cuando la ficha aún no tiene
+     * materia, para no pisar la que un test haya puesto a propósito.
+     *
+     * Un test que quiera precisamente el caso incoherente —grupo de una materia
+     * que el profesor no imparte— le da materia a la ficha ANTES de crear el
+     * grupo, y este método la respeta.
+     */
     protected function createClassGroup(Organization $organization, array $overrides = []): ClassGroup
     {
         $subjectId = $overrides['subject_id'] ?? $this->createSubject($organization)->getKey();
         unset($overrides['subject_id']);
 
-        return ClassGroup::forceCreate(array_merge([
+        $group = ClassGroup::forceCreate(array_merge([
             'organization_id' => $organization->getKey(),
             'subject_id' => $subjectId,
             'name' => 'Grupo de prueba',
@@ -135,6 +147,15 @@ trait CreatesOrganizations
             'capacity' => 10,
             'status' => 'active',
         ], $overrides));
+
+        if ($group->teacher_id !== null) {
+            Teacher::withoutGlobalScopes()
+                ->whereKey($group->teacher_id)
+                ->whereNull('subject_id')
+                ->update(['subject_id' => $group->subject_id]);
+        }
+
+        return $group;
     }
 
     protected function createEnrollment(Organization $organization, Student $student, ClassGroup $group, array $overrides = []): Enrollment

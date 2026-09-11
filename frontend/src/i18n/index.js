@@ -12,11 +12,30 @@
  * los componentes.
  */
 
+import { en } from './locales/en.js'
 import { es } from './locales/es.js'
+import { fr } from './locales/fr.js'
 
-const catalogs = { es }
+const catalogs = { es, fr, en }
 
+/**
+ * El español es el idioma base y el respaldo de los demás.
+ *
+ * Toda clave que falte en otro catálogo se resuelve aquí antes de darse por
+ * perdida. Un idioma incompleto enseña entonces algo de español —comprensible,
+ * y evidente para quien deba completarlo— en vez de la clave cruda, que es
+ * ilegible para cualquiera.
+ */
 const DEFAULT_LOCALE = 'es'
+
+/** Los idiomas ofrecidos, en el orden en que se listan. */
+export const LOCALES = [
+  { code: 'es', label: 'Español' },
+  { code: 'fr', label: 'Français' },
+  { code: 'en', label: 'English' },
+]
+
+const STORAGE_KEY = 'smartwork.locale'
 
 /**
  * Configuraciones regionales para el formato de fechas y cifras. Se mantiene
@@ -24,16 +43,49 @@ const DEFAULT_LOCALE = 'es'
  * segundo idioma puede compartir región, y una segunda región puede compartir
  * idioma.
  */
-const localeTags = { es: 'es-ES' }
-
-let activeLocale = DEFAULT_LOCALE
+const localeTags = { es: 'es-ES', fr: 'fr-FR', en: 'en-GB' }
 
 /**
- * Cambia el idioma activo.
+ * Idioma inicial: lo que la persona eligió y, si no eligió nada, el de su
+ * navegador cuando lo tengamos.
  *
- * No hay selector de idioma en el MVP (FR-069). Existe para que añadir un
- * segundo idioma sea añadir un catálogo y llamar aquí, sin tocar ni un
- * componente (FR-070), y para poder verificarlo (SC-013).
+ * Se resuelve al cargar el módulo, que ocurre antes de que React monte nada, de
+ * modo que la primera pantalla ya sale en su idioma. Envuelto en try/catch
+ * porque `localStorage` lanza en el modo privado de algunos navegadores, y
+ * quedarse sin idioma preferido es un fallo cosmético que no debe impedir que la
+ * aplicación arranque.
+ */
+function initialLocale() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored && catalogs[stored]) return stored
+  } catch {
+    // Sin almacenamiento se sigue con la negociación del navegador.
+  }
+
+  if (typeof navigator !== 'undefined') {
+    for (const tag of navigator.languages ?? [navigator.language]) {
+      const base = String(tag ?? '').slice(0, 2).toLowerCase()
+      if (catalogs[base]) return base
+    }
+  }
+
+  return DEFAULT_LOCALE
+}
+
+let activeLocale = initialLocale()
+
+/**
+ * Cambia el idioma activo y lo recuerda.
+ *
+ * Añadir un idioma sigue siendo añadir un catálogo y una entrada en `LOCALES`,
+ * sin tocar ni un componente (FR-070). El portugués —tercer idioma oficial de
+ * Guinea Ecuatorial— cabría así, con un fichero.
+ *
+ * NO provoca el repintado: esto es estado de módulo, no de React. Quien llama se
+ * encarga de que el árbol se vuelva a dibujar; lo hace `App` remontando su
+ * subárbol, porque `t()` se resuelve en tiempo de render y un remontado relee
+ * todo sin que cada componente tenga que suscribirse a nada.
  */
 export function setLocale(locale) {
   if (!catalogs[locale]) {
@@ -49,6 +101,13 @@ export function setLocale(locale) {
   // cambiar de idioma no debe depender de que exista un documento.
   if (typeof document !== 'undefined') {
     document.documentElement.lang = locale
+  }
+
+  try {
+    localStorage.setItem(STORAGE_KEY, locale)
+  } catch {
+    // El idioma se aplica igual; lo único que se pierde es que sobreviva a la
+    // recarga.
   }
 
   return true
@@ -125,6 +184,21 @@ export function t(key, params) {
 
   if (typeof value === 'string') {
     return interpolate(value, params)
+  }
+
+  // Respaldo al idioma base antes de rendirse. Una traducción incompleta enseña
+  // español —comprensible, y evidente para quien deba completarla— en lugar de
+  // la clave cruda, que no le sirve a nadie.
+  if (activeLocale !== DEFAULT_LOCALE) {
+    const fallback = lookup(catalogs[DEFAULT_LOCALE], key)
+
+    if (typeof fallback === 'string') {
+      if (import.meta.env.DEV) {
+        console.warn(`[i18n] Falta "${key}" en "${activeLocale}"; se usa "${DEFAULT_LOCALE}".`)
+      }
+
+      return interpolate(fallback, params)
+    }
   }
 
   if (import.meta.env.DEV) {
@@ -204,12 +278,29 @@ export function formatNumber(value, options) {
 /**
  * Importes con separador de millar y dos decimales (SC-010).
  *
- * Sin símbolo de divisa a propósito: la base de datos guarda el importe como
- * número desnudo, sin moneda asociada —deuda XII.b, registrada y ajena a esta
- * feature—. Inventar aquí un símbolo acoplaría la interfaz a un país, que es
- * justo lo que el Principio XII prohíbe. Cuando la moneda sea configuración de
- * la organización, se pasa aquí y se usa `style: 'currency'`.
+ * ── FCFA fijo, por decisión expresa del producto ────────────────────────────
+ *
+ * Antes no se ponía símbolo, y el motivo sigue siendo cierto: la base guarda el
+ * importe como número desnudo, sin moneda asociada (deuda XII.b), así que este
+ * sufijo lo pone la interfaz y no el dato. Vale para el centro de Guinea
+ * Ecuatorial y NO vale para ningún otro: en cuanto haya una organización que
+ * facture en otra divisa, esta línea muestra un importe falso en su pantalla.
+ *
+ * Queda escrito para que se lea como lo que es —una decisión tomada a sabiendas,
+ * no un descuido— y para que quien salde la deuda XII.b sepa que el arreglo
+ * completo es mover la moneda a la organización y usar `style: 'currency'`, no
+ * cambiar el literal de aquí.
  */
+const CURRENCY_SUFFIX = 'FCFA'
+
 export function formatAmount(value) {
-  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const amount = formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+  // Sin importe no hay moneda: «— FCFA» afirma que hay un pago en francos cuyo
+  // valor se desconoce, cuando lo que ocurre es que no hay pago del que hablar.
+  if (amount === EMPTY_VALUE) {
+    return amount
+  }
+
+  return `${amount} ${CURRENCY_SUFFIX}`
 }

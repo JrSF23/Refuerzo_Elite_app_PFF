@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Student;
+use App\Support\LowAttendance;
 use App\Rules\BelongsToCurrentOrganization;
 use App\Models\Guardian;
 use App\Models\TutorGroup;
@@ -43,21 +44,37 @@ class StudentController extends BaseApiController
     /**
      * Filtro por grupo tutorial.
      *
-     * Se implementa AQUÍ y no de forma genérica en `BaseApiController`: un
-     * mecanismo de filtros sin más consumidor que este sería una capa sin
-     * justificar (Principio IV). Cuando aparezca el segundo caso, se generaliza.
+     * ── Por qué está aquí y no en `query()` ─────────────────────────────────
+     *
+     * `query()` lo usan TAMBIÉN `show`, `update` y `destroy`. Y `tutor_group_id`
+     * no es solo un parámetro de búsqueda: es un campo editable del alumno, así
+     * que viaja en el cuerpo de cada edición. Puesto en `query()`, al mover a un
+     * alumno de aula se le buscaba filtrando por el aula de DESTINO —donde
+     * todavía no está— y no se encontraba: `PUT /students/{id}` devolvía 404 y
+     * el alumno se quedaba donde estaba.
+     *
+     * El efecto era peor que un error visible: editar un alumno funcionaba
+     * mientras no le cambiaras el aula. Justo el cambio que se quería hacer era
+     * el único que fallaba.
+     *
+     * Es el mismo patrón que ya se corrigió en `ClassSessionController` y en
+     * `AttendanceController`, y la razón de que `applyIndexFilters()` exista: se
+     * invoca SOLO desde `index`, de modo que un filtro no puede alcanzar a la
+     * búsqueda de un registro concreto.
+     *
+     * ── Lo que ya hacía bien y se conserva ──────────────────────────────────
      *
      * El identificador se valida contra Eloquent, de modo que el global scope
      * aplique. Un grupo de otra organización NO puede devolver el listado
      * completo por haberse ignorado el parámetro: eso mostraría datos que el
      * usuario pidió acotar y creería estar viendo un grupo ajeno.
      */
-    protected function query(): Builder
+    protected function applyIndexFilters(Builder $query): void
     {
-        $query = parent::query();
+        $this->applyLowAttendanceFilter($query);
 
         if (! request()->filled('tutor_group_id')) {
-            return $query;
+            return;
         }
 
         /*
@@ -67,17 +84,67 @@ class StudentController extends BaseApiController
          * migración son todos.
          */
         if (request('tutor_group_id') === 'none') {
-            return $query->whereNull('tutor_group_id');
+            $query->whereNull('tutor_group_id');
+
+            return;
         }
 
         $groupId = request()->integer('tutor_group_id');
 
         $belongsToOrganization = TutorGroup::query()->whereKey($groupId)->exists();
 
-        return $belongsToOrganization
-            ? $query->where('tutor_group_id', $groupId)
-            // Grupo inexistente o ajeno: conjunto vacío, nunca el listado entero.
-            : $query->whereRaw('1 = 0');
+        if ($belongsToOrganization) {
+            $query->where('tutor_group_id', $groupId);
+
+            return;
+        }
+
+        // Grupo inexistente o ajeno: conjunto vacío, nunca el listado entero.
+        $query->whereRaw('1 = 0');
+    }
+
+    /**
+     * Alumnos por debajo del umbral de asistencia.
+     *
+     * Es el destino del aviso del panel: enlazaba a la sección y dejaba al
+     * administrador buscando a mano a los cinco alumnos de los que acababa de
+     * avisar. El criterio NO se define aquí —lo define `LowAttendance`, que es
+     * también de donde sale el recuento del panel—, de modo que la lista y el
+     * número no pueden discrepar.
+     *
+     * ── Lo que se cuenta, y por qué ─────────────────────────────────────────
+     *
+     * Se añaden dos recuentos sobre la MISMA ventana: sesiones registradas y
+     * faltas. Con los dos, la pantalla puede mostrar «16/22 · 72,7 %» en vez de
+     * un porcentaje pelado, y eso importa: 50 % sobre 4 registros y 72,7 % sobre
+     * 22 son cosas distintas, y la segunda es la que hay que atender. Un
+     * porcentaje solo pondría delante al caso con menos evidencia.
+     *
+     * Por eso el orden es por FALTAS ABSOLUTAS y no por porcentaje. `latest()`
+     * de `index()` se aplica después, así que queda de desempate.
+     *
+     * Los recuentos se añaden solo cuando el filtro está activo: cobrárselos a
+     * cada listado de alumnos sería pagar dos agregados por una columna que casi
+     * nunca se mira.
+     */
+    protected function applyLowAttendanceFilter(Builder $query): void
+    {
+        if (request('attendance') !== 'low') {
+            return;
+        }
+
+        $query
+            ->whereIn('id', LowAttendance::studentIds())
+            // La etapa solo se carga aquí: la lista acotada la muestra para que
+            // el patrón salte a la vista —cuatro de cinco en Primaria dice más
+            // que cinco alumnos sueltos—, y el resto de listados no la usan.
+            ->with('tutorGroup.stage')
+            ->withCount([
+                'attendances as attendance_records' => fn (Builder $records) => LowAttendance::inWindow($records),
+                'attendances as attendance_absences' => fn (Builder $records) => LowAttendance::inWindow($records)
+                    ->where('status', '!=', 'present'),
+            ])
+            ->orderByDesc('attendance_absences');
     }
 
     /**

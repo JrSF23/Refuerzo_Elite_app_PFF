@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
-         bootstrap="vendor/autoload.php"
+         bootstrap="tests/bootstrap.php"
          colors="true"
 >
     <testsuites>
@@ -18,19 +18,46 @@
         </include>
     </source>
     <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
-        <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="BROADCAST_CONNECTION" value="null"/>
-        <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
-        <env name="DB_URL" value=""/>
-        <env name="MAIL_MAILER" value="array"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
-        <env name="PULSE_ENABLED" value="false"/>
-        <env name="TELESCOPE_ENABLED" value="false"/>
-        <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!--
+            TODAS estas variables llevan force="true", y no es cosmético.
+
+            Sin él, PHPUnit NO sobrescribe una variable de entorno que ya
+            exista: la declaración de aquí solo se aplica si nadie la ha puesto
+            antes. Y el contenedor `laravel` las trae puestas todas, apuntando a
+            producción — DB_DATABASE incluida.
+
+            El resultado era que dentro del contenedor este fichero no decidía
+            nada. `DB_CONNECTION` resolvía a `mysql` y `DB_DATABASE` a la base
+            que sirve la aplicación, así que el primer test con RefreshDatabase
+            o DatabaseMigrations habría hecho `migrate:fresh` SOBRE LOS DATOS
+            REALES. Hoy no ha ocurrido solo porque la imagen se construye con
+            `composer install` sin dependencias de desarrollo, y ahí no hay phpunit;
+            el día que alguien
+            instale las dependencias de desarrollo para que `make test`
+            funcione, la trampa se arma sola.
+
+            CACHE_STORE y SESSION_DRIVER importan por una razón distinta y menos
+            grave: con la caché en la base de datos, cada lectura cuenta como
+            consulta y los tests que miden consultas para detectar un N+1 dan
+            falsos positivos según qué test corriera antes.
+
+            Para validar migraciones contra MySQL de verdad —que es necesario y
+            SQLite no lo cubre— está `phpunit.mysql.xml`, que fija por dentro
+            una base de tests aparte.
+        -->
+        <env name="APP_ENV" value="testing" force="true"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file" force="true"/>
+        <env name="BCRYPT_ROUNDS" value="4" force="true"/>
+        <env name="BROADCAST_CONNECTION" value="null" force="true"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+        <env name="DB_CONNECTION" value="sqlite" force="true"/>
+        <env name="DB_DATABASE" value=":memory:" force="true"/>
+        <env name="DB_URL" value="" force="true"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
+        <env name="PULSE_ENABLED" value="false" force="true"/>
+        <env name="TELESCOPE_ENABLED" value="false" force="true"/>
+        <env name="NIGHTWATCH_ENABLED" value="false" force="true"/>
     </php>
 </phpunit>

@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Attendance;
 use App\Models\ClassGroup;
 use App\Models\ClassSession;
 use App\Models\Enrollment;
-use App\Models\Payment;
-use App\Models\Student;
 use App\Models\Teacher;
+use App\Support\AdminDashboard;
+use App\Support\TeacherScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,28 +24,21 @@ class DashboardController
         return $this->adminDashboard();
     }
 
+    /**
+     * El panel de administración es un centro de control, no un escaparate de
+     * tablas: cada dato está para responder a «cómo va el centro» y «qué tengo
+     * que atender hoy».
+     *
+     * Los números se agregan en `App\Support\AdminDashboard`, contra la base y
+     * no sobre lo que quepa en una página. Aquí solo se decide QUIÉN pregunta.
+     *
+     * Ya no se devuelve `recentSessions`: las próximas sesiones son trabajo del
+     * módulo de Sesiones, y en el panel del administrador ocupaban el sitio de lo
+     * que sí necesita mirar.
+     */
     private function adminDashboard(): JsonResponse
     {
-        return response()->json([
-            // Discriminador de vista, no el nombre del rol: el frontend solo
-            // comprueba `=== 'teacher'` y todo lo demás cae en la vista de
-            // administración. Se conserva el valor para no cambiar la forma de la
-            // respuesta sin necesidad (FR-026).
-            'role'           => 'admin',
-            'stats'          => [
-                'students'   => Student::count(),
-                'teachers'   => Teacher::count(),
-                'groups'     => ClassGroup::count(),
-                'attendances'=> Attendance::count(),
-                'payments'   => Payment::count(),
-            ],
-            'recentStudents' => Student::with('guardian')->latest()->take(5)->get(),
-            'recentSessions' => ClassSession::with(['classGroup.subject', 'classGroup.teacher'])
-                ->orderByDesc('session_date')
-                ->take(5)
-                ->get(),
-            'recentPayments' => Payment::with(['student', 'guardian'])->latest()->take(5)->get(),
-        ]);
+        return response()->json(app(AdminDashboard::class)->payload());
     }
 
     private function teacherDashboard($user): JsonResponse
@@ -66,38 +58,71 @@ class DashboardController
                 'stats'              => ['groups' => 0, 'students' => 0, 'upcoming_sessions' => 0],
                 'myGroups'           => [],
                 'upcomingSessions'   => [],
-                'recentAttendances'  => [],
             ]);
         }
 
-        $myGroups = ClassGroup::where('teacher_id', $teacher->id)
-            ->with('subject')
+        /*
+         * Los grupos que el profesor ALCANZA, resueltos por `TeacherScope`.
+         *
+         * Antes se filtraba aquí por `teacher_id` a secas, y eso NO es la regla:
+         * desde que la materia de la ficha gobierna el alcance, hacen falta las
+         * dos condiciones —grupo asignado Y materia coincidente—. Un grupo
+         * asignado a su ficha pero de otra materia aparecía en su panel y no lo
+         * alcanzaba en ninguna otra pantalla: lo veía, lo pulsaba y se
+         * encontraba con nada.
+         *
+         * Hoy no había ninguno descuadrado, así que era un fallo latente. Se
+         * corrige igual: el panel no puede tener su propia versión de la regla,
+         * porque el día que discrepe lo hará en silencio.
+         *
+         * Vienen con sus recuentos reales resueltos en subconsulta. Sin ellos, la
+         * tarjeta de cada grupo contaría sobre lo que cupo en una página y
+         * mentiría, que es el mismo fallo que ya se corrigió en el índice de
+         * alumnos.
+         */
+        $myGroupIds = collect(app(TeacherScope::class)->classGroupIdsFor($user));
+
+        $myGroups = ClassGroup::whereIn('id', $myGroupIds)
+            ->with(['subject', 'tutorGroup'])
+            ->withCount(['enrollments', 'classSessions'])
             ->orderBy('name')
             ->get();
 
-        $myGroupIds = $myGroups->pluck('id');
-
-        $upcomingSessions = ClassSession::whereIn('class_group_id', $myGroupIds)
+        /*
+         * Próximas es PENDIENTES, no «con fecha de hoy en adelante».
+         *
+         * Antes solo se filtraba por fecha, así que una sesión ya marcada como
+         * impartida seguía en el resumen. Y el marcado no se deshace: el profesor
+         * la marcaba, la veía seguir ahí y no tenía forma de quitarla — una
+         * sesión impartida hoy aguantaba hasta medianoche, justo cuando acaba de
+         * darla y espera verla desaparecer.
+         */
+        $upcoming = ClassSession::whereIn('class_group_id', $myGroupIds)
             ->where('session_date', '>=', today())
+            ->whereNull('taught_at');
+
+        $upcomingSessions = (clone $upcoming)
             ->with('classGroup.subject')
             ->orderBy('session_date')
             ->orderBy('starts_at')
             ->take(8)
             ->get();
 
+        /*
+         * El recuento sale de la consulta SIN recortar.
+         *
+         * Sacarlo de `$upcomingSessions` lo dejaba topado en ocho, que es el
+         * tamaño del resumen: un profesor con doce pendientes leía «8». Es el
+         * mismo fallo que este controlador ya evita para los grupos —recuentos
+         * en subconsulta y no sobre lo paginado— y que el índice de alumnos
+         * corrigió en su día. La lista es un resumen; la cifra, un total.
+         */
+        $upcomingCount = $upcoming->count();
+
         $studentCount = Enrollment::whereIn('class_group_id', $myGroupIds)
             ->where('status', 'active')
             ->distinct('student_id')
             ->count('student_id');
-
-        $recentAttendances = Attendance::whereHas(
-            'classSession',
-            fn ($q) => $q->whereIn('class_group_id', $myGroupIds)
-        )
-            ->with(['student', 'classSession.classGroup'])
-            ->latest()
-            ->take(8)
-            ->get();
 
         return response()->json([
             'role'              => 'teacher',
@@ -105,11 +130,10 @@ class DashboardController
             'stats'             => [
                 'groups'            => $myGroups->count(),
                 'students'          => $studentCount,
-                'upcoming_sessions' => $upcomingSessions->count(),
+                'upcoming_sessions' => $upcomingCount,
             ],
             'myGroups'          => $myGroups,
             'upcomingSessions'  => $upcomingSessions,
-            'recentAttendances' => $recentAttendances,
         ]);
     }
 }

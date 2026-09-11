@@ -59,9 +59,33 @@ class LegacyCredentialsTest extends TestCase
         }
     }
 
+    /** La primera migración de tenancy: la que añade la columna a las tablas. */
+    private const FIRST_TENANCY_MIGRATION = '2026_08_14_000002_add_organization_id_to_tables';
+
+    /**
+     * Los pasos del retroceso se CUENTAN, no se fijan.
+     *
+     * Aquí había un `5` escrito a mano, y no medía lo que parecía: `--step`
+     * deshace las N últimas migraciones aplicadas, así que el número no depende
+     * de cuántas migraciones de tenancy hay —esas son fijas— sino de cuántas se
+     * han añadido DESPUÉS, que crecen con el proyecto.
+     *
+     * Al llegar una migración nueva, el retroceso se quedaba corto justo en el
+     * backfill (M3): no se deshacía, seguía marcado como aplicado, y al migrar
+     * hacia adelante ya no volvía a ejecutarse. Las filas heredadas se quedaban
+     * sin organización y quien abortaba era M5, con un mensaje que señalaba al
+     * backfill y no a la cuenta de pasos de este fichero.
+     *
+     * Es el mismo arreglo que ya lleva MigrationBackfillTest; este fichero se
+     * quedó atrás porque hasta ahora nadie había añadido una migración después.
+     */
     private function migrateToMultiTenant(): void
     {
-        $this->artisan('migrate:rollback', ['--step' => 5, '--force' => true])->assertSuccessful();
+        $steps = DB::table('migrations')
+            ->where('migration', '>=', self::FIRST_TENANCY_MIGRATION)
+            ->count();
+
+        $this->artisan('migrate:rollback', ['--step' => $steps, '--force' => true])->assertSuccessful();
         $this->seedLegacyAdminWithData();
         $this->artisan('migrate', ['--force' => true])->assertSuccessful();
     }

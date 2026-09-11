@@ -16,6 +16,10 @@ export default defineConfig({
   esbuild: { jsx: 'automatic' },
   test: {
     environment: 'jsdom',
+    // Fija el idioma antes de cada prueba: la aplicación detecta el del
+    // navegador, y `jsdom` anuncia inglés, así que sin esto las comprobaciones
+    // de texto fallarían según la máquina y no según el código.
+    setupFiles: ['./src/test-setup.js'],
     globals: true,
     include: ['src/**/*.test.{js,jsx}'],
     restoreMocks: true,

@@ -9,6 +9,7 @@ use App\Models\Enrollment;
 use App\Models\Guardian;
 use App\Models\Organization;
 use App\Models\Payment;
+use App\Models\Stage;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
@@ -20,6 +21,7 @@ use App\Policies\EnrollmentPolicy;
 use App\Policies\GuardianPolicy;
 use App\Policies\OrganizationPolicy;
 use App\Policies\PaymentPolicy;
+use App\Policies\StagePolicy;
 use App\Policies\StudentPolicy;
 use App\Policies\SubjectPolicy;
 use App\Policies\TeacherPolicy;
@@ -45,13 +47,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Las nueve entidades con endpoint necesitan policy: BaseApiController
+        // Las diez entidades con endpoint necesitan policy: BaseApiController
         // autoriza en los cinco métodos y `authorize()` deniega cuando no hay
         // ninguna registrada. `audit_events` no aparece porque no tiene
         // controlador; su aislamiento lo garantiza el global scope.
         Gate::policy(Organization::class, OrganizationPolicy::class);
         Gate::policy(Guardian::class, GuardianPolicy::class);
         Gate::policy(Subject::class, SubjectPolicy::class);
+        Gate::policy(Stage::class, StagePolicy::class);
         Gate::policy(Teacher::class, TeacherPolicy::class);
         Gate::policy(TutorGroup::class, TutorGroupPolicy::class);
         Gate::policy(Enrollment::class, EnrollmentPolicy::class);

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 
 import { formatNumber, t } from '../../i18n/index.js'
 import { useResourceList } from '../../hooks/useResourceList.js'
+import { useDeferredLoading } from '../../hooks/useDeferredLoading.js'
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs.jsx'
 import { SearchInput } from '../../components/ui/SearchInput.jsx'
 import { Pagination } from '../../components/ui/Pagination.jsx'
@@ -29,6 +30,8 @@ import { useUnassignedCount } from './useUnassignedCount.js'
  */
 export function StudentsPage() {
   const groups = useResourceList('tutor-groups', { perPage: 50 })
+
+  const showLoader = useDeferredLoading(groups.status === 'loading')
   const unassigned = useUnassignedCount()
 
   return (
@@ -55,13 +58,13 @@ export function StudentsPage() {
           />
         </div>
 
-        {groups.status === 'loading' ? <LoadingState rows={4} /> : null}
+        {showLoader ? <LoadingState rows={4} variant="cards" /> : null}
 
-        {groups.status === 'error' ? (
+        {!showLoader && groups.status === 'error' ? (
           <ErrorState message={groups.error?.message} onRetry={groups.refresh} />
         ) : null}
 
-        {groups.status === 'ready' && groups.records.length === 0 ? (
+        {!showLoader && groups.status === 'ready' && groups.records.length === 0 ? (
           groups.search
             ? <NoResultsState onClear={() => groups.setSearch('')} term={groups.search} />
             : (
@@ -73,7 +76,7 @@ export function StudentsPage() {
             )
         ) : null}
 
-        {groups.status === 'ready' && groups.records.length > 0 ? (
+        {!showLoader && groups.status === 'ready' && groups.records.length > 0 ? (
           <ul className="group-index">
             {groups.records.map((group) => (
               <li key={group.id}>
@@ -95,7 +98,7 @@ export function StudentsPage() {
           </ul>
         ) : null}
 
-        {groups.status === 'ready' ? (
+        {!showLoader && groups.status === 'ready' ? (
           <Pagination
             from={groups.pagination?.from}
             lastPage={groups.pagination?.lastPage}

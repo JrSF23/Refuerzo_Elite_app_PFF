@@ -77,6 +77,19 @@ class Student extends Model
         return $this->belongsTo(TutorGroup::class, 'tutor_group_id');
     }
 
+    /**
+     * Sus registros de asistencia.
+     *
+     * La usa el filtro de baja asistencia para contar, sobre la ventana vigente,
+     * cuántas sesiones tuvo y a cuántas faltó. Sin esta relación el recuento
+     * habría que hacerlo a mano por alumno, que es justo el N+1 que la sección
+     * lleva evitando.
+     */
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);

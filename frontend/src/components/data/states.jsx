@@ -1,6 +1,5 @@
 import { t } from '../../i18n/index.js'
 import { Button } from '../ui/Button.jsx'
-import { Spinner } from '../ui/Spinner.jsx'
 
 /**
  * Los tres estados de una vista con datos remotos.
@@ -16,18 +15,45 @@ import { Spinner } from '../ui/Spinner.jsx'
  * Reserva la altura del contenido que va a aparecer (FR-042). Sin eso, la página
  * crece de golpe al llegar los datos y desplaza lo que el usuario estaba a punto
  * de pulsar.
+ *
+ * ── Un solo indicador, no tres ──────────────────────────────────────────────
+ *
+ * Antes se enseñaban a la vez el esqueleto, una ruleta y el texto «Cargando…».
+ * Tres cosas diciendo lo mismo compiten entre sí y convierten una espera
+ * tranquila en una pantalla nerviosa. El esqueleto solo ya dice «viene
+ * contenido», y lo dice mejor que las otras dos: enseña CUÁNTO viene y con qué
+ * forma.
+ *
+ * El texto no desaparece, se vuelve invisible: `role="status"` lo anuncia a
+ * quien usa lector de pantalla, que es quien de verdad lo necesitaba —un
+ * esqueleto no se puede leer en voz alta—.
+ *
+ * ── La forma importa ────────────────────────────────────────────────────────
+ *
+ * `variant` hace que el hueco se parezca a lo que va a ocuparlo. Unas barras
+ * genéricas dejan claro que algo carga, pero la transición al llegar los datos
+ * es un salto; cuando el esqueleto tiene la forma de la tabla o de las tarjetas,
+ * el contenido parece revelarse en su sitio en lugar de sustituir a otra cosa.
  */
-export function LoadingState({ rows = 5, label }) {
+export function LoadingState({ rows = 5, label, variant = 'rows' }) {
   return (
     <div className="state state--loading">
-      <div aria-hidden="true" className="skeleton-list">
+      <div aria-hidden="true" className={`skeleton skeleton--${variant}`}>
         {Array.from({ length: rows }, (_, index) => (
-          <div className="skeleton-row" key={index} />
+          <div className="skeleton__row" key={index}>
+            {variant === 'rows' ? null : (
+              <>
+                <span className="skeleton__bar skeleton__bar--wide" />
+                <span className="skeleton__bar skeleton__bar--narrow" />
+              </>
+            )}
+          </div>
         ))}
       </div>
 
-      <p className="state__label">
-        <Spinner label={null} size="sm" />
+      {/* Sin `aria-live`: el anuncio de `role="status"` basta y llega solo
+          cuando el elemento aparece, que es cuando hay algo que decir. */}
+      <p className="visually-hidden" role="status">
         {label ?? t('common.loading')}
       </p>
     </div>

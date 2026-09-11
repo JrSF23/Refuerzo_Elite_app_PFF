@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Api\Concerns\RecordsAuditEvents;
 use App\Http\Controllers\Controller;
-use App\Models\ClassGroup;
 use App\Support\OrganizationContext;
+use App\Support\TeacherScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -71,21 +71,38 @@ abstract class BaseApiController extends Controller
     /**
      * Identificadores de los grupos que imparte el usuario actual.
      *
-     * Un profesor sin ficha vinculada devuelve un array vacío, de modo que todo
-     * `whereIn` sobre él da cero resultados: el fallo cierra el acceso en lugar de
-     * abrirlo (FR-015c).
+     * Delega en `TeacherScope`, la misma definición que usan las policies para
+     * autorizar. Antes había aquí una segunda copia de la regla, y una copia que
+     * decide lo mismo en dos sitios acaba divergiendo: el día que lo hiciera, el
+     * listado enseñaría grupos que la policy no deja tocar, o al revés.
+     *
+     * Una ficha sin vincular, sin materia o sin grupos devuelve un array vacío, de
+     * modo que todo `whereIn` sobre él da cero resultados: el fallo cierra el
+     * acceso en lugar de abrirlo (FR-015c).
      *
      * @return list<int>
      */
     protected function taughtClassGroupIds(): array
     {
-        $teacherId = request()->user()?->teacher()->value('id');
+        return app(TeacherScope::class)->classGroupIdsFor(request()->user());
+    }
 
-        if ($teacherId === null) {
-            return [];
-        }
-
-        return ClassGroup::query()->where('teacher_id', $teacherId)->pluck('id')->all();
+    /**
+     * Acotaciones que valen SOLO para el listado.
+     *
+     * Existe porque poner un filtro en `query()` fue un error caro: ese método
+     * lo usan también `show`, `update` y `destroy`, así que un parámetro del
+     * cuerpo de la petición se colaba como condición de búsqueda. Editar una
+     * sesión enviando el `class_group_id` de DESTINO hacía que `findOrFail` no
+     * encontrara la sesión —su grupo actual es otro— y la respuesta pasaba de
+     * 403 a 404.
+     *
+     * Ahí está lo grave: un 404 en lugar de un 403 no es una molestia de
+     * códigos, es que la comprobación de permisos deja de ejecutarse. La regla
+     * seguía cumpliéndose por accidente, pero por el motivo equivocado.
+     */
+    protected function applyIndexFilters(Builder $query): void
+    {
     }
 
     public function index(Request $request): JsonResponse
@@ -94,18 +111,61 @@ abstract class BaseApiController extends Controller
 
         $query = $this->query();
 
+        $this->applyIndexFilters($query);
+
         if ($request->filled('search') && $this->searchable !== []) {
             $search = $request->string('search')->toString();
 
+            // Los OR van AGRUPADOS. Sin el paréntesis que impone este `where`
+            // anidado, el primer OR se sumaría a las condiciones anteriores
+            // —el recorte del profesor, entre ellas— y una búsqueda sacaría a
+            // flote registros que ese rol no alcanza.
             $query->where(function (Builder $builder) use ($search): void {
                 foreach ($this->searchable as $field) {
-                    $builder->orWhere($field, 'like', "%{$search}%");
+                    $this->applySearchTerm($builder, $field, $search);
                 }
             });
         }
 
         return response()->json(
             $query->latest()->paginate(min((int) $request->integer('per_page', 10), 50))
+        );
+    }
+
+    /**
+     * Añade un campo a la búsqueda, sea propio o de una tabla vecina.
+     *
+     * En matrículas, sesiones, asistencia y pagos lo que la gente teclea NO está
+     * en la fila: se busca «Ana Pérez» o «Matemáticas — Tarde A», y esos textos
+     * viven en `students` y en `class_groups`. Por eso estas cuatro secciones no
+     * tenían búsqueda: declarar sus columnas propias habría dado una caja que casi
+     * nunca encuentra nada, que es peor que no tenerla.
+     *
+     * Un campo con punto es una relación: `student.last_name`, o anidada,
+     * `classSession.classGroup.name`. Se parte por el ÚLTIMO punto, de modo que
+     * todo lo anterior es el camino de relaciones que `whereHas` ya sabe recorrer.
+     *
+     * La consulta de la relación pasa por Eloquent, así que **el global scope de
+     * organización se aplica también dentro del EXISTS**: buscar por el nombre de
+     * un alumno de otro centro no devuelve nada. Con un `join` a pelo no sería
+     * así, y la búsqueda se habría convertido en la vía para leer lo ajeno.
+     */
+    protected function applySearchTerm(Builder $builder, string $field, string $search): void
+    {
+        $lastDot = strrpos($field, '.');
+
+        if ($lastDot === false) {
+            $builder->orWhere($field, 'like', "%{$search}%");
+
+            return;
+        }
+
+        $relation = substr($field, 0, $lastDot);
+        $column = substr($field, $lastDot + 1);
+
+        $builder->orWhereHas(
+            $relation,
+            fn (Builder $related) => $related->where($column, 'like', "%{$search}%")
         );
     }
 

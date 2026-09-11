@@ -36,6 +36,10 @@ class TutorGroup extends Model
      */
     protected $fillable = [
         'name',
+        // La etapa del aula. De ella sale la cuota que paga el alumno, y por eso
+        // vive aquí y no en el alumno: así no puede haber un alumno de
+        // Bachillerato dentro de un aula de Primaria.
+        'stage_id',
         'shift',
         'academic_year',
         'tutor_teacher_id',
@@ -73,6 +77,18 @@ class TutorGroup extends Model
         });
     }
 
+    /**
+     * Etapa educativa del aula: Pre-escolar, Primaria, ESBA, Bachillerato.
+     *
+     * Nula mientras el centro no la haya configurado. Un aula sin etapa es un
+     * estado legítimo —existe antes de que nadie fije precios— y lo que provoca
+     * es que sus alumnos no tengan cuota, no un error.
+     */
+    public function stage(): BelongsTo
+    {
+        return $this->belongsTo(Stage::class);
+    }
+
     public function tutor(): BelongsTo
     {
         return $this->belongsTo(Teacher::class, 'tutor_teacher_id');
@@ -81,6 +97,17 @@ class TutorGroup extends Model
     public function representative(): BelongsTo
     {
         return $this->belongsTo(Student::class, 'representative_student_id');
+    }
+
+    /**
+     * Las materias que se imparten en el aula: aula × materia.
+     *
+     * Es la relación que permite saber quién da clase aquí, y con ella qué aulas
+     * ve un profesor.
+     */
+    public function classGroups(): HasMany
+    {
+        return $this->hasMany(ClassGroup::class);
     }
 
     public function students(): HasMany

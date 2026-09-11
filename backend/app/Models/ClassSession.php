@@ -13,14 +13,25 @@ class ClassSession extends Model
     use BelongsToOrganization, HasFactory;
 
     /**
-     * `created_by` NO está aquí, y es deliberado.
+     * `created_by`, `taught_at` y `taught_by` NO están aquí, igual que
+     * `organization_id`.
      *
-     * Es el mismo criterio que `organization_id`: un dato que identifica al autor
-     * no puede venir de la petición, porque entonces cualquiera podría atribuir
-     * una sesión a otra cuenta enviando el campo a mano. Lo pone el gancho de
-     * `booted()` a partir de la sesión autenticada. Meterlo en este array —o en
-     * un `rules()`— convierte la autoría en algo que se declara en vez de algo
-     * que se observa.
+     * Son dos cosas distintas y conviene no confundirlas: `created_by` es quién
+     * REGISTRÓ la sesión y `taught_by` quién la marcó como IMPARTIDA. Pueden ser
+     * personas distintas, y ninguna de las dos gobierna el acceso — eso lo hace
+     * el aula.
+     *
+     * `created_by` identifica al autor y no puede venir de la petición: si fuera
+     * declarable, cualquiera podría atribuir una sesión a otra cuenta enviando el
+     * campo a mano. Lo pone el gancho de `booted()` desde la sesión autenticada.
+     * Meterlo en este array —o en un `rules()`— convierte la autoría en algo que
+     * se declara en vez de algo que se observa.
+     *
+     * `taught_at` y `taught_by` los pone el endpoint de marcado, que comprueba
+     * quién es el profesor responsable. Si fueran declarables, una edición
+     * corriente del formulario podría marcar la sesión como impartida —o
+     * devolverla a pendiente, que es justo lo que el centro decidió que no se
+     * pueda hacer.
      */
     protected $fillable = [
         'class_group_id',
@@ -52,7 +63,14 @@ class ClassSession extends Model
     {
         return [
             'session_date' => 'date',
+            'taught_at' => 'datetime',
         ];
+    }
+
+    /** ¿Se ha marcado ya como impartida? */
+    public function isTaught(): bool
+    {
+        return $this->taught_at !== null;
     }
 
     public function classGroup(): BelongsTo
@@ -71,6 +89,21 @@ class ClassSession extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Quien marcó la sesión como impartida. Nulo si nunca se marcó, y también si
+     * la cuenta que la marcó se dio de baja después: la clase se dio igual.
+     *
+     * Se llama `taughtByUser` y no `taughtBy` a propósito: Eloquent serializa la
+     * relación bajo el nombre del método en snake_case, así que `taughtBy` daría
+     * la clave `taught_by` —la misma que la columna— y el objeto pisaría el
+     * identificador en la respuesta. Con este nombre conviven `taught_by`, que es
+     * el número, y `taught_by_user`, que es la cuenta.
+     */
+    public function taughtByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'taught_by');
     }
 
     public function attendances(): HasMany

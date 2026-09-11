@@ -181,4 +181,87 @@ class PaymentTest extends TestCase
 
         $this->assertSoftDeleted('payments', ['id' => $payment->id]);
     }
+
+    // ── Filtro por estado ──────────────────────────────────────────────────
+
+    private function createPaymentWithStatus(string $status): Payment
+    {
+        ['student' => $student, 'enrollment' => $enrollment] = $this->createEnrolledStudent();
+
+        return Payment::forceCreate([
+            'organization_id' => $this->organization->id,
+            'student_id'      => $student->id,
+            'enrollment_id'   => $enrollment->id,
+            'amount'          => 80,
+            'period_label'    => 'Enero 2026',
+            'paid_at'         => '2026-01-05',
+            'payment_method'  => 'cash',
+            'status'          => $status,
+        ]);
+    }
+
+    public function test_index_can_be_narrowed_to_pending_payments(): void
+    {
+        $pending = $this->createPaymentWithStatus('pending');
+        $this->createPaymentWithStatus('paid');
+
+        $response = $this->actingAsAdmin()
+            ->getJson('/api/v1/payments?status=pending')
+            ->assertOk();
+
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonPath('data.0.id', $pending->id);
+        $response->assertJsonPath('data.0.status', 'pending');
+    }
+
+    /**
+     * Un estado inexistente NO puede devolver el listado entero.
+     *
+     * Es el fallo silencioso que importa: quien pidió acotar creería estar
+     * viendo todos los pendientes y estaría mirando también los cobrados.
+     */
+    public function test_an_unknown_status_returns_no_rows_instead_of_the_whole_list(): void
+    {
+        $this->createPaymentWithStatus('pending');
+        $this->createPaymentWithStatus('paid');
+
+        $this->actingAsAdmin()
+            ->getJson('/api/v1/payments?status=inventado')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    public function test_without_the_parameter_the_list_is_not_narrowed(): void
+    {
+        $this->createPaymentWithStatus('pending');
+        $this->createPaymentWithStatus('paid');
+
+        $this->actingAsAdmin()
+            ->getJson('/api/v1/payments')
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
+    }
+
+    /**
+     * La trampa que este proyecto ya ha pisado tres veces.
+     *
+     * `status` es un campo EDITABLE, así que viaja en el cuerpo de cada edición.
+     * Si el filtro viviera en `query()`, marcar como pagado un pago pendiente lo
+     * buscaría entre los pagados —donde todavía no está— y devolvería 404.
+     */
+    public function test_a_pending_payment_can_be_marked_as_paid(): void
+    {
+        $payment = $this->createPaymentWithStatus('pending');
+
+        $this->actingAsAdmin()
+            ->putJson("/api/v1/payments/{$payment->id}", $this->basePayload([
+                'student_id'    => $payment->student_id,
+                'enrollment_id' => $payment->enrollment_id,
+                'status'        => 'paid',
+            ]))
+            ->assertOk()
+            ->assertJsonPath('status', 'paid');
+
+        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'paid']);
+    }
 }

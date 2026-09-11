@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { SessionProvider, useSession } from './context/SessionContext.jsx'
@@ -11,14 +12,21 @@ import { DashboardPage } from './pages/DashboardPage.jsx'
 import { StudentsPage } from './pages/students/StudentsPage.jsx'
 import { AllStudentsPage } from './pages/students/AllStudentsPage.jsx'
 import { GroupStudentsPage } from './pages/students/GroupStudentsPage.jsx'
+import { GroupSubjectsPage } from './pages/classGroups/GroupSubjectsPage.jsx'
 import { GuardiansPage } from './pages/guardians/GuardiansPage.jsx'
 import { TeachersPage } from './pages/teachers/TeachersPage.jsx'
+import { BillingPage } from './pages/billing/BillingPage.jsx'
+import { StagesPage } from './pages/stages/StagesPage.jsx'
 import { SubjectsPage } from './pages/subjects/SubjectsPage.jsx'
 import { TutorGroupsPage } from './pages/tutorGroups/TutorGroupsPage.jsx'
 import { ClassGroupsPage } from './pages/classGroups/ClassGroupsPage.jsx'
 import { EnrollmentsPage } from './pages/enrollments/EnrollmentsPage.jsx'
 import { SessionsPage } from './pages/sessions/SessionsPage.jsx'
-import { AttendancePage } from './pages/attendance/AttendancePage.jsx'
+import { AttendanceGroupsPage } from './pages/attendance/AttendanceGroupsPage.jsx'
+import { GroupAttendancePage } from './pages/attendance/GroupAttendancePage.jsx'
+import { RollHistoryPage } from './pages/attendance/RollHistoryPage.jsx'
+import { LocaleContext } from './context/LocaleContext.js'
+import { getLocale, setLocale } from './i18n/index.js'
 import { PaymentsPage } from './pages/payments/PaymentsPage.jsx'
 import { UsersPage } from './pages/users/UsersPage.jsx'
 import { OrganizationsPage } from './pages/organizations/OrganizationsPage.jsx'
@@ -39,11 +47,13 @@ const BUILT_SECTIONS = {
   guardians: GuardiansPage,
   teachers: TeachersPage,
   subjects: SubjectsPage,
+  stages: StagesPage,
+  billing: BillingPage,
   tutorGroups: TutorGroupsPage,
   classGroups: ClassGroupsPage,
   enrollments: EnrollmentsPage,
   sessions: SessionsPage,
-  attendance: AttendancePage,
+  attendance: AttendanceGroupsPage,
   payments: PaymentsPage,
   users: UsersPage,
   organizations: OrganizationsPage,
@@ -99,6 +109,43 @@ function AppRoutes() {
           )}
           path="alumnos/grupo/:groupId"
         />
+
+        {/* Listas guardadas: el histórico de lo ya registrado, por sesión. No
+            es sección del menú a propósito — «Asistencia» y «Listas» como dos
+            entradas hermanas repetirían la confusión de los dos «Grupos»— y se
+            llega desde el índice de asistencia. */}
+        <Route
+          element={(
+            <RequireSection section="attendance">
+              <RollHistoryPage />
+            </RequireSection>
+          )}
+          path="asistencia/listas"
+        />
+
+        {/* Asistencia de un grupo. El índice son los grupos, y la asistencia
+            se registra dentro de uno: la paginación es global, así que una lista
+            única enseñaría fragmentos de cada grupo con recuentos falsos. */}
+        <Route
+          element={(
+            <RequireSection section="attendance">
+              <GroupAttendancePage />
+            </RequireSection>
+          )}
+          path="asistencia/grupo/:groupId"
+        />
+
+        {/* Materias de un aula. Sustituye a la sección «Grupos de asignatura»,
+            que sale del menú: la entidad es la misma, pero se gestiona desde el
+            aula, que es donde el centro la reconoce. */}
+        <Route
+          element={(
+            <RequireSection section="classGroups">
+              <GroupSubjectsPage />
+            </RequireSection>
+          )}
+          path="grupos/:groupId/materias"
+        />
         <Route
           element={(
             <RequireSection section="students">
@@ -128,6 +175,28 @@ function AppRoutes() {
 }
 
 export default function App() {
+  /*
+   * El idioma remonta el subárbol en lugar de propagarse por contexto.
+   *
+   * `t()` se resuelve en TIEMPO DE RENDER leyendo estado de módulo, no de React,
+   * así que cambiar el idioma no invalida nada por sí solo: los componentes que
+   * no vuelvan a dibujarse seguirían en el idioma anterior, y quedarían medias
+   * pantallas traducidas.
+   *
+   * Un contexto no lo arregla —solo repintaría a quien lo consuma, y ningún
+   * componente consume nada para llamar a `t()`— y suscribir 400 llamadas a un
+   * contexto sería peor. Cambiar de idioma es algo que se hace una vez, así que
+   * un remontado completo es la respuesta proporcionada: cuesta un parpadeo y
+   * garantiza que no queda ni un texto sin actualizar.
+   */
+  const [localeKey, setLocaleKey] = useState(getLocale())
+
+  const changeLocale = useCallback((locale) => {
+    if (setLocale(locale)) {
+      setLocaleKey(locale)
+    }
+  }, [])
+
   return (
     // Envuelve TODO, proveedores incluidos: un fallo al restaurar la sesión o al
     // montar el contexto también dejaría la página en blanco, y es justo el
@@ -135,7 +204,9 @@ export default function App() {
     <ErrorBoundary>
       <SessionProvider>
         <ToastProvider>
-          <AppRoutes />
+          <LocaleContext.Provider value={changeLocale}>
+            <AppRoutes key={localeKey} />
+          </LocaleContext.Provider>
         </ToastProvider>
       </SessionProvider>
     </ErrorBoundary>

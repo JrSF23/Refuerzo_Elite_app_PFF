@@ -64,6 +64,16 @@ export function LoginPage() {
 
   return (
     <div className="auth-shell">
+      {/*
+        * Marca de agua, puramente decorativa. Va fuera de la tarjeta y detrás de
+        * ella, y por eso lleva `aria-hidden`: el nombre del producto ya está
+        * dentro como texto de verdad, y anunciarlo dos veces solo alarga lo que
+        * oye quien usa un lector de pantalla.
+        */}
+      <span aria-hidden="true" className="auth-shell__watermark">
+        <Logo />
+      </span>
+
       <main className="auth-card">
         <div className="auth-card__brand">
           <span aria-hidden="true" className="auth-card__mark"><Logo /></span>

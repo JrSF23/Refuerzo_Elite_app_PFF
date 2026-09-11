@@ -54,6 +54,26 @@ build-frontend:
 test:
 	docker compose exec laravel php artisan test
 
+# Suite contra MySQL 8 real. SQLite no vale para validar migraciones: no tiene
+# ALTER TABLE de verdad, así que un dropColumn sobre una columna con índices
+# pasa en verde ahí y puede fallar en producción.
+#
+# Levanta un contenedor EFÍMERO con las dependencias de desarrollo, porque la
+# imagen se construye sin ellas. Su vendor, su bootstrap/cache y su storage son
+# suyos, de modo que el contenedor que sirve la aplicación no se toca.
+test-mysql:
+	MSYS_NO_PATHCONV=1 docker compose --env-file $(ENV_FILE) run --rm --no-deps \
+	  -v /var/www/backend/bootstrap/cache -v /var/www/backend/storage \
+	  laravel sh -c 'composer install --no-interaction --no-scripts --prefer-dist -q \
+	    && mkdir -p storage/framework/cache/data storage/framework/sessions \
+	                storage/framework/views storage/logs \
+	    && php artisan config:clear -q \
+	    && vendor/bin/phpunit -c phpunit.mysql.xml'
+
+# Crea la base que usa test-mysql. Una sola vez: cada ejecución la vacía sola.
+setup-db-test:
+	docker compose exec mysql sh -c 'mysql -uroot -p"$$MYSQL_ROOT_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS refuerzo_elite_v2_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL PRIVILEGES ON refuerzo_elite_v2_test.* TO \"$$MYSQL_USER\"@\"%\"; FLUSH PRIVILEGES;"'
+
 # ── Shell y logs ─────────────────────────────────────────────────────────────
 shell:
 	docker compose exec laravel bash
@@ -75,4 +95,4 @@ clean:
 	docker compose down -v --remove-orphans
 
 .PHONY: up down restart build build-fast setup wait migrate migrate-fresh seed \
-        setup-db build-frontend test shell shell-db logs logs-laravel logs-nginx clean
+        setup-db setup-db-test build-frontend test test-mysql shell shell-db logs logs-laravel logs-nginx clean

@@ -1,6 +1,7 @@
 import { t } from '../../i18n/index.js'
 import { RecordStatusBadge } from '../../components/ui/Badge.jsx'
 import { ResourcePage } from '../../components/data/ResourcePage.jsx'
+import { useUrlFilter } from '../../hooks/useUrlFilter.js'
 
 /**
  * Grupos de asignatura.
@@ -12,8 +13,28 @@ import { ResourcePage } from '../../components/data/ResourcePage.jsx'
  * recorte lo aplica el servidor.
  */
 export function ClassGroupsPage() {
+  // `?profesor=sin-asignar` es a donde apunta el aviso del panel. El convenio
+  // `sin-asignar` → `none` es el mismo que usan los alumnos sin aula.
+  const { listParams, activeFilter } = useUrlFilter([
+    {
+      param: 'profesor',
+      values: {
+        'sin-asignar': {
+          params: { teacher_id: 'none' },
+          label: () => t('classGroups.filters.withoutTeacher'),
+        },
+        descuadrado: {
+          params: { teacher_id: 'mismatch' },
+          label: () => t('classGroups.filters.subjectMismatch'),
+        },
+      },
+    },
+  ])
+
   return (
     <ResourcePage
+      activeFilter={activeFilter}
+      listParams={listParams}
       columns={[
         { key: 'name', label: t('classGroups.fields.name') },
         { key: 'subject.name', label: t('fields.subject') },

@@ -35,6 +35,8 @@ export const es = {
     back: 'Volver',
     search: 'Buscar',
     clear: 'Limpiar',
+    view: 'Ver',
+    clearFilter: 'Quitar filtro',
     select: 'Seleccione',
     noOptions: 'No hay opciones disponibles',
 
@@ -155,24 +157,80 @@ export const es = {
     missingBody: 'Su cuenta no está asignada a ningún centro. Contacte con la administración.',
   },
 
+  language: {
+    label: 'Idioma',
+    change: 'Cambiar de idioma',
+  },
+
+  theme: {
+    // «Modo oscuro» y no «Apariencia»: el control es una casilla, y
+    // `aria-checked` tiene que responder a una pregunta de sí o no. «Apariencia:
+    // activada» no significa nada.
+    darkMode: 'Modo oscuro',
+  },
+
   dashboard: {
     title: 'Panel',
+
+    // El saludo cambia con la hora. Un «Buenos días» fijo a las nueve de la
+    // noche delata que nadie mira la pantalla, y es lo primero que se lee.
+    greetingMorning: '¡Buenos días, {name}!',
+    greetingAfternoon: '¡Buenas tardes, {name}!',
+    greetingEvening: '¡Buenas noches, {name}!',
+
     stats: {
       students: 'Alumnos',
       teachers: 'Profesores',
       groups: 'Grupos',
       attendances: 'Registros de asistencia',
+      attendanceRate: 'Asistencia',
       payments: 'Pagos',
+      pendingPayments: 'Pagos pendientes',
+      needsAttention: 'Requieren atención',
       myGroups: 'Mis grupos',
       myStudents: 'Mis alumnos',
       upcomingSessions: 'Próximas sesiones',
     },
+
+    attendance: {
+      title: 'Asistencia',
+      noTrend: 'Todavía no hay asistencia registrada esta semana.',
+      // Iniciales del día en castellano: el miércoles es X para no chocar con
+      // el martes.
+      days: {
+        mon: 'L',
+        tue: 'M',
+        wed: 'X',
+        thu: 'J',
+        fri: 'V',
+      },
+      // La dirección se dice con palabras y no solo con la flecha: un lector de
+      // pantalla que anuncia «flecha arriba 3,2» no comunica nada.
+      delta: {
+        up: '{value} puntos más que la semana anterior',
+        down: '{value} puntos menos que la semana anterior',
+        flat: 'Igual que la semana anterior',
+      },
+    },
+
+    attention: {
+      title: 'Requiere atención',
+      pendingPayments: '{count} pagos pendientes de cobro',
+      lowAttendance: '{count} alumnos con asistencia inferior al 75%',
+      groupsWithoutTeacher: '{count} grupos sin profesor asignado',
+      // El caso invisible: la ficha del grupo se ve rellena, pero su profesor
+      // imparte otra materia —o ninguna— y por tanto no alcanza el grupo.
+      groupsSubjectMismatch: '{count} grupos cuyo profesor no imparte esa materia',
+    },
+
     recentStudents: 'Últimas altas',
     recentSessions: 'Últimas sesiones',
     recentPayments: 'Últimos pagos',
     myGroups: 'Mis grupos',
     upcomingSessions: 'Próximas sesiones',
-    recentAttendances: 'Asistencia reciente',
+    // El panel del profesor ya no lista asistencia suelta: sus grupos son el
+    // panel, y cada uno entra directo a pasar lista.
+    groupStudents: '{count} alumnos',
     teacherUnlinkedTitle: 'Cuenta sin ficha de profesor',
     teacherUnlinkedBody: 'Su cuenta todavía no está vinculada a una ficha de profesor, así que no se muestran grupos ni sesiones. Pida a la administración del centro que complete la vinculación.',
     emptyStudents: 'Todavía no hay alumnos dados de alta.',
@@ -180,7 +238,6 @@ export const es = {
     emptyPayments: 'Todavía no hay pagos registrados.',
     emptyGroups: 'No tiene ningún grupo asignado.',
     emptyUpcoming: 'No tiene sesiones próximas.',
-    emptyAttendances: 'Todavía no hay asistencia registrada.',
     noGuardian: 'Sin tutor asignado',
   },
 
@@ -190,6 +247,9 @@ export const es = {
      de cada dominio se añade en la fase que construye esa pantalla.
      ───────────────────────────────────────────────────────────────────────── */
   students: {
+    filters: {
+      lowAttendance: 'Solo alumnos con baja asistencia',
+    },
     title: 'Alumnos',
     create: 'Nuevo alumno',
     edit: 'Editar alumno',
@@ -212,6 +272,7 @@ export const es = {
     countMany: '{count} alumnos',
     pagedBlocksNotice: 'Los bloques corresponden a la página mostrada. Un grupo con muchos alumnos puede continuar en la siguiente.',
     fields: {
+      attendance: 'Asistencia',
       fullName: 'Alumno',
       dateOfBirth: 'Fecha de nacimiento',
       schoolName: 'Centro escolar',
@@ -243,7 +304,26 @@ export const es = {
     fields: {
       fullName: 'Profesor',
       specialty: 'Especialidad',
+      subjectHint: 'Decide a qué grupos y sesiones llega su cuenta. Sin materia, el profesor entra pero no ve ningún grupo.',
       bio: 'Presentación',
+    },
+  },
+
+  stages: {
+    title: 'Etapas',
+    create: 'Nueva etapa',
+    edit: 'Editar etapa',
+    emptyTitle: 'Todavía no hay etapas',
+    emptyBody: 'La etapa fija lo que paga un alumno. Créelas antes de asignar aulas: Pre-escolar, Primaria, ESBA y Bachillerato son las del sistema educativo de Guinea Ecuatorial.',
+    fields: {
+      name: 'Etapa',
+      fee: 'Cuota del curso',
+      // Lo que evita la pregunta que llega siempre: si es al año o al mes, y si
+      // el importe lo pone el sistema o el centro.
+      feeHint: 'Importe del curso académico completo. Lo fija su centro; se puede cobrar a plazos.',
+      groups: 'Aulas',
+      order: 'Orden',
+      orderHint: 'Orden en que aparecen. Menor primero, para listarlas por nivel y no por alfabeto.',
     },
   },
 
@@ -254,8 +334,6 @@ export const es = {
     emptyTitle: 'Todavía no hay asignaturas',
     emptyBody: 'Cada grupo se imparte sobre una asignatura, así que son el primer paso.',
     fields: {
-      // Sin «mensual», por el mismo motivo que en matrículas.
-      fee: 'Tarifa',
       codeHint: 'Identificador corto y único dentro del centro.',
     },
   },
@@ -272,6 +350,8 @@ export const es = {
       afternoon: 'Tarde',
     },
     fields: {
+      stage: 'Etapa',
+      stageHint: 'Determina la cuota que pagan sus alumnos. Sin etapa, el aula funciona pero sus alumnos no tienen cuota asignada.',
       name: 'Grupo',
       nameHint: 'Como lo llame el centro: «1º ESO», «4º ESO - A».',
       shift: 'Turno',
@@ -289,12 +369,21 @@ export const es = {
   // Grupos DE ASIGNATURA. Renombrada para no dejar dos secciones llamadas
   // «Grupos»: un alumno pertenece a un grupo tutorial y a varios de asignatura.
   classGroups: {
+    filters: {
+      withoutTeacher: 'Solo grupos sin profesor',
+      subjectMismatch: 'Solo grupos cuyo profesor imparte otra materia',
+    },
+    subjectsOf: 'Materias',
+    emptyGroupTitle: 'Este grupo todavía no imparte ninguna materia',
+    emptyGroupBody: 'Añada las materias que se dan en este grupo y quién las imparte. Sin al menos una, no se pueden registrar sesiones ni pasar lista.',
     title: 'Grupos de asignatura',
     create: 'Nuevo grupo de asignatura',
     edit: 'Editar grupo de asignatura',
     emptyTitle: 'Todavía no hay grupos de asignatura',
     emptyBody: 'Cada grupo imparte una asignatura. Cree primero las asignaturas y los profesores.',
     fields: {
+      teacherHint: 'Quien imparte esta materia en este grupo. Puede dejarse sin asignar.',
+      nameInGroupHint: 'Como lo llame el centro. Si lo deja en blanco no pasa nada: lo que se ve en las listas es «grupo — materia».',
       name: 'Grupo',
       codeHint: 'Identificador corto y único dentro del centro.',
       academicYear: 'Curso académico',
@@ -316,7 +405,10 @@ export const es = {
       // `monthly_fee` y no se toca —es contrato de API—, pero el rótulo no puede
       // afirmar que el cobro es mensual: no todos los centros facturan así.
       amount: 'Monto',
-      amountHint: 'Puede diferir de la tarifa de la asignatura.',
+      // Ya no se compara con «la tarifa de la asignatura»: esa columna se
+      // eliminó porque el cobro va por curso, no por materia. Aquí es donde se
+      // fija el importe, así que la pista tiene que decir eso.
+      amountHint: 'Importe acordado para este alumno en este grupo.',
     },
   },
 
@@ -333,10 +425,49 @@ export const es = {
       startsAt: 'Hora de inicio',
       endsAt: 'Hora de fin',
       room: 'Aula',
+      taught: 'Impartida',
     },
+    markTaught: 'Marcar impartida',
+    markTitle: 'Marcar «{name}» como impartida',
+    marked: 'Sesión marcada como impartida.',
+    markConfirm: 'Marcar «{name}» como impartida? Esta marca no se puede deshacer.',
+    taughtBy: 'Marcada por {name}',
   },
 
   attendance: {
+    sessionsIntro: 'Elija una sesión y pase lista. El grupo tiene {count} alumnos matriculados.',
+    noSessionsTitle: 'Este grupo no tiene sesiones',
+    noSessionsBody: 'Cree una sesión desde Sesiones para poder pasar lista de ella.',
+    history: {
+      title: 'Listas guardadas',
+      intro: 'Las listas ya pasadas, de la más reciente a la más antigua. Pulse una para revisarla o corregirla.',
+      review: 'Revisar',
+      emptyTitle: 'Todavía no ha pasado ninguna lista',
+      emptyBody: 'Aquí aparecerán las listas que registre, agrupadas por sesión.',
+    },
+    roll: {
+      title: 'Pasar lista',
+      open: 'Pasar lista',
+      save: 'Guardar lista',
+      saved: 'Lista guardada: {count} alumnos.',
+      // La opción vacía se queda: es la única forma de decir «todavía no lo he
+      // mirado», y quitarla obligaría a marcar algo que no se ha comprobado.
+      unset: 'Sin marcar',
+      unmarked: 'Quedan {count} alumnos sin marcar.',
+      markRestPresent: 'Marcar el resto como presentes',
+      nothingToSave: 'No ha marcado a ningún alumno.',
+      noStudents: 'Este grupo no tiene alumnos matriculados.',
+      complete: 'Lista completa',
+      progress: '{marked} de {total}',
+    },
+    groupsIntro: 'Elija un grupo para ver y registrar su asistencia. Cada grupo lleva su propio recuento y su propia lista.',
+    searchGroups: 'Buscar grupo',
+    noGroupsTitle: 'Todavía no hay grupos',
+    noGroupsBody: 'La asistencia se registra dentro de un grupo. Añada las materias de un aula desde Grupos para poder pasar lista.',
+    sessionCountOne: 'sesión',
+    sessionCountMany: 'sesiones',
+    emptyGroupTitle: 'Este grupo no tiene asistencia registrada',
+    emptyGroupBody: 'Registre la asistencia de una de sus sesiones. Solo se ofrecen las sesiones de este grupo.',
     title: 'Asistencia',
     create: 'Registrar asistencia',
     edit: 'Editar asistencia',
@@ -347,13 +478,40 @@ export const es = {
     },
   },
 
+  billing: {
+    title: 'Estado de cobros',
+    intro: 'Lo que cada alumno debe del curso, según la cuota de su etapa y lo ya cobrado.',
+    searchStudents: 'Buscar alumno',
+    emptyTitle: 'Todavía no hay alumnos',
+    emptyBody: 'El estado de cobros se calcula sobre los alumnos del centro y la etapa de su aula.',
+    // «Sin cuota» y no «0»: el centro aún no ha dicho cuánto cuesta lo suyo, y
+    // fingir una cifra convierte un dato que falta en una afirmación sobre una
+    // familia.
+    noFee: 'Sin cuota',
+    settled: 'Al día',
+    due: 'Pendiente',
+    fields: {
+      stage: 'Etapa',
+      fee: 'Cuota del curso',
+      paid: 'Cobrado',
+      outstanding: 'Pendiente',
+    },
+  },
+
   payments: {
+    filters: {
+      pending: 'Solo pagos pendientes',
+    },
     title: 'Pagos',
     create: 'Registrar pago',
     edit: 'Editar pago',
     emptyTitle: 'Todavía no hay pagos',
     emptyBody: 'Registre los cobros del centro para llevar su seguimiento.',
     fields: {
+      // La cuota que le corresponde al alumno, para contrastar el importe que
+      // se acaba de teclear. Sale de la etapa de su aula, no de la matrícula.
+      stageFee: 'Cuota del alumno',
+      noStage: 'Sin etapa asignada',
       amount: 'Importe',
       period: 'Periodo',
       periodHint: 'Por ejemplo: «Octubre 2025» o «1er trimestre».',
@@ -365,7 +523,11 @@ export const es = {
   },
 
   users: {
-    title: 'Cuentas',
+    // «Usuarios» rotula la sección; dentro se sigue hablando de CUENTA, que es
+    // el objeto que se crea. No son sinónimos aquí: una persona puede tener
+    // ficha de profesor sin tener cuenta de acceso, y esa distinción sostiene
+    // todo el vínculo `teachers.user_id`.
+    title: 'Usuarios',
     create: 'Nueva cuenta',
     edit: 'Editar cuenta',
     emptyTitle: 'Todavía no hay cuentas',
@@ -399,7 +561,7 @@ export const es = {
       slugHint: 'Se deriva del nombre si se deja vacío.',
       contactEmail: 'Correo de contacto',
       contactPhone: 'Teléfono de contacto',
-      users: 'Cuentas',
+      users: 'Usuarios',
     },
   },
 
@@ -417,6 +579,12 @@ export const es = {
     present: 'Presente',
     absent: 'Ausente',
     late: 'Con retraso',
+    excused: 'Justificado',
+  },
+
+  sessionStatus: {
+    taught: 'Impartida',
+    pending: 'Pendiente',
   },
 
   paymentStatus: {

@@ -143,13 +143,29 @@ class TutorGroupBehaviourTest extends TestCase
 
     /* ── Permisos ─────────────────────────────────────────────────────────── */
 
+    /**
+     * El profesor LEE las aulas donde imparte, y no escribe en ninguna.
+     *
+     * La precondición cambió: antes leía cualquier aula del centro, y ahora solo
+     * aquellas en las que da clase. El propósito de esta prueba —la distinción
+     * entre leer y escribir— es el mismo; lo que se ajusta es el montaje, que
+     * ahora tiene que ponerle una materia en el aula para que la alcance.
+     */
     public function test_the_teacher_can_read_but_not_write(): void
     {
         $teacherUser = $this->createUserFor($this->org, 'teacher');
-        $this->createTeacherProfile($this->org, $teacherUser);
+        $profile = $this->createTeacherProfile($this->org, $teacherUser);
         $token = $this->tokenFor($teacherUser);
 
         $group = $this->createTutorGroup($this->org);
+
+        // Da clase en ella: es lo que ahora le da acceso de lectura.
+        $subject = $this->createSubject($this->org);
+        $this->createClassGroup($this->org, [
+            'tutor_group_id' => $group->getKey(),
+            'subject_id' => $subject->getKey(),
+            'teacher_id' => $profile->getKey(),
+        ]);
 
         $this->actingWithToken($token)->getJson('/api/v1/tutor-groups')->assertOk();
         $this->actingWithToken($token)->getJson("/api/v1/tutor-groups/{$group->getKey()}")->assertOk();
@@ -161,6 +177,23 @@ class TutorGroupBehaviourTest extends TestCase
         $this->actingWithToken($token)
             ->deleteJson("/api/v1/tutor-groups/{$group->getKey()}")
             ->assertForbidden();
+    }
+
+    /**
+     * Y un aula donde NO imparte responde 404, no 403: el recorte de consulta
+     * actúa antes que la policy, así que para él sencillamente no existe. Es el
+     * mismo criterio que en el resto de sus secciones.
+     */
+    public function test_the_teacher_cannot_read_a_classroom_where_it_does_not_teach(): void
+    {
+        $teacherUser = $this->createUserFor($this->org, 'teacher');
+        $this->createTeacherProfile($this->org, $teacherUser);
+
+        $ajena = $this->createTutorGroup($this->org, ['name' => 'Aula ajena']);
+
+        $this->actingWithToken($this->tokenFor($teacherUser))
+            ->getJson("/api/v1/tutor-groups/{$ajena->getKey()}")
+            ->assertNotFound();
     }
 
     public function test_the_platform_admin_has_no_access(): void

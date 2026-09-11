@@ -7,6 +7,7 @@ const attendanceOptions = [
   { value: 'present', label: 'Presente' },
   { value: 'absent', label: 'Ausente' },
   { value: 'late', label: 'Con retraso' },
+  { value: 'excused', label: 'Justificado' },
 ]
 
 const paymentStatusOptions = [
@@ -67,7 +68,7 @@ export const staffRoles = ['super_admin', 'org_admin', 'teacher']
 // sus propias páginas.
 export const platformModules = [
   { key: 'organizations', label: 'Organizaciones', path: '/espacio/organizaciones', roles: ['super_admin'] },
-  { key: 'users', label: 'Cuentas', path: '/espacio/cuentas', roles: ['org_admin'] },
+  { key: 'users', label: 'Usuarios', path: '/espacio/cuentas', roles: ['org_admin'] },
 ]
 
 export const moduleDefinitions = {
@@ -121,6 +122,7 @@ export const moduleDefinitions = {
     permissions: orgAdminOnlyPermissions,
     columns: [
       { key: 'full_name', label: 'Profesor' },
+      { key: 'subject.name', label: 'Materia' },
       { key: 'specialty', label: 'Especialidad' },
       { key: 'phone', label: 'Teléfono' },
       { key: 'email', label: 'Correo' },
@@ -130,6 +132,9 @@ export const moduleDefinitions = {
       { name: 'last_name', label: 'Apellidos', type: 'text', required: true },
       { name: 'email', label: 'Correo', type: 'email' },
       { name: 'phone', label: 'Teléfono', type: 'text' },
+      // La materia NO es descriptiva: con los grupos asignados decide a qué
+      // sesiones llega el profesor. `specialty` sí lo es, y se queda.
+      { name: 'subject_id', label: 'Materia', type: 'select', source: 'subjects', optionLabel: 'name', optionValue: 'id' },
       { name: 'specialty', label: 'Especialidad', type: 'text' },
       { name: 'bio', label: 'Presentación', type: 'textarea' },
     ],
@@ -142,13 +147,11 @@ export const moduleDefinitions = {
       { key: 'name', label: 'Asignatura' },
       { key: 'code', label: 'Código' },
       { key: 'level', label: 'Nivel' },
-      { key: 'monthly_fee', label: 'Tarifa mensual' },
     ],
     fields: [
       { name: 'name', label: 'Asignatura', type: 'text', required: true },
       { name: 'code', label: 'Código', type: 'text', required: true },
       { name: 'level', label: 'Nivel', type: 'text' },
-      { name: 'monthly_fee', label: 'Tarifa mensual', type: 'number', required: true },
       { name: 'description', label: 'Descripción', type: 'textarea' },
     ],
   },
@@ -203,6 +206,10 @@ export const moduleDefinitions = {
       { key: 'class_group.name', label: 'Grupo' },
       { key: 'session_date', label: 'Fecha' },
       { key: 'room', label: 'Aula' },
+      // Derivada de `taught_at`: nulo es pendiente. No es un campo del
+      // formulario — se marca con POST /class-sessions/{id}/taught, y no se
+      // deshace.
+      { key: 'taught_at', label: 'Impartida' },
     ],
     fields: [
       { name: 'class_group_id', label: 'Grupo', type: 'select', source: 'class-groups', optionLabel: 'name', optionValue: 'id', required: true },

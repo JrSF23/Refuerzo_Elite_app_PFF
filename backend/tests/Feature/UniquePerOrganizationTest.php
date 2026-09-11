@@ -39,7 +39,7 @@ class UniquePerOrganizationTest extends TestCase
 
     public function test_two_organizations_can_use_the_same_subject_code(): void
     {
-        $payload = ['name' => 'Matemáticas', 'code' => 'MAT-1', 'monthly_fee' => 80];
+        $payload = ['name' => 'Matemáticas', 'code' => 'MAT-1'];
 
         $this->actingWithToken($this->tokenA)->postJson('/api/v1/subjects', $payload)->assertCreated();
         $this->actingWithToken($this->tokenB)->postJson('/api/v1/subjects', $payload)->assertCreated();
@@ -88,7 +88,7 @@ class UniquePerOrganizationTest extends TestCase
 
     public function test_duplicate_within_the_same_organization_is_still_rejected(): void
     {
-        $payload = ['name' => 'Matemáticas', 'code' => 'MAT-1', 'monthly_fee' => 80];
+        $payload = ['name' => 'Matemáticas', 'code' => 'MAT-1'];
 
         $this->actingWithToken($this->tokenA)->postJson('/api/v1/subjects', $payload)->assertCreated();
 
@@ -105,12 +105,12 @@ class UniquePerOrganizationTest extends TestCase
     public function test_duplicate_message_does_not_leak_other_organizations(): void
     {
         $this->actingWithToken($this->tokenB)
-            ->postJson('/api/v1/subjects', ['name' => 'Secreta', 'code' => 'SECRET-B', 'monthly_fee' => 10])
+            ->postJson('/api/v1/subjects', ['name' => 'Secreta', 'code' => 'SECRET-B'])
             ->assertCreated();
 
         // Para A ese código está libre: no hay error, luego nada que filtrar.
         $this->actingWithToken($this->tokenA)
-            ->postJson('/api/v1/subjects', ['name' => 'Mía', 'code' => 'SECRET-B', 'monthly_fee' => 10])
+            ->postJson('/api/v1/subjects', ['name' => 'Mía', 'code' => 'SECRET-B'])
             ->assertCreated();
     }
 
