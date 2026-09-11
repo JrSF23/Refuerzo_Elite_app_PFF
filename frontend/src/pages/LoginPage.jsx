@@ -6,6 +6,7 @@ import { useSession } from '../context/SessionContext.jsx'
 import { Button } from '../components/ui/Button.jsx'
 import { Field, Input } from '../components/ui/Field.jsx'
 import { Logo } from '../components/ui/Logo.jsx'
+import { PasswordInput } from '../components/ui/PasswordInput.jsx'
 
 /**
  * Pantalla de acceso.
@@ -118,11 +119,10 @@ export function LoginPage() {
             required
           >
             {(props) => (
-              <Input
+              <PasswordInput
                 {...props}
                 autoComplete="current-password"
                 onChange={(event) => setForm({ ...form, password: event.target.value })}
-                type="password"
                 value={form.password}
               />
             )}

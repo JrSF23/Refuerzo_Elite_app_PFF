@@ -98,6 +98,8 @@ export const fr = {
   },
 
   auth: {
+    showPassword: 'Afficher le mot de passe',
+    hidePassword: 'Masquer le mot de passe',
     title: 'Connexion',
     subtitle: 'Saisissez vos identifiants pour entrer.',
     login: 'Identifiant ou e-mail',

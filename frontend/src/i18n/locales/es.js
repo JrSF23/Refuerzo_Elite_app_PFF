@@ -118,6 +118,8 @@ export const es = {
   },
 
   auth: {
+    showPassword: 'Mostrar contraseña',
+    hidePassword: 'Ocultar contraseña',
     title: 'Acceder',
     subtitle: 'Introduzca sus credenciales para entrar.',
     login: 'Usuario o correo',
