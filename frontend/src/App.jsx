@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { lazy, useCallback, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { SessionProvider, useSession } from './context/SessionContext.jsx'
@@ -9,27 +9,41 @@ import { AppShell } from './components/layout/AppShell.jsx'
 import { SECTIONS } from './lib/permissions.js'
 import { LoginPage } from './pages/LoginPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
-import { StudentsPage } from './pages/students/StudentsPage.jsx'
-import { AllStudentsPage } from './pages/students/AllStudentsPage.jsx'
-import { GroupStudentsPage } from './pages/students/GroupStudentsPage.jsx'
-import { GroupSubjectsPage } from './pages/classGroups/GroupSubjectsPage.jsx'
-import { GuardiansPage } from './pages/guardians/GuardiansPage.jsx'
-import { TeachersPage } from './pages/teachers/TeachersPage.jsx'
-import { BillingPage } from './pages/billing/BillingPage.jsx'
-import { StagesPage } from './pages/stages/StagesPage.jsx'
-import { SubjectsPage } from './pages/subjects/SubjectsPage.jsx'
-import { TutorGroupsPage } from './pages/tutorGroups/TutorGroupsPage.jsx'
-import { ClassGroupsPage } from './pages/classGroups/ClassGroupsPage.jsx'
-import { EnrollmentsPage } from './pages/enrollments/EnrollmentsPage.jsx'
-import { SessionsPage } from './pages/sessions/SessionsPage.jsx'
-import { AttendanceGroupsPage } from './pages/attendance/AttendanceGroupsPage.jsx'
-import { GroupAttendancePage } from './pages/attendance/GroupAttendancePage.jsx'
-import { RollHistoryPage } from './pages/attendance/RollHistoryPage.jsx'
 import { LocaleContext } from './context/LocaleContext.js'
 import { getLocale, setLocale } from './i18n/index.js'
-import { PaymentsPage } from './pages/payments/PaymentsPage.jsx'
-import { UsersPage } from './pages/users/UsersPage.jsx'
-import { OrganizationsPage } from './pages/organizations/OrganizationsPage.jsx'
+
+/*
+ * Las pantallas viajan en su propio fichero y se descargan al entrar en ellas.
+ *
+ * Antes TODO iba en un bundle único: quien abría el panel descargaba también
+ * pagos, matrículas, organizaciones y las otras dieciséis pantallas que no iba a
+ * ver. Por el túnel, donde una descarga cuesta segundos, eso se paga entero
+ * antes de pintar nada.
+ *
+ * `LoginPage` y `DashboardPage` se quedan ESTÁTICAS a propósito: son el camino
+ * crítico —se entra por una y se aterriza en la otra— y diferirlas añadiría una
+ * ida y vuelta justo donde más se nota. El resto se difiere.
+ */
+const StudentsPage = lazy(() => import('./pages/students/StudentsPage.jsx').then((m) => ({ default: m.StudentsPage })))
+const AllStudentsPage = lazy(() => import('./pages/students/AllStudentsPage.jsx').then((m) => ({ default: m.AllStudentsPage })))
+const GroupStudentsPage = lazy(() => import('./pages/students/GroupStudentsPage.jsx').then((m) => ({ default: m.GroupStudentsPage })))
+const GroupSubjectsPage = lazy(() => import('./pages/classGroups/GroupSubjectsPage.jsx').then((m) => ({ default: m.GroupSubjectsPage })))
+const GuardiansPage = lazy(() => import('./pages/guardians/GuardiansPage.jsx').then((m) => ({ default: m.GuardiansPage })))
+const TeachersPage = lazy(() => import('./pages/teachers/TeachersPage.jsx').then((m) => ({ default: m.TeachersPage })))
+const BillingPage = lazy(() => import('./pages/billing/BillingPage.jsx').then((m) => ({ default: m.BillingPage })))
+const StagesPage = lazy(() => import('./pages/stages/StagesPage.jsx').then((m) => ({ default: m.StagesPage })))
+const SubjectsPage = lazy(() => import('./pages/subjects/SubjectsPage.jsx').then((m) => ({ default: m.SubjectsPage })))
+const TutorGroupsPage = lazy(() => import('./pages/tutorGroups/TutorGroupsPage.jsx').then((m) => ({ default: m.TutorGroupsPage })))
+const ClassGroupsPage = lazy(() => import('./pages/classGroups/ClassGroupsPage.jsx').then((m) => ({ default: m.ClassGroupsPage })))
+const EnrollmentsPage = lazy(() => import('./pages/enrollments/EnrollmentsPage.jsx').then((m) => ({ default: m.EnrollmentsPage })))
+const SessionsPage = lazy(() => import('./pages/sessions/SessionsPage.jsx').then((m) => ({ default: m.SessionsPage })))
+const AttendanceGroupsPage = lazy(() => import('./pages/attendance/AttendanceGroupsPage.jsx').then((m) => ({ default: m.AttendanceGroupsPage })))
+const GroupAttendancePage = lazy(() => import('./pages/attendance/GroupAttendancePage.jsx').then((m) => ({ default: m.GroupAttendancePage })))
+const RollHistoryPage = lazy(() => import('./pages/attendance/RollHistoryPage.jsx').then((m) => ({ default: m.RollHistoryPage })))
+const PaymentsPage = lazy(() => import('./pages/payments/PaymentsPage.jsx').then((m) => ({ default: m.PaymentsPage })))
+const UsersPage = lazy(() => import('./pages/users/UsersPage.jsx').then((m) => ({ default: m.UsersPage })))
+const OrganizationsPage = lazy(() => import('./pages/organizations/OrganizationsPage.jsx').then((m) => ({ default: m.OrganizationsPage })))
+
 
 /**
  * Secciones que todavía no tienen pantalla propia.

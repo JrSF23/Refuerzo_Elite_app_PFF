@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 
 import { t } from '../../i18n/index.js'
 import { useSession } from '../../context/SessionContext.jsx'
 import { Drawer } from '../ui/Drawer.jsx'
 import { Header } from './Header.jsx'
+import { RouteFallback } from './RouteFallback.jsx'
 import { Sidebar } from './Sidebar.jsx'
 
 /**
@@ -60,7 +61,12 @@ export function AppShell() {
         />
 
         <main className="content" id="main">
-          <Outlet />
+          {/* La frontera envuelve SOLO el contenido: el armazón no se desmonta
+              mientras llega el código de la pantalla, así que la navegación
+              sigue a la vista y no parece que la aplicación se haya ido. */}
+          <Suspense fallback={<RouteFallback />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
