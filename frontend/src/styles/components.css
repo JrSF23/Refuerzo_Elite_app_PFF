@@ -2455,3 +2455,45 @@
     transition: none;
   }
 }
+
+/* ── Campo de contraseña con interruptor ─────────────────────────────────────
+ *
+ * El botón se superpone al campo en vez de ponerse al lado: al lado, el campo se
+ * estrecharía y dejaría de alinearse con el de usuario, que es el de arriba.
+ *
+ * El hueco del botón se reserva con `padding-right` en el propio campo. Sin él,
+ * el texto pasa POR DEBAJO del ojo y una contraseña larga acaba ilegible justo
+ * cuando se ha pulsado para leerla.
+ * ───────────────────────────────────────────────────────────────────────────── */
+
+.password-field {
+  position: relative;
+  display: flex;
+}
+
+.password-field__input {
+  /* 24 del botón + su separación a cada lado. */
+  padding-right: calc(24px + var(--space-2) * 2);
+}
+
+.password-field__toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.password-field__toggle:hover {
+  color: var(--color-text);
+}
+

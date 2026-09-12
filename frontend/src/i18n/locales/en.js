@@ -97,6 +97,8 @@ export const en = {
   },
 
   auth: {
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
     title: 'Sign in',
     subtitle: 'Enter your credentials to continue.',
     login: 'Username or email',
