@@ -26,7 +26,7 @@ import { AttendanceGroupsPage } from './pages/attendance/AttendanceGroupsPage.js
 import { GroupAttendancePage } from './pages/attendance/GroupAttendancePage.jsx'
 import { RollHistoryPage } from './pages/attendance/RollHistoryPage.jsx'
 import { LocaleContext } from './context/LocaleContext.js'
-import { getLocale, setLocale } from './i18n/index.js'
+import { getLocale, loadLocale, setLocale } from './i18n/index.js'
 import { PaymentsPage } from './pages/payments/PaymentsPage.jsx'
 import { UsersPage } from './pages/users/UsersPage.jsx'
 import { OrganizationsPage } from './pages/organizations/OrganizationsPage.jsx'
@@ -191,8 +191,18 @@ export default function App() {
    */
   const [localeKey, setLocaleKey] = useState(getLocale())
 
-  const changeLocale = useCallback((locale) => {
-    if (setLocale(locale)) {
+  /*
+   * Espera al catálogo antes de cambiar. `loadLocale` es idempotente y no pide
+   * nada si el idioma ya está, así que volver a uno visitado es instantáneo.
+   *
+   * Si la descarga falla no se cambia nada: la pantalla se queda en el idioma
+   * que estaba, que es preferible a activar un catálogo ausente y que todo
+   * salga en español sin haberlo pedido.
+   */
+  const changeLocale = useCallback(async (locale) => {
+    const loaded = await loadLocale(locale)
+
+    if (loaded && setLocale(locale)) {
       setLocaleKey(locale)
     }
   }, [])

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { EMPTY_VALUE, formatAmount, formatDate, formatTime, getLocale, setLocale, t } from './index.js'
+import { EMPTY_VALUE, formatAmount, formatDate, formatTime, getLocale, loadLocale, setLocale, t } from './index.js'
 
 afterEach(() => {
   setLocale('es')
@@ -50,6 +50,46 @@ describe('preparación para un segundo idioma', () => {
   it('acepta el idioma registrado y actualiza el documento', () => {
     expect(setLocale('es')).toBe(true)
     expect(document.documentElement.lang).toBe('es')
+  })
+})
+
+/**
+ * Solo el español viaja en el bundle inicial; el francés y el inglés se
+ * descargan al elegirlos. Lo que se fija aquí es que esa descarga no pueda
+ * saltarse sin que se note.
+ */
+describe('catálogos que se cargan aparte', () => {
+  it('el español está disponible sin pedir nada', async () => {
+    await expect(loadLocale('es')).resolves.toBe(true)
+    expect(setLocale('es')).toBe(true)
+  })
+
+  it('un idioma que no existe no se descarga ni se activa', async () => {
+    await expect(loadLocale('zz')).resolves.toBe(false)
+  })
+
+  /**
+   * El motivo de que `setLocale` rechace un idioma CONOCIDO pero no cargado: con
+   * el catálogo ausente, `t()` respondería español para toda clave y la pantalla
+   * saldría en un idioma que nadie pidió, sin error visible.
+   *
+   * Se carga el módulo de cero para que el francés no esté ya traído por otra
+   * prueba de este mismo fichero: el estado del catálogo vive en el módulo.
+   */
+  it('rechaza un idioma conocido que todavía no se ha descargado', async () => {
+    vi.resetModules()
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const limpio = await import('./index.js')
+
+    expect(limpio.setLocale('fr')).toBe(false)
+    expect(limpio.getLocale()).toBe('es')
+  })
+
+  it('una vez descargado, se activa y traduce', async () => {
+    expect(await loadLocale('fr')).toBe(true)
+    expect(setLocale('fr')).toBe(true)
+    expect(t('common.loading')).toBe('Chargement…')
   })
 })
 
