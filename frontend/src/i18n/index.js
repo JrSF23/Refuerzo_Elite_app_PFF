@@ -12,11 +12,30 @@
  * los componentes.
  */
 
-import { en } from './locales/en.js'
 import { es } from './locales/es.js'
-import { fr } from './locales/fr.js'
 
-const catalogs = { es, fr, en }
+/**
+ * Solo el ESPAÑOL viaja en el bundle inicial.
+ *
+ * Los tres catálogos juntos pesan 65 kB de fuente, y para la inmensa mayoría de
+ * usuarios —el mercado es hispanohablante y el español es el idioma por
+ * defecto— dos tercios de eso eran peso muerto descargado antes de pintar nada.
+ * Por un túnel, donde cada kilobyte se paga, no es un detalle.
+ *
+ * El español NO puede diferirse: además de ser el idioma base, es el respaldo de
+ * toda clave que falte en otro catálogo. Tiene que estar siempre.
+ *
+ * `catalogs` pasa a ser un REGISTRO que crece: empieza con el español y recibe
+ * los demás a medida que se piden. Por eso ya no sirve para saber si un idioma
+ * existe —solo dice si está cargado—, y esa comprobación pasa a `KNOWN_LOCALES`.
+ */
+const catalogs = { es }
+
+/** Cómo se trae cada catálogo que no viene de serie. */
+const loaders = {
+  fr: () => import('./locales/fr.js').then((module) => module.fr),
+  en: () => import('./locales/en.js').then((module) => module.en),
+}
 
 /**
  * El español es el idioma base y el respaldo de los demás.
@@ -34,6 +53,12 @@ export const LOCALES = [
   { code: 'fr', label: 'Français' },
   { code: 'en', label: 'English' },
 ]
+
+/**
+ * Qué idiomas EXISTEN, que ya no es lo mismo que cuáles están cargados. Sale de
+ * `LOCALES` para que añadir un idioma siga siendo tocar un solo sitio.
+ */
+const KNOWN_LOCALES = new Set(LOCALES.map((locale) => locale.code))
 
 const STORAGE_KEY = 'smartwork.locale'
 
@@ -58,7 +83,7 @@ const localeTags = { es: 'es-ES', fr: 'fr-FR', en: 'en-GB' }
 function initialLocale() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored && catalogs[stored]) return stored
+    if (stored && KNOWN_LOCALES.has(stored)) return stored
   } catch {
     // Sin almacenamiento se sigue con la negociación del navegador.
   }
@@ -66,7 +91,7 @@ function initialLocale() {
   if (typeof navigator !== 'undefined') {
     for (const tag of navigator.languages ?? [navigator.language]) {
       const base = String(tag ?? '').slice(0, 2).toLowerCase()
-      if (catalogs[base]) return base
+      if (KNOWN_LOCALES.has(base)) return base
     }
   }
 
@@ -88,9 +113,22 @@ let activeLocale = initialLocale()
  * todo sin que cada componente tenga que suscribirse a nada.
  */
 export function setLocale(locale) {
-  if (!catalogs[locale]) {
+  if (!KNOWN_LOCALES.has(locale)) {
     if (import.meta.env.DEV) {
       console.warn(`[i18n] Idioma desconocido: "${locale}". Se mantiene "${activeLocale}".`)
+    }
+    return false
+  }
+
+  /*
+   * Conocido pero todavía no descargado. Se rechaza en vez de activarlo: con el
+   * catálogo ausente, `t()` respondería español para TODA clave y la pantalla
+   * saldría en un idioma que nadie pidió, sin error visible. Quien cambia de
+   * idioma debe pasar antes por `loadLocale()`.
+   */
+  if (!catalogs[locale]) {
+    if (import.meta.env.DEV) {
+      console.warn(`[i18n] "${locale}" aún no está cargado. Use loadLocale() antes de setLocale().`)
     }
     return false
   }
@@ -111,6 +149,31 @@ export function setLocale(locale) {
   }
 
   return true
+}
+
+/**
+ * Trae el catálogo de un idioma si todavía no está.
+ *
+ * Idempotente y seguro de llamar siempre: con el español —o con uno ya
+ * descargado— resuelve sin pedir nada a la red.
+ *
+ * Si la descarga falla, NO se rompe la aplicación: se devuelve `false` y quien
+ * llama se queda en el idioma que tenía. Perder un cambio de idioma es molesto;
+ * quedarse con la pantalla en blanco por un fichero que no llegó, no.
+ */
+export async function loadLocale(locale) {
+  if (!KNOWN_LOCALES.has(locale)) return false
+  if (catalogs[locale]) return true
+
+  try {
+    catalogs[locale] = await loaders[locale]()
+    return true
+  } catch {
+    if (import.meta.env.DEV) {
+      console.warn(`[i18n] No se pudo descargar el catálogo "${locale}".`)
+    }
+    return false
+  }
 }
 
 export function getLocale() {

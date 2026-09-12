@@ -10,11 +10,25 @@ import '@fontsource-variable/inter/wght.css'
 
 import './index.css'
 import App from './App.jsx'
+import { getLocale, loadLocale } from './i18n/index.js'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </StrictMode>,
-)
+/*
+ * El catálogo del idioma activo tiene que estar ANTES de la primera pintada.
+ *
+ * Desde que el francés y el inglés se descargan aparte, quien tenga uno de ellos
+ * elegido necesita que llegue su fichero para no ver la primera pantalla en
+ * español y verla cambiar un instante después — un destello peor que la espera
+ * que lo evita.
+ *
+ * En español, que es el caso de la inmensa mayoría, esto NO pide nada a la red:
+ * su catálogo viaja en el bundle y la promesa resuelve en el acto.
+ */
+loadLocale(getLocale()).then(() => {
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </StrictMode>,
+  )
+})
