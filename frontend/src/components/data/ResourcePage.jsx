@@ -13,6 +13,7 @@ import { Button } from '../ui/Button.jsx'
 import { Drawer } from '../ui/Drawer.jsx'
 import { DateField } from '../ui/DateField.jsx'
 import { Field, Input, Select, Textarea } from '../ui/Field.jsx'
+import { PasswordInput } from '../ui/PasswordInput.jsx'
 import { RelationSelect } from '../ui/RelationSelect.jsx'
 import { SearchSelect } from '../ui/SearchSelect.jsx'
 import { DataTable } from './DataTable.jsx'
@@ -291,6 +292,18 @@ function FormField({ field, form }) {
               ))}
             </Select>
           )
+        }
+
+        /*
+         * Contraseña, con interruptor para verla. Mismo control que el acceso.
+         *
+         * `new-password` y no `current-password`: aquí se crea o se cambia la
+         * contraseña de OTRA cuenta. Sin declararlo, el navegador puede rellenar
+         * el campo con la contraseña del propio administrador y acabar
+         * asignándosela sin querer a la cuenta que está dando de alta.
+         */
+        if (field.type === 'password') {
+          return <PasswordInput {...common(props)} autoComplete="new-password" />
         }
 
         return (
